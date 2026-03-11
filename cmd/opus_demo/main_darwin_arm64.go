@@ -5,7 +5,9 @@
 package main
 
 import (
+	"os"
 	"reflect"
+	"runtime/pprof"
 	"unsafe"
 
 	"modernc.org/libc"
@@ -17927,6 +17929,15 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 }
 
 func main() {
+	if p := os.Getenv("CPUPROFILE"); p != "" {
+		f, _ := os.Create(p)
+		pprof.StartCPUProfile(f)
+		// Register atexit to flush profile since libc.Start calls os.Exit
+		libc.AtExit(func() {
+			pprof.StopCPUProfile()
+			f.Close()
+		})
+	}
 	libc.Start(main1)
 }
 

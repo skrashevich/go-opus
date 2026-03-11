@@ -24,10 +24,10 @@ Benchmarked on Apple M1 Pro, encoding/decoding a 3:41 stereo 48kHz file at 128 k
 | Implementation | Encode | Decode | Notes |
 |---|---|---|---|
 | C original (RFC 6716) | 1.64s (1.0x) | 0.63s (1.0x) | Baseline |
-| **Go transpiled (this)** | **3.16s (1.9x)** | **1.19s (1.9x)** | Pure Go, no CGo |
+| **Go transpiled (this)** | **2.95s (1.8x)** | **1.08s (1.7x)** | Pure Go, no CGo |
 | FFmpeg libopus | 1.91s (1.2x) | 0.11s (0.2x) | SIMD-optimized |
 
-~1.9x slower than C — excellent for automatic transpilation. Encode runs at 70x realtime, decode at 186x realtime.
+~1.8x slower than C — excellent for automatic transpilation. Encode runs at 75x realtime, decode at 205x realtime.
 
 ## Installation
 
