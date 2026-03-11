@@ -16,6 +16,24 @@ import (
 var _ reflect.Type
 var _ unsafe.Pointer
 
+var _arena = make([]byte, 4*1024*1024)
+var _arenaOff int
+
+func _arenaAlloc(size uint64) uintptr {
+	off := (_arenaOff + 15) &^ 15
+	need := off + int(size)
+	if need > len(_arena) {
+		grown := make([]byte, need*2)
+		copy(grown, _arena[:_arenaOff])
+		_arena = grown
+	}
+	_arenaOff = need
+	return uintptr(unsafe.Pointer(&_arena[off]))
+}
+
+func _arenaSave() int     { return _arenaOff }
+func _arenaRestore(s int) { _arenaOff = s }
+
 const BITRES = 3
 const CELT_GET_AND_CLEAR_ERROR_REQUEST = 10007
 const CELT_GET_MODE_REQUEST = 10015
@@ -807,9 +825,9 @@ func deinterleave_hadamard(tls *libc.TLS, X uintptr, N0 int32, stride int32, had
 	var N, i, j int32
 	var ordery, tmp uintptr
 	_, _, _, _, _ = N, i, j, ordery, tmp
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	N = N0 * stride
-	tmp = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N))
+	tmp = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N))
 	if hadamard != 0 {
 		ordery = uintptr(unsafe.Pointer(&ordery_table)) + uintptr(stride)*4 - uintptr(2)*4
 		i = 0
@@ -873,9 +891,9 @@ func interleave_hadamard(tls *libc.TLS, X uintptr, N0 int32, stride int32, hadam
 	var N, i, j int32
 	var ordery, tmp uintptr
 	_, _, _, _, _ = N, i, j, ordery, tmp
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	N = N0 * stride
-	tmp = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N))
+	tmp = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N))
 	if hadamard != 0 {
 		ordery = uintptr(unsafe.Pointer(&ordery_table)) + uintptr(stride)*4 - uintptr(2)*4
 		i = 0
@@ -1744,7 +1762,7 @@ func quant_all_bands(tls *libc.TLS, encode int32, m uintptr, start int32, end in
 	var x_cm, y_cm, v15 uint32
 	var _ /* remaining_bits at bp+0 */ opus_int32
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = B, C, M, N, X, Y, _norm, b, curr_balance, eBands, effective_lowband, fold_end, fold_i, fold_start, i, j, lowband_offset, lowband_scratch, norm, norm2, resynth, tell, tf_change, update_lowband, x_cm, y_cm, v1, v15, v2, v20, v4, v5, v6, v7, v8
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	eBands = (*OpusCustomMode)(unsafe.Pointer(m)).FeBands
 	update_lowband = int32(1)
 	if Y_ != libc.UintptrFromInt32(0) {
@@ -1761,8 +1779,8 @@ func quant_all_bands(tls *libc.TLS, encode int32, m uintptr, start int32, end in
 		v1 = int32(1)
 	}
 	B = v1
-	_norm = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(C*M*int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr((*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands)*2)))))
-	lowband_scratch = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(M*(int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr((*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands)*2)))-int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr((*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands-int32(1))*2))))))
+	_norm = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(C*M*int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr((*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands)*2)))))
+	lowband_scratch = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(M*(int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr((*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands)*2)))-int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr((*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands-int32(1))*2))))))
 	norm = _norm
 	norm2 = norm + uintptr(M*int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr((*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands)*2))))*4
 	lowband_offset = 0
@@ -2115,14 +2133,14 @@ func transient_analysis(tls *libc.TLS, in uintptr, len1 int32, C int32, overlap 
 	var max_abs, t1, t2, t3, v7, v8, v9 opus_val16
 	var mem0, mem1, x, y opus_val32
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = N, bins, block, conseq, i, is_transient, j, j1, max_abs, mem0, mem1, t1, t2, t3, tmp, x, y, v7, v8, v9
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	mem0 = libc.Float32FromInt32(0)
 	mem1 = libc.Float32FromInt32(0)
 	is_transient = 0
-	tmp = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(len1))
+	tmp = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(len1))
 	block = overlap / int32(2)
 	N = len1 / block
-	bins = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N))
+	bins = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N))
 	if C == int32(1) {
 		i = 0
 		for {
@@ -2328,10 +2346,10 @@ func compute_inv_mdcts(tls *libc.TLS, mode uintptr, shortBlocks int32, X uintptr
 	var B, N, N2, b, c, j, overlap, v1 int32
 	var x uintptr
 	_, _, _, _, _, _, _, _, _ = B, N, N2, b, c, j, overlap, x, v1
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	N = (*OpusCustomMode)(unsafe.Pointer(mode)).FshortMdctSize << LM
 	overlap = (*OpusCustomMode)(unsafe.Pointer(mode)).Foverlap
-	x = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N+overlap))
+	x = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N+overlap))
 	c = 0
 	for {
 		N2 = N
@@ -2586,7 +2604,7 @@ func tf_analysis(tls *libc.TLS, m uintptr, len1 int32, C int32, isTransient int3
 	var L1, best_L1 opus_val32
 	var metric, path0, path1, tmp uintptr
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = B, L1, N, best_L1, best_level, cost0, cost1, curr0, curr1, from0, from1, i, j, k, lambda, metric, path0, path1, tf_select, tmp, v5
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	tf_select = 0
 	if nbCompressedBytes < int32(15)*C {
 		*(*int32)(unsafe.Pointer(tf_sum)) = 0
@@ -2616,10 +2634,10 @@ func tf_analysis(tls *libc.TLS, m uintptr, len1 int32, C int32, isTransient int3
 			}
 		}
 	}
-	metric = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(len1))
-	tmp = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((int32(*(*opus_int16)(unsafe.Pointer((*OpusCustomMode)(unsafe.Pointer(m)).FeBands + uintptr(len1)*2)))-int32(*(*opus_int16)(unsafe.Pointer((*OpusCustomMode)(unsafe.Pointer(m)).FeBands + uintptr(len1-int32(1))*2))))<<LM))
-	path0 = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(len1))
-	path1 = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(len1))
+	metric = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(len1))
+	tmp = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((int32(*(*opus_int16)(unsafe.Pointer((*OpusCustomMode)(unsafe.Pointer(m)).FeBands + uintptr(len1)*2)))-int32(*(*opus_int16)(unsafe.Pointer((*OpusCustomMode)(unsafe.Pointer(m)).FeBands + uintptr(len1-int32(1))*2))))<<LM))
+	path0 = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(len1))
+	path1 = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(len1))
 	*(*int32)(unsafe.Pointer(tf_sum)) = 0
 	i = 0
 	for {
@@ -3099,7 +3117,7 @@ func celt_encode_with_ec(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int3
 	var _ /* pre at bp+80 */ [2]uintptr
 	var _ /* tf_sum at bp+56 */ int32
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = C, CC, LM, M, N, X, _pre, adjust, alloc_trim, alpha, anti_collapse_on, anti_collapse_rsv, bandE, bandLogE, bits, boost, bound, c, cap1, codedBands, collapse_masks, count, d2, delta, den, dynalloc_logp, dynalloc_loop_logp, effEnd, effectiveBytes, effectiveRate, error1, fine_priority, fine_quant, flag, freq, gain1, i, in, inp, isTransient, j, lm_diff, max_allowed, min_allowed, nbAvailableBytes, nbFilledBytes, octave, offset, offsets, oldBandE, oldLogE, oldLogE2, pcmp, pf_on, pf_threshold, pitch_buf, prefilter_mem, prefilter_tapset, pulses, qg, quanta, shortBlocks, silence, t1, t2, target, tell, tf_res, tf_select, tmp, tmp1, total_bits, total_boost, vbr_bound, vbr_rate, width, x, v10, v19, v2, v20, v21, v28, v3, v42, v5, v6, v7, v8, v9
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	shortBlocks = 0
 	isTransient = 0
 	CC = (*OpusCustomEncoder)(unsafe.Pointer(st)).Fchannels
@@ -3249,9 +3267,9 @@ func celt_encode_with_ec(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int3
 	if effEnd > (*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FeffEBands {
 		effEnd = (*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FeffEBands
 	}
-	in = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(CC*(N+(*OpusCustomEncoder)(unsafe.Pointer(st)).Foverlap)))
+	in = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(CC*(N+(*OpusCustomEncoder)(unsafe.Pointer(st)).Foverlap)))
 	/* Find pitch period and gain */
-	_pre = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(CC*(N+libc.Int32FromInt32(COMBFILTER_MAXPERIOD))))
+	_pre = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(CC*(N+libc.Int32FromInt32(COMBFILTER_MAXPERIOD))))
 	(*(*[2]uintptr)(unsafe.Pointer(bp + 80)))[0] = _pre
 	(*(*[2]uintptr)(unsafe.Pointer(bp + 80)))[int32(1)] = _pre + uintptr(N+libc.Int32FromInt32(COMBFILTER_MAXPERIOD))*4
 	silence = int32(1)
@@ -3347,7 +3365,7 @@ func celt_encode_with_ec(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int3
 		*(*int32)(unsafe.Pointer(enc + 24)) += tell - v3
 	}
 	if nbAvailableBytes > int32(12)*C && (*OpusCustomEncoder)(unsafe.Pointer(st)).Fstart == 0 && !(silence != 0) && !((*OpusCustomEncoder)(unsafe.Pointer(st)).Fdisable_pf != 0) && (*OpusCustomEncoder)(unsafe.Pointer(st)).Fcomplexity >= int32(5) {
-		pitch_buf = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((libc.Int32FromInt32(COMBFILTER_MAXPERIOD)+N)>>libc.Int32FromInt32(1)))
+		pitch_buf = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((libc.Int32FromInt32(COMBFILTER_MAXPERIOD)+N)>>libc.Int32FromInt32(1)))
 		pitch_downsample(tls, bp+80, pitch_buf, int32(COMBFILTER_MAXPERIOD)+N, CC)
 		pitch_search(tls, pitch_buf+uintptr(libc.Int32FromInt32(COMBFILTER_MAXPERIOD)>>libc.Int32FromInt32(1))*4, pitch_buf, N, libc.Int32FromInt32(COMBFILTER_MAXPERIOD)-libc.Int32FromInt32(COMBFILTER_MINPERIOD), bp+60)
 		*(*int32)(unsafe.Pointer(bp + 60)) = int32(COMBFILTER_MAXPERIOD) - *(*int32)(unsafe.Pointer(bp + 60))
@@ -3493,9 +3511,9 @@ func celt_encode_with_ec(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int3
 		}
 		ec_enc_bit_logp(tls, enc, isTransient, uint32(3))
 	}
-	freq = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(CC*N)) /**< Interleaved signal MDCTs */
-	bandE = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands*CC))
-	bandLogE = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands*CC))
+	freq = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(CC*N)) /**< Interleaved signal MDCTs */
+	bandE = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands*CC))
+	bandLogE = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands*CC))
 	/* Compute MDCTs */
 	compute_mdcts(tls, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode, shortBlocks, in, freq, CC, LM)
 	if CC == int32(2) && C == int32(1) {
@@ -3546,12 +3564,12 @@ func celt_encode_with_ec(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int3
 			}
 		}
 	}
-	X = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(C*N)) /**< Interleaved normalised MDCTs */
+	X = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(C*N)) /**< Interleaved normalised MDCTs */
 	compute_band_energies(tls, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode, freq, bandE, effEnd, C, M)
 	amp2Log2(tls, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode, effEnd, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fend, bandE, bandLogE, C)
 	/* Band normalisation */
 	normalise_bands(tls, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode, freq, X, bandE, effEnd, C, M)
-	tf_res = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	tf_res = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
 	tf_select = tf_analysis(tls, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode, effEnd, C, isTransient, tf_res, effectiveBytes, X, N, LM, bp+56)
 	i = effEnd
 	for {
@@ -3564,7 +3582,7 @@ func celt_encode_with_ec(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int3
 		;
 		i = i + 1
 	}
-	error1 = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	error1 = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
 	quant_coarse_energy(tls, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fstart, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fend, effEnd, bandLogE, oldBandE, libc.Uint32FromInt32(total_bits), error1, enc, C, LM, nbAvailableBytes, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fforce_intra, st+76, libc.BoolInt32((*OpusCustomEncoder)(unsafe.Pointer(st)).Fcomplexity >= int32(4)), (*OpusCustomEncoder)(unsafe.Pointer(st)).Floss_rate)
 	tf_encode(tls, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fstart, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fend, isTransient, tf_res, LM, tf_select, enc)
 	(*OpusCustomEncoder)(unsafe.Pointer(st)).Fspread_decision = int32(SPREAD_NORMAL)
@@ -3582,8 +3600,8 @@ _51:
 		}
 		ec_enc_icdf(tls, enc, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fspread_decision, uintptr(unsafe.Pointer(&spread_icdf)), uint32(5))
 	}
-	cap1 = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
-	offsets = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	cap1 = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	offsets = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
 	init_caps(tls, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode, cap1, LM, C)
 	i = 0
 	for {
@@ -3837,9 +3855,9 @@ _51:
 		*(*int32)(unsafe.Pointer(bp + 64)) = v3
 	}
 	/* Bit allocation */
-	fine_quant = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
-	pulses = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
-	fine_priority = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	fine_quant = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	pulses = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	fine_priority = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
 	/* bits =           packet size                    - where we are - safety*/
 	bits = libc.Int32FromUint32(libc.Uint32FromInt32(nbCompressedBytes*libc.Int32FromInt32(8)<<libc.Int32FromInt32(BITRES)) - ec_tell_frac(tls, enc) - uint32(1))
 	if isTransient != 0 && LM >= int32(2) && bits >= (LM+int32(2))<<int32(BITRES) {
@@ -3853,7 +3871,7 @@ _51:
 	(*OpusCustomEncoder)(unsafe.Pointer(st)).FlastCodedBands = codedBands
 	quant_fine_energy(tls, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fstart, (*OpusCustomEncoder)(unsafe.Pointer(st)).Fend, oldBandE, error1, fine_quant, enc, C)
 	/* Residual quantisation */
-	collapse_masks = libc.X__builtin_alloca(tls, uint64(1)*libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	collapse_masks = _arenaAlloc(uint64(1)*libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
 	if C == int32(2) {
 		v2 = X + uintptr(N)*4
 	} else {
@@ -4192,7 +4210,7 @@ func celt_decode_lost(tls *libc.TLS, st uintptr, pcm uintptr, N int32, LM int32)
 	var _ /* pitch_buf at bp+56 */ [1024]opus_val16
 	var _ /* pitch_index at bp+0 */ int32
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = C, E1, E2, S1, S2, X, backgroundLogE, bandE, blen, boffs, bound, c, decay, decay1, e, effEnd, fade, freq, i, j, len1, lpc, offset, oldBandE, oldLogE, oldLogE2, out_mem, overlap, period, poffset, ratio, seed, tmp, tmp1, tmp2, v1, v3, v4
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	overlap = (*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).Foverlap
 	fade = libc.Float32FromFloat32(1)
 	C = (*OpusCustomDecoder)(unsafe.Pointer(st)).Fchannels
@@ -4225,9 +4243,9 @@ func celt_decode_lost(tls *libc.TLS, st uintptr, pcm uintptr, N int32, LM int32)
 		if effEnd > (*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FeffEBands {
 			effEnd = (*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FeffEBands
 		}
-		freq = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(C*N)) /**< Interleaved signal MDCTs */
-		X = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(C*N))    /**< Interleaved normalised MDCTs */
-		bandE = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands*C))
+		freq = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(C*N)) /**< Interleaved signal MDCTs */
+		X = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(C*N))    /**< Interleaved normalised MDCTs */
+		bandE = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands*C))
 		if (*OpusCustomDecoder)(unsafe.Pointer(st)).Floss_count >= int32(5) {
 			log2Amp(tls, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fstart, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fend, bandE, backgroundLogE, C)
 		} else {
@@ -4396,7 +4414,7 @@ func celt_decode_lost(tls *libc.TLS, st uintptr, pcm uintptr, N int32, LM int32)
 			decay1 = libc.Float32FromInt32(1)
 			S1 = libc.Float32FromInt32(0)
 			*(*[24]opus_val16)(unsafe.Pointer(bp + 8348)) = [24]opus_val16{}
-			e = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(libc.Int32FromInt32(MAX_PERIOD)+libc.Int32FromInt32(2)*(*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).Foverlap))
+			e = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(libc.Int32FromInt32(MAX_PERIOD)+libc.Int32FromInt32(2)*(*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).Foverlap))
 			offset = int32(MAX_PERIOD) - *(*int32)(unsafe.Pointer(bp))
 			i = 0
 			for {
@@ -4630,7 +4648,7 @@ func celt_decode_with_ec(tls *libc.TLS, st uintptr, data uintptr, len1 int32, pc
 	var _ /* out_syn at bp+72 */ [2]uintptr
 	var _ /* overlap_mem at bp+56 */ [2]uintptr
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = C, CC, LM, M, N, X, alloc_trim, anti_collapse_on, anti_collapse_rsv, backgroundLogE, bandE, bits, boost, bound, c, cap1, codedBands, collapse_masks, decode_mem, dynalloc_logp, dynalloc_loop_logp, effEnd, fine_priority, fine_quant, flag, freq, i, intra_ener, isTransient, lpc, octave, offsets, oldBandE, oldLogE, oldLogE2, out_mem, postfilter_gain, postfilter_pitch, postfilter_tapset, pulses, qg, quanta, shortBlocks, silence, spread_decision, tell, tf_res, total_bits, width, v1, v12, v13, v4, v5
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	CC = (*OpusCustomDecoder)(unsafe.Pointer(st)).Fchannels
 	*(*int32)(unsafe.Pointer(bp + 88)) = 0
 	*(*int32)(unsafe.Pointer(bp + 92)) = 0
@@ -4686,9 +4704,9 @@ func celt_decode_with_ec(tls *libc.TLS, st uintptr, data uintptr, len1 int32, pc
 	} else {
 		v1 = C
 	}
-	freq = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(v1*N)) /**< Interleaved signal MDCTs */
-	X = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(C*N))     /**< Interleaved normalised MDCTs */
-	bandE = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands*C))
+	freq = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(v1*N)) /**< Interleaved signal MDCTs */
+	X = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(C*N))     /**< Interleaved normalised MDCTs */
+	bandE = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands*C))
 	c = 0
 	for {
 		i = 0
@@ -4830,7 +4848,7 @@ _15:
 	intra_ener = v1
 	/* Get band energies */
 	unquant_coarse_energy(tls, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fstart, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fend, oldBandE, intra_ener, dec, C, LM)
-	tf_res = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	tf_res = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
 	tf_decode(tls, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fstart, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fend, isTransient, tf_res, LM, dec)
 	v13 = dec
 	v1 = (*ec_ctx)(unsafe.Pointer(v13)).Fnbits_total - (libc.Int32FromInt64(4)*libc.Int32FromInt32(__CHAR_BIT__) - libc.X__builtin_clz(tls, (*ec_ctx)(unsafe.Pointer(v13)).Frng))
@@ -4841,10 +4859,10 @@ _31:
 	if tell+int32(4) <= total_bits {
 		spread_decision = ec_dec_icdf(tls, dec, uintptr(unsafe.Pointer(&spread_icdf)), uint32(5))
 	}
-	pulses = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
-	cap1 = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
-	offsets = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
-	fine_priority = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	pulses = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	cap1 = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	offsets = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	fine_priority = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
 	init_caps(tls, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode, cap1, LM, C)
 	dynalloc_logp = int32(6)
 	total_bits = total_bits << int32(BITRES)
@@ -4900,7 +4918,7 @@ _31:
 		;
 		i = i + 1
 	}
-	fine_quant = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	fine_quant = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
 	if tell+libc.Int32FromInt32(6)<<libc.Int32FromInt32(BITRES) <= total_bits {
 		v1 = ec_dec_icdf(tls, dec, uintptr(unsafe.Pointer(&trim_icdf)), uint32(7))
 	} else {
@@ -4918,7 +4936,7 @@ _31:
 	codedBands = compute_allocation(tls, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fstart, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fend, offsets, cap1, alloc_trim, bp+88, bp+92, bits, bp+96, pulses, fine_quant, fine_priority, C, LM, dec, 0, 0)
 	unquant_fine_energy(tls, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fstart, (*OpusCustomDecoder)(unsafe.Pointer(st)).Fend, oldBandE, fine_quant, dec, C)
 	/* Decode fixed codebook */
-	collapse_masks = libc.X__builtin_alloca(tls, uint64(1)*libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
+	collapse_masks = _arenaAlloc(uint64(1)*libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer((*OpusCustomDecoder)(unsafe.Pointer(st)).Fmode)).FnbEBands))
 	if C == int32(2) {
 		v13 = X + uintptr(N)*4
 	} else {
@@ -5485,8 +5503,8 @@ func _celt_autocorr(tls *libc.TLS, x uintptr, ac uintptr, window uintptr, overla
 	var i int32
 	var xx uintptr
 	_, _, _ = d, i, xx
-	defer tls.FreeAlloca()()
-	xx = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(n))
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
+	xx = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(n))
 	i = 0
 	for {
 		if !(i < n) {
@@ -6270,7 +6288,7 @@ func encode_pulses(tls *libc.TLS, _y uintptr, _n int32, __k int32, _enc uintptr)
 	var u uintptr
 	var _ /* nc at bp+4 */ opus_uint32
 	_, _ = i, u
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	switch _n {
 	case int32(2):
 		i = icwrs2(tls, _y, bp)
@@ -6282,7 +6300,7 @@ func encode_pulses(tls *libc.TLS, _y uintptr, _n int32, __k int32, _enc uintptr)
 		i = icwrs4(tls, _y, bp)
 		ec_enc_uint(tls, _enc, i, ncwrs4(tls, *(*int32)(unsafe.Pointer(bp))))
 	default:
-		u = libc.X__builtin_alloca(tls, uint64(4)*uint64(libc.Uint32FromInt32(*(*int32)(unsafe.Pointer(bp)))+libc.Uint32FromUint32(2)))
+		u = _arenaAlloc(uint64(4)*uint64(libc.Uint32FromInt32(*(*int32)(unsafe.Pointer(bp)))+libc.Uint32FromUint32(2)))
 		i = icwrs(tls, _n, *(*int32)(unsafe.Pointer(bp)), bp+4, _y, u)
 		ec_enc_uint(tls, _enc, i, *(*opus_uint32)(unsafe.Pointer(bp + 4)))
 		break
@@ -6292,7 +6310,7 @@ func encode_pulses(tls *libc.TLS, _y uintptr, _n int32, __k int32, _enc uintptr)
 func decode_pulses(tls *libc.TLS, _y uintptr, _n int32, _k int32, _dec uintptr) {
 	var u uintptr
 	_ = u
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	switch _n {
 	case int32(2):
 		cwrsi2(tls, _k, ec_dec_uint(tls, _dec, ncwrs2(tls, _k)), _y)
@@ -6301,7 +6319,7 @@ func decode_pulses(tls *libc.TLS, _y uintptr, _n int32, _k int32, _dec uintptr) 
 	case int32(4):
 		cwrsi4(tls, _k, ec_dec_uint(tls, _dec, ncwrs4(tls, _k)), _y)
 	default:
-		u = libc.X__builtin_alloca(tls, uint64(4)*uint64(libc.Uint32FromInt32(_k)+libc.Uint32FromUint32(2)))
+		u = _arenaAlloc(uint64(4)*uint64(libc.Uint32FromInt32(_k)+libc.Uint32FromUint32(2)))
 		cwrsi(tls, _n, _k, ec_dec_uint(tls, _dec, ncwrs_urow(tls, libc.Uint32FromInt32(_n), libc.Uint32FromInt32(_k), u)), _y, u)
 		break
 	}
@@ -8378,12 +8396,12 @@ func clt_mdct_forward(tls *libc.TLS, l uintptr, in uintptr, out uintptr, window 
 	var f, fp, t, t1, wp1, wp2, xp1, xp2, yp, yp1, yp11, yp2, v2 uintptr
 	var im, re, sine, yi, yi1, yr, yr1 float32
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = N, N2, N4, f, fp, i, im, re, sine, t, t1, wp1, wp2, xp1, xp2, yi, yi1, yp, yp1, yp11, yp2, yr, yr1, v2
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	N = (*mdct_lookup)(unsafe.Pointer(l)).Fn
 	N = N >> shift
 	N2 = N >> int32(1)
 	N4 = N >> int32(2)
-	f = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N2))
+	f = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N2))
 	/* sin(x) ~= x here */
 	sine = float32(float32(libc.Float32FromInt32(2)*libc.Float32FromFloat32(3.141592653))*libc.Float32FromFloat32(0.125)) / float32(N)
 	/* Consider the input to be composed of four blocks: [a, b, c, d] */
@@ -8513,13 +8531,13 @@ func clt_mdct_backward(tls *libc.TLS, l uintptr, in uintptr, out uintptr, window
 	var f, f2, fp, fp1, fp11, fp2, fp21, t, t1, wp1, wp11, wp2, wp21, xp1, xp11, xp2, xp21, yp, yp1, yp11, yp2, v2 uintptr
 	var im, re, sine, x1, x2, yi, yi1, yr, yr1 float32
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = N, N2, N4, f, f2, fp, fp1, fp11, fp2, fp21, i, im, re, sine, t, t1, wp1, wp11, wp2, wp21, x1, x2, xp1, xp11, xp2, xp21, yi, yi1, yp, yp1, yp11, yp2, yr, yr1, v2
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	N = (*mdct_lookup)(unsafe.Pointer(l)).Fn
 	N = N >> shift
 	N2 = N >> int32(1)
 	N4 = N >> int32(2)
-	f = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N2))
-	f2 = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N2))
+	f = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N2))
+	f2 = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N2))
 	/* sin(x) ~= x here */
 	sine = float32(float32(libc.Float32FromInt32(2)*libc.Float32FromFloat32(3.141592653))*libc.Float32FromFloat32(0.125)) / float32(N)
 	/* Pre-rotate */
@@ -13290,12 +13308,12 @@ func pitch_search(tls *libc.TLS, x_lp uintptr, y uintptr, len1 int32, max_pitch 
 	var x_lp4, xcorr, y_lp4 uintptr
 	var _ /* best_pitch at bp+0 */ [2]int32
 	_, _, _, _, _, _, _, _, _, _, _, _, _ = a, b, c, i, j, lag, offset, sum, sum1, x_lp4, xcorr, y_lp4, v5
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	*(*[2]int32)(unsafe.Pointer(bp)) = [2]int32{}
 	lag = len1 + max_pitch
-	x_lp4 = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(len1>>libc.Int32FromInt32(2)))
-	y_lp4 = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(lag>>libc.Int32FromInt32(2)))
-	xcorr = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(max_pitch>>libc.Int32FromInt32(1)))
+	x_lp4 = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(len1>>libc.Int32FromInt32(2)))
+	y_lp4 = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(lag>>libc.Int32FromInt32(2)))
+	xcorr = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(max_pitch>>libc.Int32FromInt32(1)))
 	/* Downsample by 2 again */
 	j = 0
 	for {
@@ -14188,7 +14206,7 @@ func quant_coarse_energy(tls *libc.TLS, m uintptr, start int32, end int32, effEn
 	var _ /* enc_intra_state at bp+56 */ ec_enc
 	var _ /* enc_start_state at bp+0 */ ec_enc
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = badness1, badness2, error_intra, intra, intra_bias, intra_bits, intra_buf, max_decay, new_distortion, nintra_bytes, nstart_bytes, oldEBands_intra, tell, tell_intra, v1, v2, v5, v6
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	badness1 = 0
 	intra = libc.BoolInt32(force_intra != 0 || !(two_pass != 0) && *(*opus_val32)(unsafe.Pointer(delayedIntra)) > opus_val32(int32(2)*C*(end-start)) && nbAvailableBytes > (end-start)*C)
 	intra_bias = int32(opus_val32(opus_val32(float32(budget)**(*opus_val32)(unsafe.Pointer(delayedIntra)))*float32(loss_rate)) / float32(C*libc.Int32FromInt32(512)))
@@ -14212,8 +14230,8 @@ _3:
 	}
 	max_decay = v5
 	*(*ec_enc)(unsafe.Pointer(bp)) = *(*ec_enc)(unsafe.Pointer(enc))
-	oldEBands_intra = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands))
-	error_intra = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands))
+	oldEBands_intra = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands))
+	error_intra = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands))
 	libc.Xmemcpy(tls, oldEBands_intra, oldEBands, libc.Uint64FromInt32(C*(*OpusCustomMode)(unsafe.Pointer(m)).FnbEBands)*uint64(4)+libc.Uint64FromInt64(0*((int64(oldEBands_intra)-int64(oldEBands))/4)))
 	if two_pass != 0 || intra != 0 {
 		badness1 = quant_coarse_energy_impl(tls, m, start, end, eBands, oldEBands_intra, libc.Int32FromUint32(budget), libc.Int32FromUint32(tell), uintptr(unsafe.Pointer(&e_prob_model))+uintptr(LM)*84+1*42, error_intra, enc, C, LM, int32(1), max_decay)
@@ -14233,7 +14251,7 @@ _3:
 		goto _11
 	_11:
 		intra_buf = v1 + uintptr(nstart_bytes)
-		intra_bits = libc.X__builtin_alloca(tls, uint64(1)*uint64(nintra_bytes-nstart_bytes))
+		intra_bits = _arenaAlloc(uint64(1)*uint64(nintra_bytes-nstart_bytes))
 		/* Copy bits from intra bit-stream */
 		libc.Xmemcpy(tls, intra_bits, intra_buf, uint64(nintra_bytes-nstart_bytes)*uint64(1)+libc.Uint64FromInt64(0*(int64(intra_bits)-int64(intra_buf))))
 		*(*ec_enc)(unsafe.Pointer(enc)) = *(*ec_enc)(unsafe.Pointer(bp))
@@ -14977,7 +14995,7 @@ func compute_allocation(tls *libc.TLS, m uintptr, start int32, end int32, offset
 	var N, N1, bits1j, bits2j, bitsj, codedBands, done, dual_stereo_rsv, hi, intensity_rsv, j, len1, lo, mid, psum, skip_rsv, skip_start, v1 int32
 	var bits1, bits2, thresh, trim_offset uintptr
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = N, N1, bits1, bits1j, bits2, bits2j, bitsj, codedBands, done, dual_stereo_rsv, hi, intensity_rsv, j, len1, lo, mid, psum, skip_rsv, skip_start, thresh, trim_offset, v1
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	if total > 0 {
 		v1 = total
 	} else {
@@ -15013,10 +15031,10 @@ func compute_allocation(tls *libc.TLS, m uintptr, start int32, end int32, offset
 			total = total - dual_stereo_rsv
 		}
 	}
-	bits1 = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(len1))
-	bits2 = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(len1))
-	thresh = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(len1))
-	trim_offset = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(len1))
+	bits1 = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(len1))
+	bits2 = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(len1))
+	thresh = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(len1))
+	trim_offset = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(len1))
 	j = start
 	for {
 		if !(j < end) {
@@ -15345,10 +15363,10 @@ func alg_quant(tls *libc.TLS, X uintptr, N int32, K int32, spread int32, B int32
 	var collapse_mask uint32
 	var iy, signx, y uintptr
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = Rxy, Ryy, best_den, best_id, best_num, collapse_mask, i, iy, j, pulsesLeft, rcp, s, signx, sum, tmp, xy, y, yy, v1, v3
-	defer tls.FreeAlloca()()
-	y = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N))
-	iy = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N))
-	signx = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N))
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
+	y = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N))
+	iy = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N))
+	signx = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N))
 	exp_rotation(tls, X, N, int32(1), B, K, spread)
 	/* Get rid of the sign */
 	sum = libc.Float32FromInt32(0)
@@ -15518,8 +15536,8 @@ func alg_unquant(tls *libc.TLS, X uintptr, N int32, K int32, spread int32, B int
 	var i, v1 int32
 	var iy uintptr
 	_, _, _, _, _ = Ryy, collapse_mask, i, iy, v1
-	defer tls.FreeAlloca()()
-	iy = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(N))
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
+	iy = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(N))
 	decode_pulses(tls, iy, N, K, dec)
 	Ryy = libc.Float32FromInt32(0)
 	i = 0
@@ -16177,7 +16195,7 @@ func opus_decode_frame(tls *libc.TLS, st uintptr, data uintptr, len1 int32, pcm 
 	var _ /* silence at bp+64 */ [2]uint8
 	var _ /* silk_frame_size at bp+56 */ opus_int32
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = F10, F20, F2_5, F5, audiosize, c, celt_dec, celt_frame_size, celt_ret, celt_to_silk, decoded_samples, endband, first_frame, i, lost_flag, mode, nb_samples, pcm_ptr, pcm_silk, pcm_transition, redundancy, redundancy_bytes, redundant_audio, ret, silk_dec, silk_ret, start_band, transition, window, v1, v11, v3, v8
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	silk_ret = 0
 	celt_ret = 0
 	transition = 0
@@ -16242,7 +16260,7 @@ func opus_decode_frame(tls *libc.TLS, st uintptr, data uintptr, len1 int32, pcm 
 		}
 		return frame_size
 	}
-	pcm_transition = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(F5*(*OpusDecoder)(unsafe.Pointer(st)).Fchannels))
+	pcm_transition = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(F5*(*OpusDecoder)(unsafe.Pointer(st)).Fchannels))
 	if data != libc.UintptrFromInt32(0) && (*OpusDecoder)(unsafe.Pointer(st)).Fprev_mode > 0 && (mode == int32(MODE_CELT_ONLY) && (*OpusDecoder)(unsafe.Pointer(st)).Fprev_mode != int32(MODE_CELT_ONLY) && !((*OpusDecoder)(unsafe.Pointer(st)).Fprev_redundancy != 0) || mode != int32(MODE_CELT_ONLY) && (*OpusDecoder)(unsafe.Pointer(st)).Fprev_mode == int32(MODE_CELT_ONLY)) {
 		transition = int32(1)
 		if mode == int32(MODE_CELT_ONLY) {
@@ -16265,8 +16283,8 @@ func opus_decode_frame(tls *libc.TLS, st uintptr, data uintptr, len1 int32, pcm 
 	} else {
 		v1 = frame_size
 	}
-	pcm_silk = libc.X__builtin_alloca(tls, uint64(2)*libc.Uint64FromInt32(v1*(*OpusDecoder)(unsafe.Pointer(st)).Fchannels))
-	redundant_audio = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(F5*(*OpusDecoder)(unsafe.Pointer(st)).Fchannels))
+	pcm_silk = _arenaAlloc(uint64(2)*libc.Uint64FromInt32(v1*(*OpusDecoder)(unsafe.Pointer(st)).Fchannels))
+	redundant_audio = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(F5*(*OpusDecoder)(unsafe.Pointer(st)).Fchannels))
 	/* SILK processing */
 	if mode != int32(MODE_CELT_ONLY) {
 		pcm_ptr = pcm_silk
@@ -16830,11 +16848,11 @@ func opus_decode(tls *libc.TLS, st uintptr, data uintptr, len1 int32, pcm uintpt
 	var v2, v3, v4 float32
 	var v5 opus_int16
 	_, _, _, _, _, _, _ = i, out, ret, v2, v3, v4, v5
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	if frame_size < 0 {
 		return -int32(1)
 	}
-	out = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(frame_size*(*OpusDecoder)(unsafe.Pointer(st)).Fchannels))
+	out = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(frame_size*(*OpusDecoder)(unsafe.Pointer(st)).Fchannels))
 	ret = opus_decode_native(tls, st, data, len1, out, frame_size, decode_fec, 0, libc.UintptrFromInt32(0))
 	if ret > 0 {
 		i = 0
@@ -18493,7 +18511,7 @@ func opus_encode_float(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int32,
 	var _ /* rp at bp+152 */ OpusRepacketizer
 	var _ /* zero at bp+648 */ int32
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = N2, N4, bak_bandwidth, bak_channels, bak_mode, bak_to_mono, bandwidth, bandwidth_thresholds, bytes_per_frame, bytes_target, cbrBytes, celt_enc, celt_to_silk, chan1, curr_bandwidth, cutoff_Hz, delay_compensation, effective_max_rate, endband, equiv_rate, equiv_rate2, err, err1, frame_rate, g1, g2, hp_freq_smth1, hysteresis, i, len1, max_rate, max_redundancy, mode_music, mode_voice, music_bandwidth_thresholds, nb_compr_bytes, nb_frames, pcm_buf, pcm_silk, prefill, redundancy, redundancy_bytes, ret, silk_enc, start_band, stereo_threshold, threshold, threshold1, tmp_data, tmp_len, tmp_prefill, to_celt, tocmode, voice_bandwidth_thresholds, voice_est, v1, v2, v21, v22, v23, v24, v3, v32, v40, v43, v47, v48
-	defer tls.FreeAlloca()()
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
 	ret = 0
 	prefill = 0
 	start_band = 0
@@ -18773,7 +18791,7 @@ func opus_encode_float(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int32,
 		}
 		nb_frames = v1
 		bytes_per_frame = max_data_bytes/nb_frames - int32(3)
-		tmp_data = libc.X__builtin_alloca(tls, uint64(1)*libc.Uint64FromInt32(nb_frames*bytes_per_frame))
+		tmp_data = _arenaAlloc(uint64(1)*libc.Uint64FromInt32(nb_frames*bytes_per_frame))
 		opus_repacketizer_init(tls, bp+152)
 		bak_mode = (*OpusEncoder)(unsafe.Pointer(st)).Fuser_forced_mode
 		bak_bandwidth = (*OpusEncoder)(unsafe.Pointer(st)).Fuser_bandwidth
@@ -18838,7 +18856,7 @@ func opus_encode_float(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int32,
 	bytes_target = v1 - int32(1)
 	data = data + uintptr(1)
 	ec_enc_init(tls, bp+8, data, libc.Uint32FromInt32(max_data_bytes-int32(1)))
-	pcm_buf = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((delay_compensation+frame_size)*(*OpusEncoder)(unsafe.Pointer(st)).Fchannels))
+	pcm_buf = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((delay_compensation+frame_size)*(*OpusEncoder)(unsafe.Pointer(st)).Fchannels))
 	i = 0
 	for {
 		if !(i < delay_compensation*(*OpusEncoder)(unsafe.Pointer(st)).Fchannels) {
@@ -18875,7 +18893,7 @@ func opus_encode_float(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int32,
 	}
 	/* SILK processing */
 	if (*OpusEncoder)(unsafe.Pointer(st)).Fmode != int32(MODE_CELT_ONLY) {
-		pcm_silk = libc.X__builtin_alloca(tls, uint64(2)*libc.Uint64FromInt32((*OpusEncoder)(unsafe.Pointer(st)).Fchannels*frame_size))
+		pcm_silk = _arenaAlloc(uint64(2)*libc.Uint64FromInt32((*OpusEncoder)(unsafe.Pointer(st)).Fchannels*frame_size))
 		(*OpusEncoder)(unsafe.Pointer(st)).Fsilk_mode.FbitRate = int32(8) * bytes_target * frame_rate
 		if (*OpusEncoder)(unsafe.Pointer(st)).Fmode == int32(MODE_HYBRID) {
 			(*OpusEncoder)(unsafe.Pointer(st)).Fsilk_mode.FbitRate /= (*OpusEncoder)(unsafe.Pointer(st)).Fstream_channels
@@ -19134,7 +19152,7 @@ func opus_encode_float(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int32,
 	} else {
 		nb_compr_bytes = 0
 	}
-	tmp_prefill = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32((*OpusEncoder)(unsafe.Pointer(st)).Fchannels*(*OpusEncoder)(unsafe.Pointer(st)).FFs/libc.Int32FromInt32(400)))
+	tmp_prefill = _arenaAlloc(uint64(4)*libc.Uint64FromInt32((*OpusEncoder)(unsafe.Pointer(st)).Fchannels*(*OpusEncoder)(unsafe.Pointer(st)).FFs/libc.Int32FromInt32(400)))
 	if (*OpusEncoder)(unsafe.Pointer(st)).Fmode != int32(MODE_SILK_ONLY) && (*OpusEncoder)(unsafe.Pointer(st)).Fmode != (*OpusEncoder)(unsafe.Pointer(st)).Fprev_mode && (*OpusEncoder)(unsafe.Pointer(st)).Fprev_mode > 0 {
 		i = 0
 		for {
@@ -19370,8 +19388,8 @@ func opus_encode(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int32, data 
 	var i, ret int32
 	var in uintptr
 	_, _, _ = i, in, ret
-	defer tls.FreeAlloca()()
-	in = libc.X__builtin_alloca(tls, uint64(4)*libc.Uint64FromInt32(frame_size*(*OpusEncoder)(unsafe.Pointer(st)).Fchannels))
+	_sp := _arenaSave(); defer _arenaRestore(_sp)
+	in = _arenaAlloc(uint64(4)*libc.Uint64FromInt32(frame_size*(*OpusEncoder)(unsafe.Pointer(st)).Fchannels))
 	i = 0
 	for {
 		if !(i < frame_size*(*OpusEncoder)(unsafe.Pointer(st)).Fchannels) {
