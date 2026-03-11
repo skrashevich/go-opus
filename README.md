@@ -23,24 +23,24 @@ Benchmarked on Apple M1 Pro, encoding/decoding a 3:41 stereo 48kHz file at 128 k
 
 | Implementation | Encode | Decode | Notes |
 |---|---|---|---|
-| C original (RFC 6716) | 1.51s (1.0x) | 0.59s (1.0x) | Baseline |
-| **Go transpiled (this)** | **2.92s (1.9x)** | **1.05s (1.8x)** | Pure Go, no CGo |
-| FFmpeg libopus | 0.04s (0.03x) | 0.09s (0.15x) | SIMD-optimized |
+| C original (RFC 6716) | 1.51s (1.0x) | 0.60s (1.0x) | Baseline |
+| **Go transpiled (this)** | **2.93s (1.9x)** | **1.08s (1.8x)** | Pure Go, no CGo |
+| FFmpeg libopus | 1.84s (1.2x) | 0.54s (0.9x) | SIMD-optimized |
 
-~1.9x slower than C — excellent for automatic transpilation. Encode runs at 76x realtime, decode at 210x realtime.
+~1.9x slower than C — excellent for automatic transpilation. Encode runs at 75x realtime, decode at 205x realtime.
 
 ### Detailed benchmarks (3 runs, user CPU time)
 
 | Implementation | Run 1 | Run 2 | Run 3 | Median | vs C |
 |---|---|---|---|---|---|
 | **Encode** | | | | | |
-| C original | 1.51s | 1.49s | 1.51s | 1.51s | 1.0x |
-| Go transpiled | 2.92s | 2.92s | 2.91s | 2.92s | 1.9x |
-| FFmpeg libopus | 0.04s | 0.04s | 0.04s | 0.04s | 0.03x |
+| C original | 1.50s | 1.53s | 1.51s | 1.51s | 1.0x |
+| Go transpiled | 2.93s | 2.92s | 2.93s | 2.93s | 1.9x |
+| FFmpeg libopus | 1.84s | 1.84s | 1.87s | 1.84s | 1.2x |
 | **Decode** | | | | | |
-| C original | 0.59s | 0.59s | 0.59s | 0.59s | 1.0x |
-| Go transpiled | 1.05s | 1.06s | 1.05s | 1.05s | 1.8x |
-| FFmpeg libopus | 0.09s | 0.09s | 0.09s | 0.09s | 0.15x |
+| C original | 0.60s | 0.61s | 0.60s | 0.60s | 1.0x |
+| Go transpiled | 1.08s | 1.08s | 1.08s | 1.08s | 1.8x |
+| FFmpeg libopus | 0.54s | 0.54s | 0.54s | 0.54s | 0.9x |
 
 ## Installation
 
