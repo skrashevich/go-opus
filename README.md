@@ -19,15 +19,28 @@ This is a complete Opus codec (SILK + CELT + Hybrid modes) — unlike other pure
 
 ## Performance
 
-Benchmarked on Apple M1 Pro, encoding/decoding a 3:41 stereo 48kHz file at 128 kbps:
+Benchmarked on Apple M1 Pro, encoding/decoding a 3:41 stereo 48kHz file at 128 kbps (median of 3 runs, user CPU time):
 
 | Implementation | Encode | Decode | Notes |
 |---|---|---|---|
-| C original (RFC 6716) | 1.64s (1.0x) | 0.63s (1.0x) | Baseline |
-| **Go transpiled (this)** | **2.95s (1.8x)** | **1.08s (1.7x)** | Pure Go, no CGo |
-| FFmpeg libopus | 1.91s (1.2x) | 0.11s (0.2x) | SIMD-optimized |
+| C original (RFC 6716) | 1.51s (1.0x) | 0.59s (1.0x) | Baseline |
+| **Go transpiled (this)** | **2.92s (1.9x)** | **1.05s (1.8x)** | Pure Go, no CGo |
+| FFmpeg libopus | 0.04s (0.03x) | 0.09s (0.15x) | SIMD-optimized |
 
-~1.8x slower than C — excellent for automatic transpilation. Encode runs at 75x realtime, decode at 205x realtime.
+~1.9x slower than C — excellent for automatic transpilation. Encode runs at 76x realtime, decode at 210x realtime.
+
+### Detailed benchmarks (3 runs, user CPU time)
+
+| Implementation | Run 1 | Run 2 | Run 3 | Median | vs C |
+|---|---|---|---|---|---|
+| **Encode** | | | | | |
+| C original | 1.51s | 1.49s | 1.51s | 1.51s | 1.0x |
+| Go transpiled | 2.92s | 2.92s | 2.91s | 2.92s | 1.9x |
+| FFmpeg libopus | 0.04s | 0.04s | 0.04s | 0.04s | 0.03x |
+| **Decode** | | | | | |
+| C original | 0.59s | 0.59s | 0.59s | 0.59s | 1.0x |
+| Go transpiled | 1.05s | 1.06s | 1.05s | 1.05s | 1.8x |
+| FFmpeg libopus | 0.09s | 0.09s | 0.09s | 0.09s | 0.15x |
 
 ## Installation
 
