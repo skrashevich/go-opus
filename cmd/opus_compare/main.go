@@ -1,6 +1,5 @@
 // Code generated for darwin/arm64 by 'ccgo celt_bands.o.go celt_celt.o.go celt_celt_lpc.o.go celt_cwrs.o.go celt_entcode.o.go celt_entdec.o.go celt_entenc.o.go celt_kiss_fft.o.go celt_laplace.o.go celt_mathops.o.go celt_mdct.o.go celt_modes.o.go celt_pitch.o.go celt_quant_bands.o.go celt_rate.o.go celt_vq.o.go opus_opus.o.go opus_opus_compare.o.go opus_opus_decoder.o.go opus_opus_encoder.o.go opus_opus_multistream.o.go opus_repacketizer.o.go silk_A2NLSF.o.go silk_CNG.o.go silk_HP_variable_cutoff.o.go silk_LPC_analysis_filter.o.go silk_LPC_inv_pred_gain.o.go silk_LP_variable_cutoff.o.go silk_NLSF2A.o.go silk_NLSF_VQ.o.go silk_NLSF_VQ_weights_laroia.o.go silk_NLSF_decode.o.go silk_NLSF_del_dec_quant.o.go silk_NLSF_encode.o.go silk_NLSF_stabilize.o.go silk_NLSF_unpack.o.go silk_NSQ.o.go silk_NSQ_del_dec.o.go silk_PLC.o.go silk_VAD.o.go silk_VQ_WMat_EC.o.go silk_ana_filt_bank_1.o.go silk_biquad_alt.o.go silk_bwexpander.o.go silk_bwexpander_32.o.go silk_check_control_input.o.go silk_code_signs.o.go silk_control_SNR.o.go silk_control_audio_bandwidth.o.go silk_control_codec.o.go silk_debug.o.go silk_dec_API.o.go silk_decode_core.o.go silk_decode_frame.o.go silk_decode_indices.o.go silk_decode_parameters.o.go silk_decode_pitch.o.go silk_decode_pulses.o.go silk_decoder_set_fs.o.go silk_enc_API.o.go silk_encode_indices.o.go silk_encode_pulses.o.go silk_float_LPC_analysis_filter_FLP.o.go silk_float_LPC_inv_pred_gain_FLP.o.go silk_float_LTP_analysis_filter_FLP.o.go silk_float_LTP_scale_ctrl_FLP.o.go silk_float_apply_sine_window_FLP.o.go silk_float_autocorrelation_FLP.o.go silk_float_burg_modified_FLP.o.go silk_float_bwexpander_FLP.o.go silk_float_corrMatrix_FLP.o.go silk_float_encode_frame_FLP.o.go silk_float_energy_FLP.o.go silk_float_find_LPC_FLP.o.go silk_float_find_LTP_FLP.o.go silk_float_find_pitch_lags_FLP.o.go silk_float_find_pred_coefs_FLP.o.go silk_float_inner_product_FLP.o.go silk_float_k2a_FLP.o.go silk_float_levinsondurbin_FLP.o.go silk_float_noise_shape_analysis_FLP.o.go silk_float_pitch_analysis_core_FLP.o.go silk_float_prefilter_FLP.o.go silk_float_process_gains_FLP.o.go silk_float_regularize_correlations_FLP.o.go silk_float_residual_energy_FLP.o.go silk_float_scale_copy_vector_FLP.o.go silk_float_scale_vector_FLP.o.go silk_float_schur_FLP.o.go silk_float_solve_LS_FLP.o.go silk_float_sort_FLP.o.go silk_float_warped_autocorrelation_FLP.o.go silk_float_wrappers_FLP.o.go silk_gain_quant.o.go silk_init_decoder.o.go silk_init_encoder.o.go silk_inner_prod_aligned.o.go silk_interpolate.o.go silk_lin2log.o.go silk_log2lin.o.go silk_pitch_est_tables.o.go silk_process_NLSFs.o.go silk_quant_LTP_gains.o.go silk_resampler.o.go silk_resampler_down2.o.go silk_resampler_down2_3.o.go silk_resampler_private_AR2.o.go silk_resampler_private_IIR_FIR.o.go silk_resampler_private_down_FIR.o.go silk_resampler_private_up2_HQ.o.go silk_resampler_rom.o.go silk_shell_coder.o.go silk_sigm_Q15.o.go silk_sort.o.go silk_stereo_LR_to_MS.o.go silk_stereo_MS_to_LR.o.go silk_stereo_decode_pred.o.go silk_stereo_encode_pred.o.go silk_stereo_find_predictor.o.go silk_stereo_quant_pred.o.go silk_sum_sqr_shift.o.go silk_table_LSF_cos.o.go silk_tables_LTP.o.go silk_tables_NLSF_CB_NB_MB.o.go silk_tables_NLSF_CB_WB.o.go silk_tables_gain.o.go silk_tables_other.o.go silk_tables_pitch_lag.o.go silk_tables_pulses_per_block.o.go', DO NOT EDIT.
 
-//go:build darwin && arm64
 
 package main
 
@@ -343,7 +342,7 @@ const TEST_WIN_STEP = 120
 
 func check_alloc(tls *libc.TLS, _ptr uintptr) (r uintptr) {
 	if _ptr == libc.UintptrFromInt32(0) {
-		libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+165, 0)
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+165, 0)
 		libc.Xexit(tls, int32(EXIT_FAILURE))
 	}
 	return _ptr
@@ -595,7 +594,7 @@ func main1(tls *libc.TLS, _argc int32, _argv uintptr) (r1 int32) {
 	var _ /* y at bp+8 */ uintptr
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = Eb, Ef, Q, X, Y, bi, ci, downsample, err, fin1, fin2, im, l, max_compare, nchannels, nframes, r, rate, re, xb, xi, xj, xlength, xtmp, xtmp2, ybands, yfreqs, ylength, ytmp, ytmp2, v6
 	if _argc < int32(3) || _argc > int32(6) {
-		libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+181, libc.VaList(bp+24, *(*uintptr)(unsafe.Pointer(_argv))))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+181, libc.VaList(bp+24, *(*uintptr)(unsafe.Pointer(_argv))))
 		return int32(EXIT_FAILURE)
 	}
 	nchannels = int32(1)
@@ -610,7 +609,7 @@ func main1(tls *libc.TLS, _argc int32, _argv uintptr) (r1 int32) {
 	if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(_argv + 1*8)), __ccgo_ts+233) == 0 {
 		rate = libc.Uint32FromInt32(libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(_argv + 2*8))))
 		if rate != uint32(8000) && rate != uint32(12000) && rate != uint32(16000) && rate != uint32(24000) && rate != uint32(48000) {
-			libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+236, 0)
+			libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+236, 0)
 			return int32(EXIT_FAILURE)
 		}
 		downsample = libc.Int32FromUint32(uint32(48000) / rate)
@@ -630,12 +629,12 @@ func main1(tls *libc.TLS, _argc int32, _argv uintptr) (r1 int32) {
 	}
 	fin1 = libc.Xfopen(tls, *(*uintptr)(unsafe.Pointer(_argv + 1*8)), __ccgo_ts+295)
 	if fin1 == libc.UintptrFromInt32(0) {
-		libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+298, libc.VaList(bp+24, *(*uintptr)(unsafe.Pointer(_argv + 1*8))))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+298, libc.VaList(bp+24, *(*uintptr)(unsafe.Pointer(_argv + 1*8))))
 		return int32(EXIT_FAILURE)
 	}
 	fin2 = libc.Xfopen(tls, *(*uintptr)(unsafe.Pointer(_argv + 2*8)), __ccgo_ts+295)
 	if fin2 == libc.UintptrFromInt32(0) {
-		libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+298, libc.VaList(bp+24, *(*uintptr)(unsafe.Pointer(_argv + 2*8))))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+298, libc.VaList(bp+24, *(*uintptr)(unsafe.Pointer(_argv + 2*8))))
 		libc.Xfclose(tls, fin1)
 		return int32(EXIT_FAILURE)
 	}
@@ -658,11 +657,11 @@ func main1(tls *libc.TLS, _argc int32, _argv uintptr) (r1 int32) {
 	ylength = read_pcm16(tls, bp+8, fin2, nchannels)
 	libc.Xfclose(tls, fin2)
 	if xlength != ylength*libc.Uint64FromInt32(downsample) {
-		libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+319, libc.VaList(bp+24, xlength, ylength*libc.Uint64FromInt32(downsample)))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+319, libc.VaList(bp+24, xlength, ylength*libc.Uint64FromInt32(downsample)))
 		return int32(EXIT_FAILURE)
 	}
 	if xlength < libc.Uint64FromInt32(libc.Int32FromInt32(TEST_WIN_SIZE)) {
-		libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+359, libc.VaList(bp+24, xlength, int32(TEST_WIN_SIZE)))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+359, libc.VaList(bp+24, xlength, int32(TEST_WIN_SIZE)))
 		return int32(EXIT_FAILURE)
 	}
 	nframes = (xlength - libc.Uint64FromInt32(libc.Int32FromInt32(TEST_WIN_SIZE)) + libc.Uint64FromInt32(libc.Int32FromInt32(TEST_WIN_STEP))) / libc.Uint64FromInt32(libc.Int32FromInt32(TEST_WIN_STEP))
@@ -929,12 +928,12 @@ func main1(tls *libc.TLS, _argc int32, _argv uintptr) (r1 int32) {
 	err = libc.Xpow(tls, err/float64(nframes), libc.Float64FromFloat64(1)/libc.Float64FromInt32(16))
 	Q = float32(libc.Float64FromInt32(100) * (libc.Float64FromInt32(1) - float64(float64(0.5)*libc.Xlog(tls, libc.Float64FromInt32(1)+err))/libc.Xlog(tls, float64(1.13))))
 	if Q < libc.Float32FromInt32(0) {
-		libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+395, 0)
-		libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+414, libc.VaList(bp+24, err))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+395, 0)
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+414, libc.VaList(bp+24, err))
 		return int32(EXIT_FAILURE)
 	} else {
-		libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+445, 0)
-		libc.Xfprintf(tls, libc.X__stderrp, __ccgo_ts+465, libc.VaList(bp+24, float64(Q), err))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+445, 0)
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+465, libc.VaList(bp+24, float64(Q), err))
 		return EXIT_SUCCESS
 	}
 	return r1
