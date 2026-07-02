@@ -1,14 +1,10 @@
 // Copyright (c) 2026 Sergey Krashevich.
 // SPDX-License-Identifier: Apache-2.0
 // See LICENSE and NOTICE in the project root.
-// https://github.com/skrashevich/go-opus
 
 package opus
 
 import (
-	"crypto/sha256"
-	"encoding/binary"
-	"fmt"
 	"math"
 	"runtime"
 	"testing"
@@ -17,179 +13,238 @@ import (
 	"github.com/skrashevich/go-opus/internal/libc"
 )
 
-// heapSink forces codec buffers onto the heap. The codec receives raw
-// uintptrs, which do not keep a goroutine stack slot in place: if the stack
-// grows during a call, writes through the stale address are lost.
-var heapSink any
+const (
+	testSampleRate = 48000
+	testChannels   = 2
+	testFrameSize  = testSampleRate / 50
+	testMaxPacket  = 4096
+)
 
-func cBuf[T any](n int) []T {
-	s := make([]T, n)
-	heapSink = s
-	return s
+func newTestTLS(tb testing.TB) *libc.TLS {
+	tb.Helper()
+
+	tls := libc.NewTLS()
+	tb.Cleanup(tls.Close)
+	return tls
 }
 
-func TestCodecOutput(t *testing.T) {
-	for _, tc := range []struct {
-		name        string
-		rate        int32
-		frameSize   int32
-		bitrate     int32 // 0 keeps the encoder default
-		channels    int32
-		application int32
-		signal      int // 0 sine, 1 noise, 2 chirp with noise bursts
-		frames      int
-		want        string
-	}{
-		{"stereo audio", 48000, 960, 0, 2, OPUS_APPLICATION_AUDIO, 0, 10, "7100148eac64468b99fa66324ed57a454acd1d4ae257530dfc1c46e185883192"},
-		{"mono voip", 48000, 960, 0, 1, OPUS_APPLICATION_VOIP, 0, 10, "ad1d8ea999f460474691cb2164cce788ef52e4433f8aca9c7fa55a28d5fb8650"},
-		{"stereo noise", 48000, 960, 0, 2, OPUS_APPLICATION_AUDIO, 1, 10, "d55f39654d51200301f7e2bce6aacb712f20af0a9322e350a5f60976e38c55fd"},
-		{"silk 16k mono voip", 16000, 320, 16000, 1, OPUS_APPLICATION_VOIP, 0, 10, "8f3fefa3be77c2fae500056bd583497a2ad3176664b1b099e79d51c22fb37672"},
-		{"silk 8k mono noise", 8000, 160, 12000, 1, OPUS_APPLICATION_VOIP, 1, 10, "4bb1df117f6ef68400a0d759b789c4f84f1a836e9cdccb30fb261333610477e1"},
-		{"hybrid stereo 24k", 48000, 960, 24000, 2, OPUS_APPLICATION_AUDIO, 0, 10, "07a5bb2972ae6f1abaa34ee1c9a2491b2cab5313695f0ab991c45addaef96b88"},
-		{"celt stereo 10ms noise", 48000, 480, 96000, 2, OPUS_APPLICATION_AUDIO, 1, 10, "70f7cd94e110de21b2566ea866fd29067eff6be9143ba900a5635e14c03a676c"},
-		{"mix stereo audio long", 48000, 960, 0, 2, OPUS_APPLICATION_AUDIO, 2, 200, "57d607b522c5a3e7d8debd405c97bc04963c3c97427d8c93f157ec007e8f6f23"},
-		{"mix stereo 10ms 64k long", 48000, 480, 64000, 2, OPUS_APPLICATION_AUDIO, 2, 200, "bcfb5ec04c459fe04e1e1e509010be385a0302efccb0ad119f7bcc2b23fc88d8"},
-		{"mix hybrid mono long", 48000, 960, 20000, 1, OPUS_APPLICATION_VOIP, 2, 200, "c0d09d637694b4dc8adf135b52705001f6d0dd77a73b0c797e6b50a9327dc2ea"},
-		{"mix silk 16k long", 16000, 320, 14000, 1, OPUS_APPLICATION_VOIP, 2, 200, "4ed553920c3b613b79c7699f7627e54af1d4e577cf14ebe9faa0bc340d5b9ef4"},
-		{"mix 24k stereo 40ms long", 24000, 960, 48000, 2, OPUS_APPLICATION_AUDIO, 2, 100, "322197c02cb1dd2d352d2d5a2dd1b5a80c02aaafe456e72a9169537e2372b5a0"},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			tls := libc.NewTLS()
-			defer tls.Close()
-			status := &cBuf[int32](1)[0]
-			enc := opus_encoder_create(tls, tc.rate, tc.channels, tc.application, uintptr(unsafe.Pointer(status)))
-			if *status != OPUS_OK || enc == 0 {
-				t.Fatalf("encoder init: %d", *status)
-			}
-			defer opus_encoder_destroy(tls, enc)
-			if tc.bitrate != 0 {
-				va := tls.Alloc(16)
-				rc := opus_encoder_ctl(tls, enc, OPUS_SET_BITRATE_REQUEST, libc.VaList(va, tc.bitrate))
-				tls.Free(16)
-				if rc != OPUS_OK {
-					t.Fatalf("set bitrate: %d", rc)
-				}
-			}
-			dec := opus_decoder_create(tls, tc.rate, tc.channels, uintptr(unsafe.Pointer(status)))
-			if *status != OPUS_OK || dec == 0 {
-				t.Fatalf("decoder init: %d", *status)
-			}
-			defer opus_decoder_destroy(tls, dec)
-			pcm := cBuf[int16](int(tc.frameSize * tc.channels))
-			out := cBuf[int16](int(tc.frameSize * tc.channels))
-			packet := cBuf[byte](1275)
-			h := sha256.New()
-			pcmLE := make([]byte, 0, 2*len(out))
-			seed := uint32(1)
-			for frame := range tc.frames {
-				for i := range pcm {
-					switch tc.signal {
-					case 1:
-						seed = 1664525*seed + 1013904223
-						pcm[i] = int16(seed>>16) / 2
-					case 2:
-						// Rising chirp, amplitude modulated, with periodic noise bursts.
-						t := float64(frame*len(pcm)+i) / float64(tc.rate) / float64(tc.channels)
-						v := 8000 * math.Sin(2*math.Pi*(100+400*t)*t) * (0.6 + 0.4*math.Sin(2*math.Pi*1.3*t))
-						seed = 1664525*seed + 1013904223
-						if frame%17 < 3 {
-							v += float64(int16(seed>>16)) / 3
-						} else {
-							v += float64(int16(seed>>16)) / 200
-						}
-						pcm[i] = int16(v)
-					default:
-						pcm[i] = int16(10000 * math.Sin(2*math.Pi*440*float64(frame*len(pcm)+i)/float64(tc.rate)))
-					}
-				}
-				n := opus_encode(tls, enc, uintptr(unsafe.Pointer(&pcm[0])), tc.frameSize, uintptr(unsafe.Pointer(&packet[0])), int32(len(packet)))
-				if n <= 0 {
-					t.Fatalf("encode frame %d: %d", frame, n)
-				}
-				h.Write(packet[:n])
-				got := opus_decode(tls, dec, uintptr(unsafe.Pointer(&packet[0])), n, uintptr(unsafe.Pointer(&out[0])), tc.frameSize, 0)
-				if got <= 0 || got > tc.frameSize {
-					t.Fatalf("decode frame %d: %d", frame, got)
-				}
-				// Hash PCM little-endian so the digests hold on big-endian targets too.
-				pcmLE = pcmLE[:0]
-				for _, s := range out[:got*tc.channels] {
-					pcmLE = binary.LittleEndian.AppendUint16(pcmLE, uint16(s))
-				}
-				h.Write(pcmLE)
-			}
-			runtime.KeepAlive(pcm)
-			runtime.KeepAlive(out)
-			runtime.KeepAlive(packet)
-			digest := fmt.Sprintf("%x", h.Sum(nil))
-			if digest != tc.want {
-				t.Fatalf("codec output changed: got %s, want %s", digest, tc.want)
-			}
-		})
-	}
-}
-
-// A steady 20 ms stereo frame exercises both the SILK and CELT paths.
-func benchmarkPCM() []int16 {
-	pcm := cBuf[int16](960 * 2)
-	for i := range 960 {
-		pcm[2*i] = int16(12000 * math.Sin(2*math.Pi*440*float64(i)/48000))
-		pcm[2*i+1] = int16(10000 * math.Sin(2*math.Pi*660*float64(i)/48000))
+func makeTestPCM(frameSize, channels int) []opus_int16 {
+	pcm := make([]opus_int16, frameSize*channels)
+	for i := range frameSize {
+		left := int16(math.Sin(2*math.Pi*440*float64(i)/testSampleRate) * 12000)
+		right := int16(math.Sin(2*math.Pi*660*float64(i)/testSampleRate) * 10000)
+		pcm[i*channels] = left
+		if channels > 1 {
+			pcm[i*channels+1] = right
+		}
 	}
 	return pcm
 }
 
-func BenchmarkEncode(b *testing.B) {
-	tls := libc.NewTLS()
-	defer tls.Close()
-	status := &cBuf[int32](1)[0]
-	enc := opus_encoder_create(tls, 48000, 2, OPUS_APPLICATION_AUDIO, uintptr(unsafe.Pointer(status)))
-	if *status != OPUS_OK || enc == 0 {
-		b.Fatalf("encoder init: %d", *status)
+func ptrOf[T any](v []T) uintptr {
+	if len(v) == 0 {
+		return 0
 	}
-	defer opus_encoder_destroy(tls, enc)
-	pcm := benchmarkPCM()
-	packet := cBuf[byte](1275)
+	return uintptr(unsafe.Pointer(&v[0]))
+}
+
+func testCString(p uintptr) string {
+	if p == 0 {
+		return ""
+	}
+
+	var b []byte
+	for i := uintptr(0); ; i++ {
+		c := *(*byte)(unsafe.Pointer(p + i))
+		if c == 0 {
+			return string(b)
+		}
+		b = append(b, c)
+	}
+}
+
+func newEncoder(tb testing.TB, tls *libc.TLS) uintptr {
+	tb.Helper()
+
+	var err int32
+	enc := opus_encoder_create(tls, testSampleRate, testChannels, OPUS_APPLICATION_AUDIO, uintptr(unsafe.Pointer(&err)))
+	if enc == 0 || err != OPUS_OK {
+		tb.Fatalf("opus_encoder_create() = %#x, err = %d", enc, err)
+	}
+	tb.Cleanup(func() { opus_encoder_destroy(tls, enc) })
+	return enc
+}
+
+func newDecoder(tb testing.TB, tls *libc.TLS) uintptr {
+	tb.Helper()
+
+	var err int32
+	dec := opus_decoder_create(tls, testSampleRate, testChannels, uintptr(unsafe.Pointer(&err)))
+	if dec == 0 || err != OPUS_OK {
+		tb.Fatalf("opus_decoder_create() = %#x, err = %d", dec, err)
+	}
+	tb.Cleanup(func() { opus_decoder_destroy(tls, dec) })
+	return dec
+}
+
+func encodeTestFrame(tb testing.TB, tls *libc.TLS, enc uintptr, pcm []opus_int16) []byte {
+	tb.Helper()
+
+	packet := make([]byte, testMaxPacket)
+	n := opus_encode(tls, enc, ptrOf(pcm), testFrameSize, ptrOf(packet), int32(len(packet)))
+	runtime.KeepAlive(pcm)
+	if n <= 0 {
+		tb.Fatalf("opus_encode() = %d", n)
+	}
+	return packet[:n]
+}
+
+func TestCodecCreateRejectsInvalidParameters(t *testing.T) {
+	tls := newTestTLS(t)
+
+	var err int32
+	if enc := opus_encoder_create(tls, 44100, testChannels, OPUS_APPLICATION_AUDIO, uintptr(unsafe.Pointer(&err))); enc != 0 {
+		opus_encoder_destroy(tls, enc)
+		t.Fatalf("opus_encoder_create() unexpectedly succeeded for 44100 Hz")
+	}
+	if err != -1 {
+		t.Fatalf("encoder error = %d, want -1", err)
+	}
+
+	err = 0
+	if dec := opus_decoder_create(tls, testSampleRate, 3, uintptr(unsafe.Pointer(&err))); dec != 0 {
+		opus_decoder_destroy(tls, dec)
+		t.Fatalf("opus_decoder_create() unexpectedly succeeded for 3 channels")
+	}
+	if err != -1 {
+		t.Fatalf("decoder error = %d, want -1", err)
+	}
+}
+
+func TestCodecSizesAndVersion(t *testing.T) {
+	tls := newTestTLS(t)
+
+	if got := opus_encoder_get_size(tls, 1); got <= 0 {
+		t.Fatalf("opus_encoder_get_size(1) = %d", got)
+	}
+	if got := opus_encoder_get_size(tls, 2); got <= 0 {
+		t.Fatalf("opus_encoder_get_size(2) = %d", got)
+	}
+	if got := opus_encoder_get_size(tls, 3); got != 0 {
+		t.Fatalf("opus_encoder_get_size(3) = %d, want 0", got)
+	}
+	if got := opus_decoder_get_size(tls, 1); got <= 0 {
+		t.Fatalf("opus_decoder_get_size(1) = %d", got)
+	}
+	if got := opus_decoder_get_size(tls, 2); got <= 0 {
+		t.Fatalf("opus_decoder_get_size(2) = %d", got)
+	}
+	if got := opus_decoder_get_size(tls, 0); got != 0 {
+		t.Fatalf("opus_decoder_get_size(0) = %d, want 0", got)
+	}
+
+	if got := testCString(opus_get_version_string(tls)); got != "libopus 1.0.0" {
+		t.Fatalf("opus_get_version_string() = %q", got)
+	}
+	if got := testCString(opus_strerror(tls, OPUS_OK)); got != "success" {
+		t.Fatalf("opus_strerror(OPUS_OK) = %q", got)
+	}
+}
+
+func TestEncodeDecodeRoundTripPacket(t *testing.T) {
+	tls := newTestTLS(t)
+	enc := newEncoder(t, tls)
+	dec := newDecoder(t, tls)
+	pcm := makeTestPCM(testFrameSize, testChannels)
+
+	packet := encodeTestFrame(t, tls, enc, pcm)
+	packetPtr := ptrOf(packet)
+	if got := opus_packet_get_nb_frames(tls, packetPtr, int32(len(packet))); got != 1 {
+		t.Fatalf("opus_packet_get_nb_frames() = %d, want 1", got)
+	}
+	if got := opus_packet_get_nb_channels(tls, packetPtr); got != testChannels {
+		t.Fatalf("opus_packet_get_nb_channels() = %d, want %d", got, testChannels)
+	}
+	if got := opus_packet_get_samples_per_frame(tls, packetPtr, testSampleRate); got != testFrameSize {
+		t.Fatalf("opus_packet_get_samples_per_frame() = %d, want %d", got, testFrameSize)
+	}
+	if got := opus_decoder_get_nb_samples(tls, dec, packetPtr, int32(len(packet))); got != testFrameSize {
+		t.Fatalf("opus_decoder_get_nb_samples() = %d, want %d", got, testFrameSize)
+	}
+
+	decoded := make([]opus_int16, testFrameSize*testChannels)
+	n := opus_decode(tls, dec, packetPtr, int32(len(packet)), ptrOf(decoded), testFrameSize, 0)
+	runtime.KeepAlive(packet)
+	if n != testFrameSize {
+		t.Fatalf("opus_decode() = %d, want %d", n, testFrameSize)
+	}
+}
+
+func BenchmarkEncode20msStereo48k(b *testing.B) {
+	tls := newTestTLS(b)
+	enc := newEncoder(b, tls)
+	pcm := makeTestPCM(testFrameSize, testChannels)
+	packet := make([]byte, testMaxPacket)
+	pcmPtr := ptrOf(pcm)
+	packetPtr := ptrOf(packet)
+
+	b.SetBytes(int64(len(pcm) * 2))
 	b.ReportAllocs()
 	b.ResetTimer()
-	for b.Loop() {
-		if n := opus_encode(tls, enc, uintptr(unsafe.Pointer(&pcm[0])), 960, uintptr(unsafe.Pointer(&packet[0])), int32(len(packet))); n < 0 {
-			b.Fatalf("encode: %d", n)
+	for i := 0; i < b.N; i++ {
+		if n := opus_encode(tls, enc, pcmPtr, testFrameSize, packetPtr, int32(len(packet))); n <= 0 {
+			b.Fatalf("opus_encode() = %d", n)
 		}
 	}
 	runtime.KeepAlive(pcm)
 	runtime.KeepAlive(packet)
 }
 
-func BenchmarkDecode(b *testing.B) {
-	tls := libc.NewTLS()
-	defer tls.Close()
-	status := &cBuf[int32](1)[0]
-	enc := opus_encoder_create(tls, 48000, 2, OPUS_APPLICATION_AUDIO, uintptr(unsafe.Pointer(status)))
-	if *status != OPUS_OK || enc == 0 {
-		b.Fatalf("encoder init: %d", *status)
-	}
-	pcm := benchmarkPCM()
-	packet := cBuf[byte](1275)
-	n := opus_encode(tls, enc, uintptr(unsafe.Pointer(&pcm[0])), 960, uintptr(unsafe.Pointer(&packet[0])), int32(len(packet)))
-	opus_encoder_destroy(tls, enc)
-	if n < 0 {
-		b.Fatalf("encode fixture: %d", n)
-	}
-	dec := opus_decoder_create(tls, 48000, 2, uintptr(unsafe.Pointer(status)))
-	if *status != OPUS_OK || dec == 0 {
-		b.Fatalf("decoder init: %d", *status)
-	}
-	defer opus_decoder_destroy(tls, dec)
-	out := cBuf[int16](5760 * 2)
+func BenchmarkDecode20msStereo48k(b *testing.B) {
+	tls := newTestTLS(b)
+	enc := newEncoder(b, tls)
+	dec := newDecoder(b, tls)
+	packet := encodeTestFrame(b, tls, enc, makeTestPCM(testFrameSize, testChannels))
+	decoded := make([]opus_int16, testFrameSize*testChannels)
+	packetPtr := ptrOf(packet)
+	decodedPtr := ptrOf(decoded)
+
+	b.SetBytes(int64(len(decoded) * 2))
 	b.ReportAllocs()
 	b.ResetTimer()
-	for b.Loop() {
-		if got := opus_decode(tls, dec, uintptr(unsafe.Pointer(&packet[0])), n, uintptr(unsafe.Pointer(&out[0])), 5760, 0); got != 960 {
-			b.Fatalf("decode: %d", got)
+	for i := 0; i < b.N; i++ {
+		if n := opus_decode(tls, dec, packetPtr, int32(len(packet)), decodedPtr, testFrameSize, 0); n != testFrameSize {
+			b.Fatalf("opus_decode() = %d, want %d", n, testFrameSize)
+		}
+	}
+	runtime.KeepAlive(packet)
+	runtime.KeepAlive(decoded)
+}
+
+func BenchmarkEncodeDecode20msStereo48k(b *testing.B) {
+	tls := newTestTLS(b)
+	enc := newEncoder(b, tls)
+	dec := newDecoder(b, tls)
+	pcm := makeTestPCM(testFrameSize, testChannels)
+	packet := make([]byte, testMaxPacket)
+	decoded := make([]opus_int16, testFrameSize*testChannels)
+	pcmPtr := ptrOf(pcm)
+	packetPtr := ptrOf(packet)
+	decodedPtr := ptrOf(decoded)
+
+	b.SetBytes(int64(len(pcm) * 2))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		n := opus_encode(tls, enc, pcmPtr, testFrameSize, packetPtr, int32(len(packet)))
+		if n <= 0 {
+			b.Fatalf("opus_encode() = %d", n)
+		}
+		if got := opus_decode(tls, dec, packetPtr, n, decodedPtr, testFrameSize, 0); got != testFrameSize {
+			b.Fatalf("opus_decode() = %d, want %d", got, testFrameSize)
 		}
 	}
 	runtime.KeepAlive(pcm)
 	runtime.KeepAlive(packet)
-	runtime.KeepAlive(out)
+	runtime.KeepAlive(decoded)
 }

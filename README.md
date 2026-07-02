@@ -30,6 +30,8 @@ Apple M1 Pro, encoding and decoding a 3:41 stereo 48 kHz PCM file at 128 kb/s. T
 
 go-opus encodes at 144x realtime and decodes at 295x realtime on this file.
 
+The performance figures above and the following microbenchmarks were measured before checkout consolidation; they are retained measurements, not a fresh benchmark of the merged sources.
+
 Go microbenchmarks for one 20 ms stereo 48 kHz frame (default encoder settings, codec state reused, no file I/O): encode 79 µs, decode 51 µs, with 0 allocations per frame. To reproduce:
 
 ```bash
@@ -84,6 +86,10 @@ Buffers passed to the codec must come from `opus.Malloc`, not from Go slices: C 
 
 **Compatibility with earlier versions.** Earlier versions required `modernc.org/libc` and took a `*libc.TLS`. The context parameter is now generic, so direct calls with a `*libc.TLS` still compile and produce the same output: for any pointer other than `*opus.TLS`, the call borrows an internal context for its duration and never touches the pointer. Memory from `libc.Xmalloc` and `libc.VaList` works as before. Two forms no longer compile: taking a function value without a type (`f := opus.Encode`; write `opus.Encode[libc.TLS]`) and passing an untyped `nil` context. New code should use `opus.NewTLS`, `opus.Malloc`, `opus.Free` and `opus.VaList`, and needs no dependency.
 
+### Demo entry points
+
+`opus.RunDemo(args)` retains the existing library workflow. `opus.RunReferenceDemo(args)` implements the complete reference CLI, including sweep, random frame/FEC and mode-test options; `cmd/opus_demo` uses this entry point. Both call the same codec library and return an exit status. `CPUPROFILE` is handled by the thin command wrapper.
+
 ### Command-line
 
 ```bash
@@ -118,7 +124,11 @@ go-opus/
 ├── lib.go                  # Opus library (package opus), transpiled + hand-optimized kernels
 ├── export.go               # Exported API: TLS, Malloc/Free, VaList, encoder/decoder entry points
 ├── internal/libc/          # Minimal C runtime for lib.go (C stack, malloc, memcpy, va_list)
-├── lib_test.go             # Bit-exact codec output tests and benchmarks
+├── lib_test.go             # Creation, packet round-trip tests and benchmarks
+├── codec_output_test.go    # Reference codec output digests and benchmarks
+├── portability_test.go     # Additional output regression coverage
+├── demo.go                 # Compatible RunDemo library workflow
+├── reference_demo.go       # Complete RFC 6716 demo CLI workflow
 ├── lib_kernels_test.go     # Optimized kernels vs. the generated reference code
 ├── ptr64.go                # 64-bit struct layout on 32-bit targets
 ├── libc_shim.go            # size_t wrappers for 32-bit targets
@@ -129,7 +139,7 @@ go-opus/
 ├── concurrency_test.go     # Parallel encoders match a serial run
 ├── sx16*.go                # ppc64 compiler bug workaround
 ├── cmd/
-│   ├── opus_demo/main.go   # Encoder/decoder CLI (opus_demo.c) on top of package opus
+│   ├── opus_demo/main.go   # Thin CLI wrapper over opus.RunReferenceDemo
 │   └── opus_compare/main.go # Audio comparison CLI (opus_compare.c)
 └── go.mod
 ```
@@ -140,7 +150,7 @@ go-opus/
 2. Each `.c` file compiled to `.o.go` using `ccgo -c` with flags: `-DUSE_ALLOCA -Drestrict= -DOPUS_BUILD`
 3. Object files linked into final Go source with `ccgo`
 4. The runtime from [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) was replaced by `internal/libc`, which implements only what `lib.go` uses. `alloca` memory lives on the per-context C stack, so codec instances on different goroutines never share scratch memory
-5. The CLI tools were ported to plain Go; their output is byte-identical to the transpiled versions built on darwin. The packet-loss simulation (`-loss`, `-random_fec`, `-random_framesize`) uses the `rand()` sequence of the darwin build on every platform; the transpiled Linux build used musl's `rand()` and produced different loss patterns
+5. The CLI tools were ported to plain Go and the complete demo was moved into the library; their output is byte-identical to the transpiled versions built on darwin. The packet-loss simulation (`-loss`, `-random_fec`, `-random_framesize`) uses the `rand()` sequence of the darwin build on every platform; the transpiled Linux build used musl's `rand()` and produced different loss patterns
 
 ## Alternatives
 
@@ -176,7 +186,9 @@ go-opus encodes 1.9 times as fast. The quality measures point in different direc
 
 ## Platform Support
 
-The code was transpiled on `darwin/arm64`, but it runs on 64-bit targets and on 32-bit little-endian targets. It needs only the Go standard library, so it builds for every `GOOS/GOARCH` that Go supports. On every platform marked "bit-exact" below, `TestCodecOutput` and `TestMultistreamOutput` pass, so encoded packets and decoded PCM match `darwin/arm64` exactly.
+The code was originally transpiled on `darwin/arm64`; that identifies its provenance rather than a build restriction. It runs on 64-bit targets and on 32-bit little-endian targets. It needs only the Go standard library, so it builds for every `GOOS/GOARCH` that Go supports. In the earlier validation runs marked "bit-exact" below, `TestCodecOutput` and `TestMultistreamOutput` passed, with encoded packets and decoded PCM matching `darwin/arm64` exactly.
+
+The consolidated sources were checked with Go 1.27.1: the library builds for all 47 targets from `go tool dist list`, while both CLI executables build with `CGO_ENABLED=0` on 42 targets. iOS and Android 386/amd64/arm executables require the toolchain's external linker. Full tests were rerun on macOS arm64/amd64 and JavaScript/WebAssembly, plus the heap runtime backend and focused `-race` checks. The table below records the earlier cross-platform runtime validation; build success alone does not establish bit-exact runtime behavior on every target.
 
 | Platform | Build | Status | Tested with |
 |---|---|---|---|

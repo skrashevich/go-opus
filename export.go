@@ -32,8 +32,8 @@ type TLS = libc.TLS
 // NewTLS returns a new C context. Call Close when done with it.
 func NewTLS() *TLS { return libc.NewTLS() }
 
-// Malloc allocates n bytes of C memory outside the Go heap, or returns 0 if
-// the allocation fails. The memory must be released with Free. Each call maps
+// Malloc allocates n bytes of C memory, or returns 0 if the allocation fails.
+// Unix and Windows use memory outside the Go heap; other targets retain Go heap memory. The memory must be released with Free. Each call maps
 // at least one page, so allocate buffers once and reuse them.
 func Malloc(n int) uintptr { return libc.Xmalloc(nil, libc.Tsize_t(n)) }
 
