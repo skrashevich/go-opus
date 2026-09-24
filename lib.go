@@ -3032,135 +3032,45 @@ var ordery_table = [30]int32{
 }
 
 func deinterleave_hadamard(tls *libc.TLS, X uintptr, N0 int32, stride int32, hadamard int32) {
-	var N, i, j int32
-	var ordery, tmp uintptr
-	_, _, _, _, _ = N, i, j, ordery, tmp
 	_sp := _arenaSave(); defer _arenaRestore(_sp)
-	N = N0 * stride
-	tmp = _arenaAlloc(uint64(4)*uint64(N))
+	N := int(N0 * stride)
+	tmp := unsafe.Slice((*celt_norm)(unsafe.Pointer(_arenaAlloc(uint64(4)*uint64(N)))), N)
+	x := unsafe.Slice((*celt_norm)(unsafe.Pointer(X)), N)
+	var ordery []int32
 	if hadamard != 0 {
-		ordery = uintptr(unsafe.Pointer(&ordery_table)) + uintptr(stride)*4 - uintptr(2)*4
-		i = 0
-		for {
-			if !(i < stride) {
-				break
-			}
-			j = 0
-			for {
-				if !(j < N0) {
-					break
-				}
-				*(*celt_norm)(unsafe.Pointer(tmp + uintptr(*(*int32)(unsafe.Pointer(ordery + uintptr(i)*4))*N0+j)*4)) = *(*celt_norm)(unsafe.Pointer(X + uintptr(j*stride+i)*4))
-				goto _2
-			_2:
-				;
-				j = j + 1
-			}
-			goto _1
-		_1:
-			;
-			i = i + 1
+		ordery = ordery_table[stride-2:]
+	}
+	for i := 0; i < int(stride); i++ {
+		row := i
+		if hadamard != 0 {
+			row = int(ordery[i])
 		}
-	} else {
-		i = 0
-		for {
-			if !(i < stride) {
-				break
-			}
-			j = 0
-			for {
-				if !(j < N0) {
-					break
-				}
-				*(*celt_norm)(unsafe.Pointer(tmp + uintptr(i*N0+j)*4)) = *(*celt_norm)(unsafe.Pointer(X + uintptr(j*stride+i)*4))
-				goto _4
-			_4:
-				;
-				j = j + 1
-			}
-			goto _3
-		_3:
-			;
-			i = i + 1
+		for j := 0; j < int(N0); j++ {
+			tmp[row*int(N0)+j] = x[j*int(stride)+i]
 		}
 	}
-	j = 0
-	for {
-		if !(j < N) {
-			break
-		}
-		*(*celt_norm)(unsafe.Pointer(X + uintptr(j)*4)) = *(*celt_norm)(unsafe.Pointer(tmp + uintptr(j)*4))
-		goto _5
-	_5:
-		;
-		j = j + 1
-	}
+	copy(x, tmp)
 }
 
 func interleave_hadamard(tls *libc.TLS, X uintptr, N0 int32, stride int32, hadamard int32) {
-	var N, i, j int32
-	var ordery, tmp uintptr
-	_, _, _, _, _ = N, i, j, ordery, tmp
 	_sp := _arenaSave(); defer _arenaRestore(_sp)
-	N = N0 * stride
-	tmp = _arenaAlloc(uint64(4)*uint64(N))
+	N := int(N0 * stride)
+	tmp := unsafe.Slice((*celt_norm)(unsafe.Pointer(_arenaAlloc(uint64(4)*uint64(N)))), N)
+	x := unsafe.Slice((*celt_norm)(unsafe.Pointer(X)), N)
+	var ordery []int32
 	if hadamard != 0 {
-		ordery = uintptr(unsafe.Pointer(&ordery_table)) + uintptr(stride)*4 - uintptr(2)*4
-		i = 0
-		for {
-			if !(i < stride) {
-				break
-			}
-			j = 0
-			for {
-				if !(j < N0) {
-					break
-				}
-				*(*celt_norm)(unsafe.Pointer(tmp + uintptr(j*stride+i)*4)) = *(*celt_norm)(unsafe.Pointer(X + uintptr(*(*int32)(unsafe.Pointer(ordery + uintptr(i)*4))*N0+j)*4))
-				goto _2
-			_2:
-				;
-				j = j + 1
-			}
-			goto _1
-		_1:
-			;
-			i = i + 1
+		ordery = ordery_table[stride-2:]
+	}
+	for i := 0; i < int(stride); i++ {
+		row := i
+		if hadamard != 0 {
+			row = int(ordery[i])
 		}
-	} else {
-		i = 0
-		for {
-			if !(i < stride) {
-				break
-			}
-			j = 0
-			for {
-				if !(j < N0) {
-					break
-				}
-				*(*celt_norm)(unsafe.Pointer(tmp + uintptr(j*stride+i)*4)) = *(*celt_norm)(unsafe.Pointer(X + uintptr(i*N0+j)*4))
-				goto _4
-			_4:
-				;
-				j = j + 1
-			}
-			goto _3
-		_3:
-			;
-			i = i + 1
+		for j := 0; j < int(N0); j++ {
+			tmp[j*int(stride)+i] = x[row*int(N0)+j]
 		}
 	}
-	j = 0
-	for {
-		if !(j < N) {
-			break
-		}
-		*(*celt_norm)(unsafe.Pointer(X + uintptr(j)*4)) = *(*celt_norm)(unsafe.Pointer(tmp + uintptr(j)*4))
-		goto _5
-	_5:
-		;
-		j = j + 1
-	}
+	copy(x, tmp)
 }
 
 func haar1(tls *libc.TLS, X uintptr, N0 int32, stride int32) {
@@ -4343,6 +4253,53 @@ func SIG2WORD16(tls *libc.TLS, x celt_sig) (r opus_val16) {
 	return x
 }
 
+func clipSample(x float32) float32 {
+	if x > 65536 {
+		return 65536
+	} else if x < -65536 {
+		return -65536
+	}
+	return x
+}
+
+// preemphStereo applies the encoder input scaling and pre-emphasis to an
+// interleaved stereo float frame without upsampling, writing each channel to
+// out0/out1. It reports whether any output sample is non-zero.
+func preemphStereo(pcm, out0, out1 uintptr, N int32, clip bool, coef *[4]opus_val16, mem *[2]opus_val32) (nonzero bool) {
+	coef0, coef1, coef2 := coef[0], coef[1], coef[2]
+	m0, m1 := mem[0], mem[1]
+	in := unsafe.Slice((*float32)(unsafe.Pointer(pcm)), 2*N)
+	o0 := unsafe.Slice((*float32)(unsafe.Pointer(out0)), N)
+	o1 := unsafe.Slice((*float32)(unsafe.Pointer(out1)), N)[:len(o0)]
+	for i := range o0 {
+		x0 := float32(in[2*i] * 32768)
+		x1 := float32(in[2*i+1] * 32768)
+		if !(x0 == x0) {
+			x0 = 0
+		}
+		if !(x1 == x1) {
+			x1 = 0
+		}
+		if clip {
+			x0 = clipSample(x0)
+			x1 = clipSample(x1)
+		}
+		t0 := float32(coef2 * x0)
+		t1 := float32(coef2 * x1)
+		v0 := t0 + m0
+		v1 := t1 + m1
+		o0[i] = v0
+		o1[i] = v1
+		m0 = float32(coef1*v0) - float32(coef0*t0)
+		m1 = float32(coef1*v1) - float32(coef0*t1)
+		if v0 != 0 || v1 != 0 {
+			nonzero = true
+		}
+	}
+	mem[0], mem[1] = m0, m1
+	return
+}
+
 func transient_analysis(tls *libc.TLS, in uintptr, len1 int32, C int32, overlap int32) (r int32) {
 	var N, block, conseq, i, is_transient, j, j1 int32
 	var bins, tmp uintptr
@@ -4357,96 +4314,39 @@ func transient_analysis(tls *libc.TLS, in uintptr, len1 int32, C int32, overlap 
 	block = overlap / int32(2)
 	N = len1 / block
 	bins = _arenaAlloc(uint64(4)*uint64(N))
-	if C == int32(1) {
-		i = 0
-		for {
-			if !(i < len1) {
-				break
+	{
+		in0 := unsafe.Slice((*opus_val32)(unsafe.Pointer(in)), len1)
+		ts := unsafe.Slice((*opus_val16)(unsafe.Pointer(tmp)), len1)[:len(in0)]
+		/* High-pass filter: (1 - 2*z^-1 + z^-2) / (1 - z^-1 + .5*z^-2) */
+		var in1 []opus_val32
+		if C != int32(1) {
+			in1 = unsafe.Slice((*opus_val32)(unsafe.Pointer(in+uintptr(len1)*4)), len1)[:len(in0)]
+		}
+		for i, x := range in0 {
+			if in1 != nil {
+				x += in1[i]
 			}
-			*(*opus_val16)(unsafe.Pointer(tmp + uintptr(i)*4)) = *(*opus_val32)(unsafe.Pointer(in + uintptr(i)*4))
-			goto _1
-		_1:
-			;
-			i = i + 1
+			y := mem0 + x
+			mem0 = mem1 + y - opus_val32(float32(2)*x)
+			mem1 = x - opus_val32(libc.Float32FromFloat32(0.5)*y)
+			ts[i] = y
 		}
-	} else {
-		i = 0
-		for {
-			if !(i < len1) {
-				break
-			}
-			*(*opus_val16)(unsafe.Pointer(tmp + uintptr(i)*4)) = *(*opus_val32)(unsafe.Pointer(in + uintptr(i)*4)) + *(*opus_val32)(unsafe.Pointer(in + uintptr(i+len1)*4))
-			goto _2
-		_2:
-			;
-			i = i + 1
-		}
-	}
-	/* High-pass filter: (1 - 2*z^-1 + z^-2) / (1 - z^-1 + .5*z^-2) */
-	i = 0
-	for {
-		if !(i < len1) {
-			break
-		}
-		x = *(*opus_val16)(unsafe.Pointer(tmp + uintptr(i)*4))
-		y = mem0 + x
-		mem0 = mem1 + y - opus_val32(float32(2)*x)
-		mem1 = x - opus_val32(libc.Float32FromFloat32(0.5)*y)
-		*(*opus_val16)(unsafe.Pointer(tmp + uintptr(i)*4)) = y
-		goto _3
-	_3:
-		;
-		i = i + 1
-	}
-	/* First few samples are bad because we don't propagate the memory */
-	i = 0
-	for {
-		if !(i < int32(12)) {
-			break
-		}
-		*(*opus_val16)(unsafe.Pointer(tmp + uintptr(i)*4)) = float32(0)
-		goto _4
-	_4:
-		;
-		i = i + 1
-	}
-	i = 0
-	for {
-		if !(i < N) {
-			break
-		}
-		max_abs = float32(0)
-		j = 0
-		for {
-			if !(j < block) {
-				break
-			}
-			if *(*opus_val16)(unsafe.Pointer(tmp + uintptr(i*block+j)*4)) < float32(0) {
-				v8 = -*(*opus_val16)(unsafe.Pointer(tmp + uintptr(i*block+j)*4))
-			} else {
-				v8 = *(*opus_val16)(unsafe.Pointer(tmp + uintptr(i*block+j)*4))
-			}
-			if max_abs > v8 {
-				v7 = max_abs
-			} else {
-				if *(*opus_val16)(unsafe.Pointer(tmp + uintptr(i*block+j)*4)) < float32(0) {
-					v9 = -*(*opus_val16)(unsafe.Pointer(tmp + uintptr(i*block+j)*4))
-				} else {
-					v9 = *(*opus_val16)(unsafe.Pointer(tmp + uintptr(i*block+j)*4))
+		/* First few samples are bad because we don't propagate the memory */
+		clear(ts[:min(12, len(ts))])
+		bs := unsafe.Slice((*opus_val16)(unsafe.Pointer(bins)), N)
+		for i := range bs {
+			max_abs := float32(0)
+			for _, t := range ts[i*int(block) : (i+1)*int(block)] {
+				a := t
+				if t < float32(0) {
+					a = -t
 				}
-				v7 = v9
+				if !(max_abs > a) {
+					max_abs = a
+				}
 			}
-			max_abs = v7
-			goto _6
-		_6:
-			;
-			j = j + 1
+			bs[i] = max_abs
 		}
-		*(*opus_val16)(unsafe.Pointer(bins + uintptr(i)*4)) = max_abs
-		goto _5
-	_5:
-		;
-		i = i + 1
 	}
 	i = 0
 	for {
@@ -4593,38 +4493,15 @@ func compute_inv_mdcts(tls *libc.TLS, mode uintptr, shortBlocks int32, X uintptr
 			;
 			b = b + 1
 		}
-		j = 0
-		for {
-			if !(j < overlap) {
-				break
-			}
-			*(*celt_sig)(unsafe.Pointer(*(*uintptr)(unsafe.Pointer(out_mem + uintptr(c)*8)) + uintptr(j)*4)) = *(*opus_val32)(unsafe.Pointer(x + uintptr(j)*4)) + *(*celt_sig)(unsafe.Pointer(*(*uintptr)(unsafe.Pointer(overlap_mem + uintptr(c)*8)) + uintptr(j)*4))
-			goto _5
-		_5:
-			;
-			j = j + 1
+		// x is scratch memory disjoint from the decoder state buffers.
+		outc := unsafe.Slice((*celt_sig)(unsafe.Pointer(*(*uintptr)(unsafe.Pointer(out_mem + uintptr(c)*8)))), N)
+		ovc := unsafe.Slice((*celt_sig)(unsafe.Pointer(*(*uintptr)(unsafe.Pointer(overlap_mem + uintptr(c)*8)))), overlap)
+		xs := unsafe.Slice((*opus_val32)(unsafe.Pointer(x)), N+overlap)
+		for j := range ovc {
+			outc[j] = xs[j] + ovc[j]
 		}
-		for {
-			if !(j < N) {
-				break
-			}
-			*(*celt_sig)(unsafe.Pointer(*(*uintptr)(unsafe.Pointer(out_mem + uintptr(c)*8)) + uintptr(j)*4)) = *(*opus_val32)(unsafe.Pointer(x + uintptr(j)*4))
-			goto _6
-		_6:
-			;
-			j = j + 1
-		}
-		j = 0
-		for {
-			if !(j < overlap) {
-				break
-			}
-			*(*celt_sig)(unsafe.Pointer(*(*uintptr)(unsafe.Pointer(overlap_mem + uintptr(c)*8)) + uintptr(j)*4)) = *(*opus_val32)(unsafe.Pointer(x + uintptr(N+j)*4))
-			goto _7
-		_7:
-			;
-			j = j + 1
-		}
+		copy(outc[overlap:], xs[overlap:N])
+		copy(ovc, xs[N:N+overlap])
 		goto _2
 	_2:
 		;
@@ -4641,6 +4518,10 @@ func deemphasis(tls *libc.TLS, in uintptr, pcm uintptr, N int32, C int32, downsa
 	var m, tmp celt_sig
 	var x, y uintptr
 	_, _, _, _, _, _, _, _ = c, count, j, m, tmp, x, y, v1
+	if downsample == 1 && (C == 1 || C == 2) {
+		deemphFast(in, pcm, N, C, (*[4]opus_val16)(unsafe.Pointer(coef)), mem)
+		return
+	}
 	count = 0
 	c = 0
 	for {
@@ -4684,6 +4565,76 @@ func deemphasis(tls *libc.TLS, in uintptr, pcm uintptr, N int32, C int32, downsa
 	}
 }
 
+// deemphFast is deemphasis without downsampling for one or two channels. The
+// coefficients and filter state stay in registers and, for stereo, both
+// channel recursions are interleaved so their latencies overlap.
+func deemphFast(in, pcm uintptr, N, C int32, coef *[4]opus_val16, mem uintptr) {
+	coef0, coef1, coef3 := coef[0], coef[1], coef[3]
+	const scale = float32(1) / float32(32768)
+	x0 := unsafe.Slice((*float32)(unsafe.Pointer(*(*uintptr)(unsafe.Pointer(in)))), N)
+	ms := unsafe.Slice((*float32)(unsafe.Pointer(mem)), C)
+	if C == 1 {
+		out := unsafe.Slice((*float32)(unsafe.Pointer(pcm)), N)[:len(x0)]
+		m := ms[0]
+		for j, v := range x0 {
+			tmp := v + m
+			m = float32(coef0*tmp) - float32(coef1*v)
+			out[j] = float32(float32(coef3*tmp) * scale)
+		}
+		ms[0] = m
+		return
+	}
+	x1 := unsafe.Slice((*float32)(unsafe.Pointer(*(*uintptr)(unsafe.Pointer(in + 8)))), N)[:len(x0)]
+	out := unsafe.Slice((*float32)(unsafe.Pointer(pcm)), 2*N)[:2*len(x0)]
+	m0, m1 := ms[0], ms[1]
+	for j, v0 := range x0 {
+		v1 := x1[j]
+		t0 := v0 + m0
+		t1 := v1 + m1
+		m0 = float32(coef0*t0) - float32(coef1*v0)
+		m1 = float32(coef0*t1) - float32(coef1*v1)
+		out[2*j] = float32(float32(coef3*t0) * scale)
+		out[2*j+1] = float32(float32(coef3*t1) * scale)
+	}
+	ms[0], ms[1] = m0, m1
+}
+
+// combFilterOverlap is the cross-faded part of comb_filter (i < overlap). The
+// five taps around each period slide through registers, one load per period
+// per sample; the sum is formed in the same order as the scalar expression.
+func combFilterOverlap(y, x uintptr, T0, T1, overlap int32, g00, g01, g02, g10, g11, g12 opus_val16, window uintptr) {
+	if overlap <= 0 {
+		return
+	}
+	at := func(i int32) float32 { return *(*float32)(unsafe.Pointer(x + uintptr(i)*4)) }
+	a0, a1, a2, a3 := at(-T0-2), at(-T0-1), at(-T0), at(-T0+1)
+	b0, b1, b2, b3 := at(-T1-2), at(-T1-1), at(-T1), at(-T1+1)
+	for i := int32(0); i < overlap; i++ {
+		a4 := at(i - T0 + 2)
+		b4 := at(i - T1 + 2)
+		w := *(*opus_val16)(unsafe.Pointer(window + uintptr(i)*4))
+		f := opus_val16(w * w)
+		h := float32(1) - f
+		*(*opus_val32)(unsafe.Pointer(y + uintptr(i)*4)) = at(i) + float32(float32(h*g00)*a2) + float32(float32(h*g01)*a1) + float32(float32(h*g01)*a3) + float32(float32(h*g02)*a0) + float32(float32(h*g02)*a4) + opus_val16(opus_val16(f*g10)*b2) + opus_val16(opus_val16(f*g11)*b1) + opus_val16(opus_val16(f*g11)*b3) + opus_val16(opus_val16(f*g12)*b0) + opus_val16(opus_val16(f*g12)*b4)
+		a0, a1, a2, a3 = a1, a2, a3, a4
+		b0, b1, b2, b3 = b1, b2, b3, b4
+	}
+}
+
+// combFilterConst is the constant-gain part of comb_filter (overlap <= i < N).
+func combFilterConst(y, x uintptr, T1, start, N int32, g10, g11, g12 opus_val16) {
+	if start >= N {
+		return
+	}
+	at := func(i int32) float32 { return *(*float32)(unsafe.Pointer(x + uintptr(i)*4)) }
+	b0, b1, b2, b3 := at(start-T1-2), at(start-T1-1), at(start-T1), at(start-T1+1)
+	for i := start; i < N; i++ {
+		b4 := at(i - T1 + 2)
+		*(*opus_val32)(unsafe.Pointer(y + uintptr(i)*4)) = at(i) + opus_val16(g10*b2) + opus_val16(g11*b1) + opus_val16(g11*b3) + opus_val16(g12*b0) + opus_val16(g12*b4)
+		b0, b1, b2, b3 = b1, b2, b3, b4
+	}
+}
+
 func comb_filter(tls *libc.TLS, y uintptr, x uintptr, T0 int32, T1 int32, N int32, g0 opus_val16, g1 opus_val16, tapset0 int32, tapset1 int32, window uintptr, overlap int32) {
 	var f, g00, g01, g02, g10, g11, g12 opus_val16
 	var i int32
@@ -4694,6 +4645,13 @@ func comb_filter(tls *libc.TLS, y uintptr, x uintptr, T0 int32, T1 int32, N int3
 	g10 = opus_val16(g1 * *(*opus_val16)(unsafe.Pointer(uintptr(unsafe.Pointer(&gains)) + uintptr(tapset1)*12)))
 	g11 = opus_val16(g1 * *(*opus_val16)(unsafe.Pointer(uintptr(unsafe.Pointer(&gains)) + uintptr(tapset1)*12 + 1*4)))
 	g12 = opus_val16(g1 * *(*opus_val16)(unsafe.Pointer(uintptr(unsafe.Pointer(&gains)) + uintptr(tapset1)*12 + 2*4)))
+	// With periods of at least 5 every tap read by the windowed loops below was
+	// already final (written, when filtering in place) before it is loaded.
+	if T0 >= 5 && T1 >= 5 {
+		combFilterOverlap(y, x, T0, T1, overlap, g00, g01, g02, g10, g11, g12, window)
+		combFilterConst(y, x, T1, overlap, N, g10, g11, g12)
+		return
+	}
 	i = 0
 	for {
 		if !(i < overlap) {
@@ -5494,51 +5452,47 @@ func celt_encode_with_ec(tls *libc.TLS, st uintptr, pcm uintptr, frame_size int3
 		count = 0
 		pcmp = pcm + uintptr(c)*4
 		inp = in + uintptr(c*(N+(*OpusCustomEncoder)(unsafe.Pointer(st)).Foverlap))*4 + uintptr((*OpusCustomEncoder)(unsafe.Pointer(st)).Foverlap)*4
-		i = 0
-		for {
-			if !(i < N) {
-				break
-			}
-			x = opus_val16(*(*opus_val16)(unsafe.Pointer(pcmp)) * libc.Float32FromFloat32(32768))
-			if !(x == x) {
-				x = float32(0)
-			}
-			if (*OpusCustomEncoder)(unsafe.Pointer(st)).Fclip != 0 {
-				if libc.Float32FromFloat32(65536) < x {
-					v20 = libc.Float32FromFloat32(65536)
-				} else {
-					v20 = x
+		// Pre-emphasis with coefficients and filter memory kept in registers.
+		coef := (*[4]opus_val16)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode + 16))
+		clip := (*OpusCustomEncoder)(unsafe.Pointer(st)).Fclip != 0
+		upsample := (*OpusCustomEncoder)(unsafe.Pointer(st)).Fupsample
+		memp := (*[2]opus_val32)(unsafe.Pointer(st + 112))
+		if CC == 2 && upsample == 1 {
+			// Both channels at once: two independent filter chains overlap.
+			if c == 0 {
+				inp1 := in + uintptr(N+(*OpusCustomEncoder)(unsafe.Pointer(st)).Foverlap)*4 + uintptr((*OpusCustomEncoder)(unsafe.Pointer(st)).Foverlap)*4
+				if preemphStereo(pcmp, inp, inp1, N, clip, coef, memp) {
+					silence = 0
 				}
-				if -libc.Float32FromFloat32(65536) > v20 {
-					v19 = -libc.Float32FromFloat32(65536)
-				} else {
-					if libc.Float32FromFloat32(65536) < x {
-						v21 = libc.Float32FromFloat32(65536)
-					} else {
-						v21 = x
-					}
-					v19 = v21
+			}
+		} else {
+			coef0, coef1, coef2 := coef[0], coef[1], coef[2]
+			mem := memp[c]
+			for i = 0; i < N; i++ {
+				x = opus_val16(*(*opus_val16)(unsafe.Pointer(pcmp)) * libc.Float32FromFloat32(32768))
+				if !(x == x) {
+					x = float32(0)
 				}
-				x = v19
+				if clip {
+					x = clipSample(x)
+				}
+				count = count + 1
+				if count == upsample {
+					count = 0
+					pcmp = pcmp + uintptr(CC)*4
+				} else {
+					x = float32(0)
+				}
+				tmp1 = opus_val32(coef2 * x)
+				v := tmp1 + mem
+				*(*celt_sig)(unsafe.Pointer(inp)) = v
+				mem = opus_val16(coef1*v) - opus_val16(coef0*tmp1)
+				if v != 0 {
+					silence = 0
+				}
+				inp += 4
 			}
-			count = count + 1
-			v3 = count
-			if v3 == (*OpusCustomEncoder)(unsafe.Pointer(st)).Fupsample {
-				count = 0
-				pcmp = pcmp + uintptr(CC)*4
-			} else {
-				x = float32(0)
-			}
-			/* Apply pre-emphasis */
-			tmp1 = opus_val32(*(*opus_val16)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode + 16 + 2*4)) * x)
-			*(*celt_sig)(unsafe.Pointer(inp)) = tmp1 + *(*opus_val32)(unsafe.Pointer(st + 112 + uintptr(c)*4))
-			*(*opus_val32)(unsafe.Pointer(st + 112 + uintptr(c)*4)) = opus_val16(*(*opus_val16)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode + 16 + 1*4))**(*celt_sig)(unsafe.Pointer(inp))) - opus_val16(*(*opus_val16)(unsafe.Pointer((*OpusCustomEncoder)(unsafe.Pointer(st)).Fmode + 16))*tmp1)
-			silence = libc.BoolInt32(silence != 0 && *(*celt_sig)(unsafe.Pointer(inp)) == float32(0))
-			inp += 4
-			goto _18
-		_18:
-			;
-			i = i + 1
+			memp[c] = mem
 		}
 		libc.Xmemcpy(tls, (*(*[2]uintptr)(unsafe.Pointer(bp + 80)))[c], prefilter_mem+uintptr(c*int32(COMBFILTER_MAXPERIOD))*4, uint64(int32(COMBFILTER_MAXPERIOD))*libc.Uint64FromInt64(4)+libc.Uint64FromInt64(0*((int64((*(*[2]uintptr)(unsafe.Pointer(bp + 80)))[c])-int64(prefilter_mem+uintptr(c*int32(COMBFILTER_MAXPERIOD))*4))/4)))
 		libc.Xmemcpy(tls, (*(*[2]uintptr)(unsafe.Pointer(bp + 80)))[c]+libc.UintptrFromInt32(COMBFILTER_MAXPERIOD)*4, in+uintptr(c*(N+(*OpusCustomEncoder)(unsafe.Pointer(st)).Foverlap))*4+uintptr((*OpusCustomEncoder)(unsafe.Pointer(st)).Foverlap)*4, uint64(N)*uint64(4)+libc.Uint64FromInt64(0*((int64((*(*[2]uintptr)(unsafe.Pointer(bp + 80)))[c]+libc.UintptrFromInt32(COMBFILTER_MAXPERIOD)*4)-int64(in+uintptr(c*(N+(*OpusCustomEncoder)(unsafe.Pointer(st)).Foverlap))*4+uintptr((*OpusCustomEncoder)(unsafe.Pointer(st)).Foverlap)*4))/4)))
@@ -7640,6 +7594,14 @@ func celt_fir(tls *libc.TLS, x uintptr, num uintptr, y uintptr, N int32, ord int
 	var i, j int32
 	var sum opus_val32
 	_, _, _ = i, j, sum
+	switch ord {
+	case 4:
+		celtFir4(x, num, y, N, mem)
+		return
+	case 1:
+		celtFir1(x, num, y, N, mem)
+		return
+	}
 	i = 0
 	for {
 		if !(i < N) {
@@ -7675,6 +7637,46 @@ func celt_fir(tls *libc.TLS, x uintptr, num uintptr, y uintptr, N int32, ord int
 		;
 		i = i + 1
 	}
+}
+
+// celtFir4 is celt_fir for ord == 4 with the filter memory held in registers.
+// Four outputs are produced per iteration from inputs read before any store,
+// so x and y may alias exactly as in the scalar loop.
+func celtFir4(x, num, y uintptr, N int32, mem uintptr) {
+	nm := (*[4]float32)(unsafe.Pointer(num))
+	mm := (*[4]float32)(unsafe.Pointer(mem))
+	n0, n1, n2, n3 := nm[0], nm[1], nm[2], nm[3]
+	m0, m1, m2, m3 := mm[0], mm[1], mm[2], mm[3]
+	xs := unsafe.Slice((*float32)(unsafe.Pointer(x)), N)
+	ys := unsafe.Slice((*float32)(unsafe.Pointer(y)), N)[:len(xs)]
+	i := 0
+	for ; i+4 <= len(xs); i += 4 {
+		a, b, c, d := xs[i], xs[i+1], xs[i+2], xs[i+3]
+		ys[i] = a + float32(n0*m0) + float32(n1*m1) + float32(n2*m2) + float32(n3*m3)
+		ys[i+1] = b + float32(n0*a) + float32(n1*m0) + float32(n2*m1) + float32(n3*m2)
+		ys[i+2] = c + float32(n0*b) + float32(n1*a) + float32(n2*m0) + float32(n3*m1)
+		ys[i+3] = d + float32(n0*c) + float32(n1*b) + float32(n2*a) + float32(n3*m0)
+		m0, m1, m2, m3 = d, c, b, a
+	}
+	for ; i < len(xs); i++ {
+		a := xs[i]
+		ys[i] = a + float32(n0*m0) + float32(n1*m1) + float32(n2*m2) + float32(n3*m3)
+		m0, m1, m2, m3 = a, m0, m1, m2
+	}
+	mm[0], mm[1], mm[2], mm[3] = m0, m1, m2, m3
+}
+
+// celtFir1 is celt_fir for ord == 1.
+func celtFir1(x, num, y uintptr, N int32, mem uintptr) {
+	n0 := *(*float32)(unsafe.Pointer(num))
+	m0 := *(*float32)(unsafe.Pointer(mem))
+	xs := unsafe.Slice((*float32)(unsafe.Pointer(x)), N)
+	ys := unsafe.Slice((*float32)(unsafe.Pointer(y)), N)[:len(xs)]
+	for i, a := range xs {
+		ys[i] = a + float32(n0*m0)
+		m0 = a
+	}
+	*(*float32)(unsafe.Pointer(mem)) = m0
 }
 
 func celt_iir(tls *libc.TLS, x uintptr, den uintptr, y uintptr, N int32, ord int32, mem uintptr) {
@@ -7748,25 +7750,35 @@ func _celt_autocorr(tls *libc.TLS, x uintptr, ac uintptr, window uintptr, overla
 		;
 		i = i + 1
 	}
-	for lag >= 0 {
-		i = lag
-		d = float32(0)
-		for {
-			if !(i < n) {
-				break
-			}
-			d = d + opus_val32(*(*opus_val16)(unsafe.Pointer(xx + uintptr(i)*4))**(*opus_val16)(unsafe.Pointer(xx + uintptr(i-lag)*4)))
-			goto _3
-		_3:
-			;
-			i = i + 1
-		}
-		*(*opus_val32)(unsafe.Pointer(ac + uintptr(lag)*4)) = d
-		/*printf ("%f ", ac[lag]);*/
-		lag = lag - 1
-	}
+	autocorrLags(xx, n, lag, ac)
 	/*printf ("\n");*/
 	*(*opus_val32)(unsafe.Pointer(ac)) += float32(10)
+}
+
+// autocorrLags computes ac[l] = sum_{i=l}^{n-1} xx[i]*xx[i-l] for l <= lag,
+// four lags at a time. Each lag keeps the sequential, unfused accumulation
+// order of the scalar loop: the part of its range below the group's largest
+// lag is summed first, then the shared tail runs in dotSerial4From.
+func autocorrLags(xx uintptr, n, lag int32, ac uintptr) {
+	for base := int32(0); base <= lag; base += 4 {
+		cnt := min(lag-base+1, 4)
+		hi := base + cnt - 1
+		var d [4]float32
+		var l [4]int32
+		for k := int32(0); k < 4; k++ {
+			l[k] = base + min(k, cnt-1)
+			for i := l[k]; i < hi && i < n; i++ {
+				d[k] = d[k] + float32(*(*float32)(unsafe.Pointer(xx + uintptr(i)*4))**(*float32)(unsafe.Pointer(xx + uintptr(i-l[k])*4)))
+			}
+		}
+		if hi < n {
+			x := xx + uintptr(hi)*4
+			d[0], d[1], d[2], d[3] = dotSerial4From(d[0], d[1], d[2], d[3], x, x-uintptr(l[0])*4, x-uintptr(l[1])*4, x-uintptr(l[2])*4, x-uintptr(l[3])*4, n-hi)
+		}
+		for k := int32(0); k < cnt; k++ {
+			*(*opus_val32)(unsafe.Pointer(ac + uintptr(base+k)*4)) = d[k]
+		}
+	}
 }
 
 const MASK32 = 4294967295
@@ -8500,6 +8512,81 @@ func icwrs(tls *libc.TLS, _n int32, _k int32, _nc uintptr, _y uintptr, _u uintpt
 	return i
 }
 
+// cwrsU holds U(n,k) for n <= cwrsMaxN and k < cwrsCols, computed with the
+// recurrence U(n,k) = U(n-1,k) + U(n,k-1) + U(n-1,k-1) in uint32 arithmetic.
+// That is the relation unext/uprev apply to their row buffers, so every row
+// entry the scalar CWRS coder would reach is read directly instead of being
+// recomputed. Codebooks used by CELT satisfy V(N,K) = U(N,K)+U(N,K+1) < 2^32,
+// hence all entries involved are exact.
+const (
+	cwrsMaxN = 176 // widest band: 22 bins << LM=3
+	cwrsCols = MAX_PULSES + 2
+)
+
+var cwrsU = func() (u [(cwrsMaxN + 1) * cwrsCols]uint32) {
+	u[0] = 1
+	for n := 1; n <= cwrsMaxN; n++ {
+		for k := 1; k < cwrsCols; k++ {
+			u[n*cwrsCols+k] = u[(n-1)*cwrsCols+k] + u[n*cwrsCols+k-1] + u[(n-1)*cwrsCols+k-1]
+		}
+	}
+	return
+}()
+
+func cwrsRow(n int32) []uint32 {
+	return cwrsU[int(n)*cwrsCols : int(n+1)*cwrsCols]
+}
+
+// cwrsTableFits reports whether the table path handles an (n, k) codebook.
+// n <= 4 has closed forms, and the scalar row setup for n < 5 differs.
+func cwrsTableFits(n, k int32) bool {
+	return n >= 5 && n <= cwrsMaxN && k >= 0 && k+1 < cwrsCols
+}
+
+// cwrsiTable is cwrsi reading U rows from cwrsU.
+func cwrsiTable(n, k int32, i opus_uint32, y uintptr) {
+	ys := unsafe.Slice((*int32)(unsafe.Pointer(y)), n)
+	for j := range ys {
+		u := cwrsRow(n - int32(j))
+		p := u[k+1]
+		s := -libc.BoolInt32(i >= p)
+		i -= p & uint32(s)
+		yj := k
+		p = u[k]
+		for p > i {
+			k--
+			p = u[k]
+		}
+		i -= p
+		yj -= k
+		ys[j] = yj + s ^ s
+	}
+}
+
+// icwrsTable is icwrs reading U rows from cwrsU; it returns the index and the
+// codebook size V(n, K).
+func icwrsTable(n int32, y uintptr) (i, nc opus_uint32) {
+	ys := unsafe.Slice((*int32)(unsafe.Pointer(y)), n)
+	k := ys[n-1]
+	if k < 0 {
+		k = -k
+		i = 1
+	}
+	for j := n - 2; j >= 0; j-- {
+		u := cwrsRow(n - j)
+		i += u[k]
+		v := ys[j]
+		if v < 0 {
+			k -= v
+			i += u[k+1]
+		} else {
+			k += v
+		}
+	}
+	u := cwrsRow(n)
+	return i, u[k] + u[k+1]
+}
+
 func encode_pulses(tls *libc.TLS, _y uintptr, _n int32, __k int32, _enc uintptr) {
 	bp := tls.Alloc(16)
 	defer tls.Free(16)
@@ -8520,6 +8607,11 @@ func encode_pulses(tls *libc.TLS, _y uintptr, _n int32, __k int32, _enc uintptr)
 		i = icwrs4(tls, _y, bp)
 		ec_enc_uint(tls, _enc, i, ncwrs4(tls, *(*int32)(unsafe.Pointer(bp))))
 	default:
+		if cwrsTableFits(_n, __k) {
+			i, nc := icwrsTable(_n, _y)
+			ec_enc_uint(tls, _enc, i, nc)
+			break
+		}
 		u = _arenaAlloc(uint64(4)*uint64(uint32(*(*int32)(unsafe.Pointer(bp)))+libc.Uint32FromUint32(2)))
 		i = icwrs(tls, _n, *(*int32)(unsafe.Pointer(bp)), bp+4, _y, u)
 		ec_enc_uint(tls, _enc, i, *(*opus_uint32)(unsafe.Pointer(bp + 4)))
@@ -8539,6 +8631,11 @@ func decode_pulses(tls *libc.TLS, _y uintptr, _n int32, _k int32, _dec uintptr) 
 	case int32(4):
 		cwrsi4(tls, _k, ec_dec_uint(tls, _dec, ncwrs4(tls, _k)), _y)
 	default:
+		if cwrsTableFits(_n, _k) {
+			row := cwrsRow(_n)
+			cwrsiTable(_n, _k, ec_dec_uint(tls, _dec, row[_k]+row[_k+1]), _y)
+			break
+		}
 		u = _arenaAlloc(uint64(4)*uint64(uint32(_k)+libc.Uint32FromUint32(2)))
 		cwrsi(tls, _n, _k, ec_dec_uint(tls, _dec, ncwrs_urow(tls, uint32(_n), uint32(_k), u)), _y, u)
 		break
@@ -9674,490 +9771,328 @@ func ec_enc_done(tls *libc.TLS, _this uintptr) {
 */
 
 func kf_bfly2(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
-	var Fout2, Fout_beg, tw1 uintptr
-	var i, j int32
-	var t kiss_fft_cpx
-	_, _, _, _, _, _ = Fout2, Fout_beg, i, j, t, tw1
-	Fout_beg = Fout
-	i = 0
-	for {
-		if !(i < N) {
-			break
+	twiddles := (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	for i := int32(0); i < N; i++ {
+		f := Fout + uintptr(i*mm)*8
+		tw1 := twiddles
+		for j := int32(0); j < m; j++ {
+			fa := (*kiss_fft_cpx)(unsafe.Pointer(f))
+			fb := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(m)*8))
+			a, b, tw := *fa, *fb, *(*kiss_twiddle_cpx)(unsafe.Pointer(tw1))
+			tr := float32(b.Fr*tw.Fr) - float32(b.Fi*tw.Fi)
+			ti := float32(b.Fr*tw.Fi) + float32(b.Fi*tw.Fr)
+			fb.Fr = a.Fr - tr
+			fb.Fi = a.Fi - ti
+			fa.Fr = a.Fr + tr
+			fa.Fi = a.Fi + ti
+			tw1 += uintptr(fstride) * 8
+			f += 8
 		}
-		Fout = Fout_beg + uintptr(i*mm)*8
-		Fout2 = Fout + uintptr(m)*8
-		tw1 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
-		j = 0
-		for {
-			if !(j < m) {
-				break
-			}
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi
-			t.Fr = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr) - float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi)
-			t.Fi = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi) + float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr)
-			tw1 = tw1 + uintptr(fstride)*8
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - t.Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - t.Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr += t.Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi += t.Fi
-			Fout2 += 8
-			Fout += 8
-			goto _2
-		_2:
-			;
-			j = j + 1
-		}
-		goto _1
-	_1:
-		;
-		i = i + 1
 	}
 }
 
 func ki_bfly2(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
-	var Fout2, Fout_beg, tw1 uintptr
-	var i, j int32
-	var t kiss_fft_cpx
-	_, _, _, _, _, _ = Fout2, Fout_beg, i, j, t, tw1
-	Fout_beg = Fout
-	i = 0
-	for {
-		if !(i < N) {
-			break
+	twiddles := (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	for i := int32(0); i < N; i++ {
+		f := Fout + uintptr(i*mm)*8
+		tw1 := twiddles
+		for j := int32(0); j < m; j++ {
+			fa := (*kiss_fft_cpx)(unsafe.Pointer(f))
+			fb := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(m)*8))
+			a, b, tw := *fa, *fb, *(*kiss_twiddle_cpx)(unsafe.Pointer(tw1))
+			tr := float32(b.Fr*tw.Fr) + float32(b.Fi*tw.Fi)
+			ti := float32(b.Fi*tw.Fr) - float32(b.Fr*tw.Fi)
+			fb.Fr = a.Fr - tr
+			fb.Fi = a.Fi - ti
+			fa.Fr = a.Fr + tr
+			fa.Fi = a.Fi + ti
+			tw1 += uintptr(fstride) * 8
+			f += 8
 		}
-		Fout = Fout_beg + uintptr(i*mm)*8
-		Fout2 = Fout + uintptr(m)*8
-		tw1 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
-		j = 0
-		for {
-			if !(j < m) {
-				break
-			}
-			t.Fr = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr) + float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi)
-			t.Fi = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr) - float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi)
-			tw1 = tw1 + uintptr(fstride)*8
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - t.Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - t.Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr += t.Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi += t.Fi
-			Fout2 += 8
-			Fout += 8
-			goto _2
-		_2:
-			;
-			j = j + 1
-		}
-		goto _1
-	_1:
-		;
-		i = i + 1
 	}
 }
 
 func kf_bfly4(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
-	var Fout_beg, tw1, tw2, tw3, v2, v3 uintptr
-	var i, j int32
-	var m2, m3 size_t
-	var scratch [6]kiss_fft_cpx
-	_, _, _, _, _, _, _, _, _, _, _ = Fout_beg, i, j, m2, m3, scratch, tw1, tw2, tw3, v2, v3
-	m2 = uint64(int32(2) * m)
-	m3 = uint64(int32(3) * m)
-	Fout_beg = Fout
-	i = 0
-	for {
-		if !(i < N) {
-			break
+	twiddles := (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	for i := int32(0); i < N; i++ {
+		f := Fout + uintptr(i*mm)*8
+		tw1, tw2, tw3 := twiddles, twiddles, twiddles
+		for j := int32(0); j < m; j++ {
+			fa := (*kiss_fft_cpx)(unsafe.Pointer(f))
+			fb := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(m)*8))
+			fc := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(2*m)*8))
+			fd := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(3*m)*8))
+			a, b, c, d := *fa, *fb, *fc, *fd
+			t1 := *(*kiss_twiddle_cpx)(unsafe.Pointer(tw1))
+			t2 := *(*kiss_twiddle_cpx)(unsafe.Pointer(tw2))
+			t3 := *(*kiss_twiddle_cpx)(unsafe.Pointer(tw3))
+			s0r := float32(b.Fr*t1.Fr) - float32(b.Fi*t1.Fi)
+			s0i := float32(b.Fr*t1.Fi) + float32(b.Fi*t1.Fr)
+			s1r := float32(c.Fr*t2.Fr) - float32(c.Fi*t2.Fi)
+			s1i := float32(c.Fr*t2.Fi) + float32(c.Fi*t2.Fr)
+			s2r := float32(d.Fr*t3.Fr) - float32(d.Fi*t3.Fi)
+			s2i := float32(d.Fr*t3.Fi) + float32(d.Fi*t3.Fr)
+			s5r := a.Fr - s1r
+			s5i := a.Fi - s1i
+			a.Fr += s1r
+			a.Fi += s1i
+			s3r := s0r + s2r
+			s3i := s0i + s2i
+			s4r := s0r - s2r
+			s4i := s0i - s2i
+			fc.Fr = a.Fr - s3r
+			fc.Fi = a.Fi - s3i
+			fa.Fr = a.Fr + s3r
+			fa.Fi = a.Fi + s3i
+			fb.Fr = s5r + s4i
+			fb.Fi = s5i - s4r
+			fd.Fr = s5r - s4i
+			fd.Fi = s5i + s4r
+			tw1 += uintptr(fstride) * 8
+			tw2 += uintptr(fstride*2) * 8
+			tw3 += uintptr(fstride*3) * 8
+			f += 8
 		}
-		Fout = Fout_beg + uintptr(i*mm)*8
-		v3 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
-		tw1 = v3
-		v2 = v3
-		tw2 = v2
-		tw3 = v2
-		j = 0
-		for {
-			if !(j < m) {
-				break
-			}
-			scratch[0].Fr = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr) - float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi)
-			scratch[0].Fi = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi) + float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr)
-			scratch[int32(1)].Fr = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fr) - float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fi)
-			scratch[int32(1)].Fi = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fi) + float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fr)
-			scratch[int32(2)].Fr = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw3)).Fr) - float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw3)).Fi)
-			scratch[int32(2)].Fi = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw3)).Fi) + float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw3)).Fr)
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi
-			scratch[int32(5)].Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - scratch[int32(1)].Fr
-			scratch[int32(5)].Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - scratch[int32(1)].Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr += scratch[int32(1)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi += scratch[int32(1)].Fi
-			scratch[int32(3)].Fr = scratch[0].Fr + scratch[int32(2)].Fr
-			scratch[int32(3)].Fi = scratch[0].Fi + scratch[int32(2)].Fi
-			scratch[int32(4)].Fr = scratch[0].Fr - scratch[int32(2)].Fr
-			scratch[int32(4)].Fi = scratch[0].Fi - scratch[int32(2)].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr = (*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi = (*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - scratch[int32(3)].Fr
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - scratch[int32(3)].Fi
-			tw1 = tw1 + uintptr(fstride)*8
-			tw2 = tw2 + uintptr(fstride*uint64(2))*8
-			tw3 = tw3 + uintptr(fstride*uint64(3))*8
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr += scratch[int32(3)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi += scratch[int32(3)].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr = scratch[int32(5)].Fr + scratch[int32(4)].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi = scratch[int32(5)].Fi - scratch[int32(4)].Fr
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fr = scratch[int32(5)].Fr - scratch[int32(4)].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fi = scratch[int32(5)].Fi + scratch[int32(4)].Fr
-			Fout += 8
-			goto _4
-		_4:
-			;
-			j = j + 1
-		}
-		goto _1
-	_1:
-		;
-		i = i + 1
 	}
 }
 
 func ki_bfly4(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
-	var Fout_beg, tw1, tw2, tw3, v2, v3 uintptr
-	var i, j int32
-	var m2, m3 size_t
-	var scratch [6]kiss_fft_cpx
-	_, _, _, _, _, _, _, _, _, _, _ = Fout_beg, i, j, m2, m3, scratch, tw1, tw2, tw3, v2, v3
-	m2 = uint64(int32(2) * m)
-	m3 = uint64(int32(3) * m)
-	Fout_beg = Fout
-	i = 0
-	for {
-		if !(i < N) {
-			break
+	twiddles := (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	for i := int32(0); i < N; i++ {
+		f := Fout + uintptr(i*mm)*8
+		tw1, tw2, tw3 := twiddles, twiddles, twiddles
+		for j := int32(0); j < m; j++ {
+			fa := (*kiss_fft_cpx)(unsafe.Pointer(f))
+			fb := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(m)*8))
+			fc := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(2*m)*8))
+			fd := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(3*m)*8))
+			a, b, c, d := *fa, *fb, *fc, *fd
+			t1 := *(*kiss_twiddle_cpx)(unsafe.Pointer(tw1))
+			t2 := *(*kiss_twiddle_cpx)(unsafe.Pointer(tw2))
+			t3 := *(*kiss_twiddle_cpx)(unsafe.Pointer(tw3))
+			s0r := float32(b.Fr*t1.Fr) + float32(b.Fi*t1.Fi)
+			s0i := float32(b.Fi*t1.Fr) - float32(b.Fr*t1.Fi)
+			s1r := float32(c.Fr*t2.Fr) + float32(c.Fi*t2.Fi)
+			s1i := float32(c.Fi*t2.Fr) - float32(c.Fr*t2.Fi)
+			s2r := float32(d.Fr*t3.Fr) + float32(d.Fi*t3.Fi)
+			s2i := float32(d.Fi*t3.Fr) - float32(d.Fr*t3.Fi)
+			s5r := a.Fr - s1r
+			s5i := a.Fi - s1i
+			a.Fr += s1r
+			a.Fi += s1i
+			s3r := s0r + s2r
+			s3i := s0i + s2i
+			s4r := s0r - s2r
+			s4i := s0i - s2i
+			fc.Fr = a.Fr - s3r
+			fc.Fi = a.Fi - s3i
+			fa.Fr = a.Fr + s3r
+			fa.Fi = a.Fi + s3i
+			fb.Fr = s5r - s4i
+			fb.Fi = s5i + s4r
+			fd.Fr = s5r + s4i
+			fd.Fi = s5i - s4r
+			tw1 += uintptr(fstride) * 8
+			tw2 += uintptr(fstride*2) * 8
+			tw3 += uintptr(fstride*3) * 8
+			f += 8
 		}
-		Fout = Fout_beg + uintptr(i*mm)*8
-		v3 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
-		tw1 = v3
-		v2 = v3
-		tw2 = v2
-		tw3 = v2
-		j = 0
-		for {
-			if !(j < m) {
-				break
-			}
-			scratch[0].Fr = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr) + float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi)
-			scratch[0].Fi = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr) - float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi)
-			scratch[int32(1)].Fr = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fr) + float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fi)
-			scratch[int32(1)].Fi = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fr) - float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fi)
-			scratch[int32(2)].Fr = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw3)).Fr) + float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw3)).Fi)
-			scratch[int32(2)].Fi = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw3)).Fr) - float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw3)).Fi)
-			scratch[int32(5)].Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - scratch[int32(1)].Fr
-			scratch[int32(5)].Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - scratch[int32(1)].Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr += scratch[int32(1)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi += scratch[int32(1)].Fi
-			scratch[int32(3)].Fr = scratch[0].Fr + scratch[int32(2)].Fr
-			scratch[int32(3)].Fi = scratch[0].Fi + scratch[int32(2)].Fi
-			scratch[int32(4)].Fr = scratch[0].Fr - scratch[int32(2)].Fr
-			scratch[int32(4)].Fi = scratch[0].Fi - scratch[int32(2)].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - scratch[int32(3)].Fr
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - scratch[int32(3)].Fi
-			tw1 = tw1 + uintptr(fstride)*8
-			tw2 = tw2 + uintptr(fstride*uint64(2))*8
-			tw3 = tw3 + uintptr(fstride*uint64(3))*8
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr += scratch[int32(3)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi += scratch[int32(3)].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr = scratch[int32(5)].Fr - scratch[int32(4)].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi = scratch[int32(5)].Fi + scratch[int32(4)].Fr
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fr = scratch[int32(5)].Fr + scratch[int32(4)].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m3)*8))).Fi = scratch[int32(5)].Fi - scratch[int32(4)].Fr
-			Fout += 8
-			goto _4
-		_4:
-			;
-			j = j + 1
-		}
-		goto _1
-	_1:
-		;
-		i = i + 1
 	}
 }
 
 func kf_bfly3(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
-	var Fout_beg, tw1, tw2, v2 uintptr
-	var epi3 kiss_twiddle_cpx
-	var i int32
-	var k, m2, v3 size_t
-	var scratch [5]kiss_fft_cpx
-	_, _, _, _, _, _, _, _, _, _ = Fout_beg, epi3, i, k, m2, scratch, tw1, tw2, v2, v3
-	m2 = uint64(int32(2) * m)
-	Fout_beg = Fout
-	epi3 = *(*kiss_twiddle_cpx)(unsafe.Pointer((*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles + uintptr(fstride*uint64(m))*8))
-	i = 0
-	for {
-		if !(i < N) {
-			break
-		}
-		Fout = Fout_beg + uintptr(i*mm)*8
-		v2 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
-		tw2 = v2
-		tw1 = v2
-		k = uint64(m)
-		for {
-			scratch[int32(1)].Fr = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr) - float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi)
-			scratch[int32(1)].Fi = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi) + float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr)
-			scratch[int32(2)].Fr = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fr) - float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fi)
-			scratch[int32(2)].Fi = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fi) + float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fr)
-			scratch[int32(3)].Fr = scratch[int32(1)].Fr + scratch[int32(2)].Fr
-			scratch[int32(3)].Fi = scratch[int32(1)].Fi + scratch[int32(2)].Fi
-			scratch[0].Fr = scratch[int32(1)].Fr - scratch[int32(2)].Fr
-			scratch[0].Fi = scratch[int32(1)].Fi - scratch[int32(2)].Fi
-			tw1 = tw1 + uintptr(fstride)*8
-			tw2 = tw2 + uintptr(fstride*uint64(2))*8
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - float32(scratch[int32(3)].Fr*libc.Float32FromFloat32(0.5))
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - float32(scratch[int32(3)].Fi*libc.Float32FromFloat32(0.5))
-			scratch[0].Fr *= epi3.Fi
-			scratch[0].Fi *= epi3.Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr += scratch[int32(3)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi += scratch[int32(3)].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr = (*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr + scratch[0].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi = (*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi - scratch[0].Fr
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr -= scratch[0].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi += scratch[0].Fr
-			Fout += 8
-			goto _4
-		_4:
-			;
-			k = k - 1
-			v3 = k
-			if !(v3 != 0) {
+	twiddles := (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	epi3 := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(m))*8))
+	for i := int32(0); i < N; i++ {
+		f := Fout + uintptr(i*mm)*8
+		tw1, tw2 := twiddles, twiddles
+		for k := m; ; {
+			fa := (*kiss_fft_cpx)(unsafe.Pointer(f))
+			fb := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(m)*8))
+			fc := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(2*m)*8))
+			a, b, c := *fa, *fb, *fc
+			t1 := *(*kiss_twiddle_cpx)(unsafe.Pointer(tw1))
+			t2 := *(*kiss_twiddle_cpx)(unsafe.Pointer(tw2))
+			s1r := float32(b.Fr*t1.Fr) - float32(b.Fi*t1.Fi)
+			s1i := float32(b.Fr*t1.Fi) + float32(b.Fi*t1.Fr)
+			s2r := float32(c.Fr*t2.Fr) - float32(c.Fi*t2.Fi)
+			s2i := float32(c.Fr*t2.Fi) + float32(c.Fi*t2.Fr)
+			s3r := s1r + s2r
+			s3i := s1i + s2i
+			s0r := s1r - s2r
+			s0i := s1i - s2i
+			br := a.Fr - float32(s3r*0.5)
+			bi := a.Fi - float32(s3i*0.5)
+			s0r = float32(s0r * epi3.Fi)
+			s0i = float32(s0i * epi3.Fi)
+			fa.Fr = a.Fr + s3r
+			fa.Fi = a.Fi + s3i
+			fc.Fr = br + s0i
+			fc.Fi = bi - s0r
+			fb.Fr = br - s0i
+			fb.Fi = bi + s0r
+			tw1 += uintptr(fstride) * 8
+			tw2 += uintptr(fstride*2) * 8
+			f += 8
+			k--
+			if k == 0 {
 				break
 			}
 		}
-		goto _1
-	_1:
-		;
-		i = i + 1
 	}
 }
 
 func ki_bfly3(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
-	var Fout_beg, tw1, tw2, v2 uintptr
-	var epi3 kiss_twiddle_cpx
-	var i, k, v3 int32
-	var m2 size_t
-	var scratch [5]kiss_fft_cpx
-	_, _, _, _, _, _, _, _, _, _ = Fout_beg, epi3, i, k, m2, scratch, tw1, tw2, v2, v3
-	m2 = uint64(int32(2) * m)
-	Fout_beg = Fout
-	epi3 = *(*kiss_twiddle_cpx)(unsafe.Pointer((*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles + uintptr(fstride*uint64(m))*8))
-	i = 0
-	for {
-		if !(i < N) {
-			break
-		}
-		Fout = Fout_beg + uintptr(i*mm)*8
-		v2 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
-		tw2 = v2
-		tw1 = v2
-		k = m
-		for {
-			scratch[int32(1)].Fr = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr) + float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi)
-			scratch[int32(1)].Fi = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fr) - float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw1)).Fi)
-			scratch[int32(2)].Fr = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fr) + float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fi)
-			scratch[int32(2)].Fi = float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fr) - float32((*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr*(*kiss_twiddle_cpx)(unsafe.Pointer(tw2)).Fi)
-			scratch[int32(3)].Fr = scratch[int32(1)].Fr + scratch[int32(2)].Fr
-			scratch[int32(3)].Fi = scratch[int32(1)].Fi + scratch[int32(2)].Fi
-			scratch[0].Fr = scratch[int32(1)].Fr - scratch[int32(2)].Fr
-			scratch[0].Fi = scratch[int32(1)].Fi - scratch[int32(2)].Fi
-			tw1 = tw1 + uintptr(fstride)*8
-			tw2 = tw2 + uintptr(fstride*uint64(2))*8
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - float32(scratch[int32(3)].Fr*libc.Float32FromFloat32(0.5))
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - float32(scratch[int32(3)].Fi*libc.Float32FromFloat32(0.5))
-			scratch[0].Fr *= -epi3.Fi
-			scratch[0].Fi *= -epi3.Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr += scratch[int32(3)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi += scratch[int32(3)].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fr = (*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr + scratch[0].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m2)*8))).Fi = (*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi - scratch[0].Fr
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr -= scratch[0].Fi
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi += scratch[0].Fr
-			Fout += 8
-			goto _4
-		_4:
-			;
-			k = k - 1
-			v3 = k
-			if !(v3 != 0) {
+	twiddles := (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	epi3 := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(m))*8))
+	for i := int32(0); i < N; i++ {
+		f := Fout + uintptr(i*mm)*8
+		tw1, tw2 := twiddles, twiddles
+		for k := m; ; {
+			fa := (*kiss_fft_cpx)(unsafe.Pointer(f))
+			fb := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(m)*8))
+			fc := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(2*m)*8))
+			a, b, c := *fa, *fb, *fc
+			t1 := *(*kiss_twiddle_cpx)(unsafe.Pointer(tw1))
+			t2 := *(*kiss_twiddle_cpx)(unsafe.Pointer(tw2))
+			s1r := float32(b.Fr*t1.Fr) + float32(b.Fi*t1.Fi)
+			s1i := float32(b.Fi*t1.Fr) - float32(b.Fr*t1.Fi)
+			s2r := float32(c.Fr*t2.Fr) + float32(c.Fi*t2.Fi)
+			s2i := float32(c.Fi*t2.Fr) - float32(c.Fr*t2.Fi)
+			s3r := s1r + s2r
+			s3i := s1i + s2i
+			s0r := s1r - s2r
+			s0i := s1i - s2i
+			br := a.Fr - float32(s3r*0.5)
+			bi := a.Fi - float32(s3i*0.5)
+			s0r = float32(s0r * -epi3.Fi)
+			s0i = float32(s0i * -epi3.Fi)
+			fa.Fr = a.Fr + s3r
+			fa.Fi = a.Fi + s3i
+			fc.Fr = br + s0i
+			fc.Fi = bi - s0r
+			fb.Fr = br - s0i
+			fb.Fi = bi + s0r
+			tw1 += uintptr(fstride) * 8
+			tw2 += uintptr(fstride*2) * 8
+			f += 8
+			k--
+			if k == 0 {
 				break
 			}
 		}
-		goto _1
-	_1:
-		;
-		i = i + 1
 	}
 }
 
 func kf_bfly5(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
-	var Fout0, Fout1, Fout2, Fout3, Fout4, Fout_beg, tw, twiddles uintptr
-	var i, u int32
-	var scratch [13]kiss_fft_cpx
-	var ya, yb kiss_twiddle_cpx
-	_, _, _, _, _, _, _, _, _, _, _, _, _ = Fout0, Fout1, Fout2, Fout3, Fout4, Fout_beg, i, scratch, tw, twiddles, u, ya, yb
-	twiddles = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
-	Fout_beg = Fout
-	ya = *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(m))*8))
-	yb = *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(2)*uint64(m))*8))
-	tw = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
-	i = 0
-	for {
-		if !(i < N) {
-			break
+	twiddles := (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	ya := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(m))*8))
+	yb := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(2)*uint64(m))*8))
+	for i := int32(0); i < N; i++ {
+		f := Fout + uintptr(i*mm)*8
+		for u := int32(0); u < m; u++ {
+			fa := (*kiss_fft_cpx)(unsafe.Pointer(f))
+			fb := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(m)*8))
+			fc := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(2*m)*8))
+			fd := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(3*m)*8))
+			fe := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(4*m)*8))
+			a, b, c, d, e := *fa, *fb, *fc, *fd, *fe
+			t1 := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(uint64(u)*fstride)*8))
+			t2 := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(uint64(2*u)*fstride)*8))
+			t3 := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(uint64(3*u)*fstride)*8))
+			t4 := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(uint64(4*u)*fstride)*8))
+			s1r := float32(b.Fr*t1.Fr) - float32(b.Fi*t1.Fi)
+			s1i := float32(b.Fr*t1.Fi) + float32(b.Fi*t1.Fr)
+			s2r := float32(c.Fr*t2.Fr) - float32(c.Fi*t2.Fi)
+			s2i := float32(c.Fr*t2.Fi) + float32(c.Fi*t2.Fr)
+			s3r := float32(d.Fr*t3.Fr) - float32(d.Fi*t3.Fi)
+			s3i := float32(d.Fr*t3.Fi) + float32(d.Fi*t3.Fr)
+			s4r := float32(e.Fr*t4.Fr) - float32(e.Fi*t4.Fi)
+			s4i := float32(e.Fr*t4.Fi) + float32(e.Fi*t4.Fr)
+			s7r := s1r + s4r
+			s7i := s1i + s4i
+			s10r := s1r - s4r
+			s10i := s1i - s4i
+			s8r := s2r + s3r
+			s8i := s2i + s3i
+			s9r := s2r - s3r
+			s9i := s2i - s3i
+			fa.Fr = a.Fr + (s7r + s8r)
+			fa.Fi = a.Fi + (s7i + s8i)
+			s5r := a.Fr + float32(s7r*ya.Fr) + float32(s8r*yb.Fr)
+			s5i := a.Fi + float32(s7i*ya.Fr) + float32(s8i*yb.Fr)
+			s6r := float32(s10i*ya.Fi) + float32(s9i*yb.Fi)
+			s6i := -float32(s10r*ya.Fi) - float32(s9r*yb.Fi)
+			fb.Fr = s5r - s6r
+			fb.Fi = s5i - s6i
+			fe.Fr = s5r + s6r
+			fe.Fi = s5i + s6i
+			s11r := a.Fr + float32(s7r*yb.Fr) + float32(s8r*ya.Fr)
+			s11i := a.Fi + float32(s7i*yb.Fr) + float32(s8i*ya.Fr)
+			s12r := -float32(s10i*yb.Fi) + float32(s9i*ya.Fi)
+			s12i := float32(s10r*yb.Fi) - float32(s9r*ya.Fi)
+			fc.Fr = s11r + s12r
+			fc.Fi = s11i + s12i
+			fd.Fr = s11r - s12r
+			fd.Fi = s11i - s12i
+			f += 8
 		}
-		Fout = Fout_beg + uintptr(i*mm)*8
-		Fout0 = Fout
-		Fout1 = Fout0 + uintptr(m)*8
-		Fout2 = Fout0 + uintptr(int32(2)*m)*8
-		Fout3 = Fout0 + uintptr(int32(3)*m)*8
-		Fout4 = Fout0 + uintptr(int32(4)*m)*8
-		u = 0
-		for {
-			if !(u < m) {
-				break
-			}
-			scratch[0] = *(*kiss_fft_cpx)(unsafe.Pointer(Fout0))
-			scratch[int32(1)].Fr = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(u)*fstride)*8))).Fr) - float32((*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(u)*fstride)*8))).Fi)
-			scratch[int32(1)].Fi = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(u)*fstride)*8))).Fi) + float32((*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(u)*fstride)*8))).Fr)
-			scratch[int32(2)].Fr = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(2)*u)*fstride)*8))).Fr) - float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(2)*u)*fstride)*8))).Fi)
-			scratch[int32(2)].Fi = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(2)*u)*fstride)*8))).Fi) + float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(2)*u)*fstride)*8))).Fr)
-			scratch[int32(3)].Fr = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(3)*u)*fstride)*8))).Fr) - float32((*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(3)*u)*fstride)*8))).Fi)
-			scratch[int32(3)].Fi = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(3)*u)*fstride)*8))).Fi) + float32((*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(3)*u)*fstride)*8))).Fr)
-			scratch[int32(4)].Fr = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(4)*u)*fstride)*8))).Fr) - float32((*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(4)*u)*fstride)*8))).Fi)
-			scratch[int32(4)].Fi = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(4)*u)*fstride)*8))).Fi) + float32((*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(4)*u)*fstride)*8))).Fr)
-			scratch[int32(7)].Fr = scratch[int32(1)].Fr + scratch[int32(4)].Fr
-			scratch[int32(7)].Fi = scratch[int32(1)].Fi + scratch[int32(4)].Fi
-			scratch[int32(10)].Fr = scratch[int32(1)].Fr - scratch[int32(4)].Fr
-			scratch[int32(10)].Fi = scratch[int32(1)].Fi - scratch[int32(4)].Fi
-			scratch[int32(8)].Fr = scratch[int32(2)].Fr + scratch[int32(3)].Fr
-			scratch[int32(8)].Fi = scratch[int32(2)].Fi + scratch[int32(3)].Fi
-			scratch[int32(9)].Fr = scratch[int32(2)].Fr - scratch[int32(3)].Fr
-			scratch[int32(9)].Fi = scratch[int32(2)].Fi - scratch[int32(3)].Fi
-			*(*float32)(unsafe.Pointer(Fout0)) += scratch[int32(7)].Fr + scratch[int32(8)].Fr
-			*(*float32)(unsafe.Pointer(Fout0 + 4)) += scratch[int32(7)].Fi + scratch[int32(8)].Fi
-			scratch[int32(5)].Fr = scratch[0].Fr + float32(scratch[int32(7)].Fr*ya.Fr) + float32(scratch[int32(8)].Fr*yb.Fr)
-			scratch[int32(5)].Fi = scratch[0].Fi + float32(scratch[int32(7)].Fi*ya.Fr) + float32(scratch[int32(8)].Fi*yb.Fr)
-			scratch[int32(6)].Fr = float32(scratch[int32(10)].Fi*ya.Fi) + float32(scratch[int32(9)].Fi*yb.Fi)
-			scratch[int32(6)].Fi = -float32(scratch[int32(10)].Fr*ya.Fi) - float32(scratch[int32(9)].Fr*yb.Fi)
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fr = scratch[int32(5)].Fr - scratch[int32(6)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fi = scratch[int32(5)].Fi - scratch[int32(6)].Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fr = scratch[int32(5)].Fr + scratch[int32(6)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fi = scratch[int32(5)].Fi + scratch[int32(6)].Fi
-			scratch[int32(11)].Fr = scratch[0].Fr + float32(scratch[int32(7)].Fr*yb.Fr) + float32(scratch[int32(8)].Fr*ya.Fr)
-			scratch[int32(11)].Fi = scratch[0].Fi + float32(scratch[int32(7)].Fi*yb.Fr) + float32(scratch[int32(8)].Fi*ya.Fr)
-			scratch[int32(12)].Fr = -float32(scratch[int32(10)].Fi*yb.Fi) + float32(scratch[int32(9)].Fi*ya.Fi)
-			scratch[int32(12)].Fi = float32(scratch[int32(10)].Fr*yb.Fi) - float32(scratch[int32(9)].Fr*ya.Fi)
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr = scratch[int32(11)].Fr + scratch[int32(12)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi = scratch[int32(11)].Fi + scratch[int32(12)].Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fr = scratch[int32(11)].Fr - scratch[int32(12)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fi = scratch[int32(11)].Fi - scratch[int32(12)].Fi
-			Fout0 += 8
-			Fout1 += 8
-			Fout2 += 8
-			Fout3 += 8
-			Fout4 += 8
-			goto _2
-		_2:
-			;
-			u = u + 1
-		}
-		goto _1
-	_1:
-		;
-		i = i + 1
 	}
 }
 
 func ki_bfly5(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
-	var Fout0, Fout1, Fout2, Fout3, Fout4, Fout_beg, tw, twiddles uintptr
-	var i, u int32
-	var scratch [13]kiss_fft_cpx
-	var ya, yb kiss_twiddle_cpx
-	_, _, _, _, _, _, _, _, _, _, _, _, _ = Fout0, Fout1, Fout2, Fout3, Fout4, Fout_beg, i, scratch, tw, twiddles, u, ya, yb
-	twiddles = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
-	Fout_beg = Fout
-	ya = *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(m))*8))
-	yb = *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(2)*uint64(m))*8))
-	tw = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
-	i = 0
-	for {
-		if !(i < N) {
-			break
+	twiddles := (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	ya := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(m))*8))
+	yb := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(2)*uint64(m))*8))
+	for i := int32(0); i < N; i++ {
+		f := Fout + uintptr(i*mm)*8
+		for u := int32(0); u < m; u++ {
+			fa := (*kiss_fft_cpx)(unsafe.Pointer(f))
+			fb := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(m)*8))
+			fc := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(2*m)*8))
+			fd := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(3*m)*8))
+			fe := (*kiss_fft_cpx)(unsafe.Pointer(f + uintptr(4*m)*8))
+			a, b, c, d, e := *fa, *fb, *fc, *fd, *fe
+			t1 := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(uint64(u)*fstride)*8))
+			t2 := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(uint64(2*u)*fstride)*8))
+			t3 := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(uint64(3*u)*fstride)*8))
+			t4 := *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(uint64(4*u)*fstride)*8))
+			s1r := float32(b.Fr*t1.Fr) + float32(b.Fi*t1.Fi)
+			s1i := float32(b.Fi*t1.Fr) - float32(b.Fr*t1.Fi)
+			s2r := float32(c.Fr*t2.Fr) + float32(c.Fi*t2.Fi)
+			s2i := float32(c.Fi*t2.Fr) - float32(c.Fr*t2.Fi)
+			s3r := float32(d.Fr*t3.Fr) + float32(d.Fi*t3.Fi)
+			s3i := float32(d.Fi*t3.Fr) - float32(d.Fr*t3.Fi)
+			s4r := float32(e.Fr*t4.Fr) + float32(e.Fi*t4.Fi)
+			s4i := float32(e.Fi*t4.Fr) - float32(e.Fr*t4.Fi)
+			s7r := s1r + s4r
+			s7i := s1i + s4i
+			s10r := s1r - s4r
+			s10i := s1i - s4i
+			s8r := s2r + s3r
+			s8i := s2i + s3i
+			s9r := s2r - s3r
+			s9i := s2i - s3i
+			fa.Fr = a.Fr + (s7r + s8r)
+			fa.Fi = a.Fi + (s7i + s8i)
+			s5r := a.Fr + float32(s7r*ya.Fr) + float32(s8r*yb.Fr)
+			s5i := a.Fi + float32(s7i*ya.Fr) + float32(s8i*yb.Fr)
+			s6r := -float32(s10i*ya.Fi) - float32(s9i*yb.Fi)
+			s6i := float32(s10r*ya.Fi) + float32(s9r*yb.Fi)
+			fb.Fr = s5r - s6r
+			fb.Fi = s5i - s6i
+			fe.Fr = s5r + s6r
+			fe.Fi = s5i + s6i
+			s11r := a.Fr + float32(s7r*yb.Fr) + float32(s8r*ya.Fr)
+			s11i := a.Fi + float32(s7i*yb.Fr) + float32(s8i*ya.Fr)
+			s12r := float32(s10i*yb.Fi) - float32(s9i*ya.Fi)
+			s12i := -float32(s10r*yb.Fi) + float32(s9r*ya.Fi)
+			fc.Fr = s11r + s12r
+			fc.Fi = s11i + s12i
+			fd.Fr = s11r - s12r
+			fd.Fi = s11i - s12i
+			f += 8
 		}
-		Fout = Fout_beg + uintptr(i*mm)*8
-		Fout0 = Fout
-		Fout1 = Fout0 + uintptr(m)*8
-		Fout2 = Fout0 + uintptr(int32(2)*m)*8
-		Fout3 = Fout0 + uintptr(int32(3)*m)*8
-		Fout4 = Fout0 + uintptr(int32(4)*m)*8
-		u = 0
-		for {
-			if !(u < m) {
-				break
-			}
-			scratch[0] = *(*kiss_fft_cpx)(unsafe.Pointer(Fout0))
-			scratch[int32(1)].Fr = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(u)*fstride)*8))).Fr) + float32((*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(u)*fstride)*8))).Fi)
-			scratch[int32(1)].Fi = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(u)*fstride)*8))).Fr) - float32((*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(u)*fstride)*8))).Fi)
-			scratch[int32(2)].Fr = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(2)*u)*fstride)*8))).Fr) + float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(2)*u)*fstride)*8))).Fi)
-			scratch[int32(2)].Fi = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(2)*u)*fstride)*8))).Fr) - float32((*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(2)*u)*fstride)*8))).Fi)
-			scratch[int32(3)].Fr = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(3)*u)*fstride)*8))).Fr) + float32((*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(3)*u)*fstride)*8))).Fi)
-			scratch[int32(3)].Fi = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(3)*u)*fstride)*8))).Fr) - float32((*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(3)*u)*fstride)*8))).Fi)
-			scratch[int32(4)].Fr = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(4)*u)*fstride)*8))).Fr) + float32((*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(4)*u)*fstride)*8))).Fi)
-			scratch[int32(4)].Fi = float32((*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fi*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(4)*u)*fstride)*8))).Fr) - float32((*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fr*(*(*kiss_twiddle_cpx)(unsafe.Pointer(tw + uintptr(uint64(int32(4)*u)*fstride)*8))).Fi)
-			scratch[int32(7)].Fr = scratch[int32(1)].Fr + scratch[int32(4)].Fr
-			scratch[int32(7)].Fi = scratch[int32(1)].Fi + scratch[int32(4)].Fi
-			scratch[int32(10)].Fr = scratch[int32(1)].Fr - scratch[int32(4)].Fr
-			scratch[int32(10)].Fi = scratch[int32(1)].Fi - scratch[int32(4)].Fi
-			scratch[int32(8)].Fr = scratch[int32(2)].Fr + scratch[int32(3)].Fr
-			scratch[int32(8)].Fi = scratch[int32(2)].Fi + scratch[int32(3)].Fi
-			scratch[int32(9)].Fr = scratch[int32(2)].Fr - scratch[int32(3)].Fr
-			scratch[int32(9)].Fi = scratch[int32(2)].Fi - scratch[int32(3)].Fi
-			*(*float32)(unsafe.Pointer(Fout0)) += scratch[int32(7)].Fr + scratch[int32(8)].Fr
-			*(*float32)(unsafe.Pointer(Fout0 + 4)) += scratch[int32(7)].Fi + scratch[int32(8)].Fi
-			scratch[int32(5)].Fr = scratch[0].Fr + float32(scratch[int32(7)].Fr*ya.Fr) + float32(scratch[int32(8)].Fr*yb.Fr)
-			scratch[int32(5)].Fi = scratch[0].Fi + float32(scratch[int32(7)].Fi*ya.Fr) + float32(scratch[int32(8)].Fi*yb.Fr)
-			scratch[int32(6)].Fr = -float32(scratch[int32(10)].Fi*ya.Fi) - float32(scratch[int32(9)].Fi*yb.Fi)
-			scratch[int32(6)].Fi = float32(scratch[int32(10)].Fr*ya.Fi) + float32(scratch[int32(9)].Fr*yb.Fi)
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fr = scratch[int32(5)].Fr - scratch[int32(6)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout1)).Fi = scratch[int32(5)].Fi - scratch[int32(6)].Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fr = scratch[int32(5)].Fr + scratch[int32(6)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout4)).Fi = scratch[int32(5)].Fi + scratch[int32(6)].Fi
-			scratch[int32(11)].Fr = scratch[0].Fr + float32(scratch[int32(7)].Fr*yb.Fr) + float32(scratch[int32(8)].Fr*ya.Fr)
-			scratch[int32(11)].Fi = scratch[0].Fi + float32(scratch[int32(7)].Fi*yb.Fr) + float32(scratch[int32(8)].Fi*ya.Fr)
-			scratch[int32(12)].Fr = float32(scratch[int32(10)].Fi*yb.Fi) - float32(scratch[int32(9)].Fi*ya.Fi)
-			scratch[int32(12)].Fi = -float32(scratch[int32(10)].Fr*yb.Fi) + float32(scratch[int32(9)].Fr*ya.Fi)
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fr = scratch[int32(11)].Fr + scratch[int32(12)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout2)).Fi = scratch[int32(11)].Fi + scratch[int32(12)].Fi
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fr = scratch[int32(11)].Fr - scratch[int32(12)].Fr
-			(*kiss_fft_cpx)(unsafe.Pointer(Fout3)).Fi = scratch[int32(11)].Fi - scratch[int32(12)].Fi
-			Fout0 += 8
-			Fout1 += 8
-			Fout2 += 8
-			Fout3 += 8
-			Fout4 += 8
-			goto _2
-		_2:
-			;
-			u = u + 1
-		}
-		goto _1
-	_1:
-		;
-		i = i + 1
 	}
 }
 
@@ -10765,57 +10700,41 @@ func clt_mdct_backward(tls *libc.TLS, l uintptr, in uintptr, out uintptr, window
 	sine = float32(float32(float32(2)*libc.Float32FromFloat32(3.141592653))*libc.Float32FromFloat32(0.125)) / float32(N)
 	/* Pre-rotate */
 	/* Temp pointers to make it really clear to the compiler what we're doing */
-	xp1 = in
-	xp2 = in + uintptr(stride*(N2-int32(1)))*4
-	yp = f2
-	t = (*mdct_lookup)(unsafe.Pointer(l)).Ftrig
-	i = 0
-	for {
-		if !(i < N4) {
-			break
+	{
+		trig := unsafe.Slice((*float32)(unsafe.Pointer((*mdct_lookup)(unsafe.Pointer(l)).Ftrig)), (N4<<shift)+1)
+		ys := unsafe.Slice((*float32)(unsafe.Pointer(f2)), 2*N4)
+		xp1 := in
+		xp2 := in + uintptr(stride*(N2-int32(1)))*4
+		step := uintptr(int32(2)*stride) * 4
+		for i := int32(0); i < N4; i++ {
+			x1 := *(*float32)(unsafe.Pointer(xp1))
+			x2 := *(*float32)(unsafe.Pointer(xp2))
+			ta, tb := trig[i<<shift], trig[(N4-i)<<shift]
+			yr := -float32(x2*ta) + float32(x1*tb)
+			yi := -float32(x2*tb) - float32(x1*ta)
+			/* works because the cos is nearly one */
+			ys[2*i] = yr - float32(yi*sine)
+			ys[2*i+1] = yi + float32(yr*sine)
+			xp1 += step
+			xp2 -= step
 		}
-		yr = -float32(*(*float32)(unsafe.Pointer(xp2))**(*float32)(unsafe.Pointer(t + uintptr(i<<shift)*4))) + float32(*(*float32)(unsafe.Pointer(xp1))**(*float32)(unsafe.Pointer(t + uintptr((N4-i)<<shift)*4)))
-		yi = -float32(*(*float32)(unsafe.Pointer(xp2))**(*float32)(unsafe.Pointer(t + uintptr((N4-i)<<shift)*4))) - float32(*(*float32)(unsafe.Pointer(xp1))**(*float32)(unsafe.Pointer(t + uintptr(i<<shift)*4)))
-		/* works because the cos is nearly one */
-		v2 = yp
-		yp += 4
-		*(*float32)(unsafe.Pointer(v2)) = yr - float32(yi*sine)
-		v2 = yp
-		yp += 4
-		*(*float32)(unsafe.Pointer(v2)) = yi + float32(yr*sine)
-		xp1 = xp1 + uintptr(int32(2)*stride)*4
-		xp2 = xp2 - uintptr(int32(2)*stride)*4
-		goto _1
-	_1:
-		;
-		i = i + 1
 	}
 	/* Inverse N/4 complex FFT. This one should *not* downscale even in fixed-point */
 	opus_ifft(tls, *(*uintptr)(unsafe.Pointer(l + 8 + uintptr(shift)*8)), f2, f)
 	/* Post-rotate */
-	fp = f
-	t1 = (*mdct_lookup)(unsafe.Pointer(l)).Ftrig
-	i = 0
-	for {
-		if !(i < N4) {
-			break
+	{
+		trig := unsafe.Slice((*float32)(unsafe.Pointer((*mdct_lookup)(unsafe.Pointer(l)).Ftrig)), (N4<<shift)+1)
+		fs := unsafe.Slice((*float32)(unsafe.Pointer(f)), 2*N4)
+		for i := int32(0); i < N4; i++ {
+			re, im := fs[2*i], fs[2*i+1]
+			ta, tb := trig[i<<shift], trig[(N4-i)<<shift]
+			/* We'd scale up by 2 here, but instead it's done when mixing the windows */
+			yr := float32(re*ta) - float32(im*tb)
+			yi := float32(im*ta) + float32(re*tb)
+			/* works because the cos is nearly one */
+			fs[2*i] = yr - float32(yi*sine)
+			fs[2*i+1] = yi + float32(yr*sine)
 		}
-		re = *(*float32)(unsafe.Pointer(fp))
-		im = *(*float32)(unsafe.Pointer(fp + 1*4))
-		/* We'd scale up by 2 here, but instead it's done when mixing the windows */
-		yr1 = float32(re**(*float32)(unsafe.Pointer(t1 + uintptr(i<<shift)*4))) - float32(im**(*float32)(unsafe.Pointer(t1 + uintptr((N4-i)<<shift)*4)))
-		yi1 = float32(im**(*float32)(unsafe.Pointer(t1 + uintptr(i<<shift)*4))) + float32(re**(*float32)(unsafe.Pointer(t1 + uintptr((N4-i)<<shift)*4)))
-		/* works because the cos is nearly one */
-		v2 = fp
-		fp += 4
-		*(*float32)(unsafe.Pointer(v2)) = yr1 - float32(yi1*sine)
-		v2 = fp
-		fp += 4
-		*(*float32)(unsafe.Pointer(v2)) = yi1 + float32(yr1*sine)
-		goto _4
-	_4:
-		;
-		i = i + 1
 	}
 	/* De-shuffle the components for the middle of the window only */
 	fp1 = f
@@ -15532,7 +15451,7 @@ func pitch_search(tls *libc.TLS, x_lp uintptr, y uintptr, len1 int32, max_pitch 
 	defer tls.Free(16)
 	var a, b, c, sum, sum1, v5 opus_val32
 	var i, j, lag, offset int32
-	var x_lp4, xcorr, y_lp4, xp, yp uintptr
+	var x_lp4, xcorr, y_lp4 uintptr
 	var _ /* best_pitch at bp+0 */ [2]int32
 	_, _, _, _, _, _, _, _, _, _, _, _, _ = a, b, c, i, j, lag, offset, sum, sum1, x_lp4, xcorr, y_lp4, v5
 	_sp := _arenaSave(); defer _arenaRestore(_sp)
@@ -15565,74 +15484,27 @@ func pitch_search(tls *libc.TLS, x_lp uintptr, y uintptr, len1 int32, max_pitch 
 		j = j + 1
 	}
 	/* Coarse search with 4x decimation */
-	i = 0
-	for {
-		if !(i < max_pitch>>int32(2)) {
-			break
-		}
-		sum = float32(0)
-		xp, yp = x_lp4, y_lp4+uintptr(i)*4
-		// Independent sums hide the dependency between successive additions.
-		var sum2, sum3, sum4 opus_val32
-		count := len1 >> 2
-		for j = 0; j+4 <= count; j += 4 {
-			sum += *(*opus_val16)(unsafe.Pointer(xp)) * *(*opus_val16)(unsafe.Pointer(yp))
-			sum2 += *(*opus_val16)(unsafe.Pointer(xp + 4)) * *(*opus_val16)(unsafe.Pointer(yp + 4))
-			sum3 += *(*opus_val16)(unsafe.Pointer(xp + 8)) * *(*opus_val16)(unsafe.Pointer(yp + 8))
-			sum4 += *(*opus_val16)(unsafe.Pointer(xp + 12)) * *(*opus_val16)(unsafe.Pointer(yp + 12))
-			xp += 16
-			yp += 16
-		}
-		sum += sum2 + sum3 + sum4
-		for ; j < count; j++ {
-			sum += *(*opus_val16)(unsafe.Pointer(xp)) * *(*opus_val16)(unsafe.Pointer(yp))
-			xp += 4
-			yp += 4
-		}
-		if float32(-int32(1)) > sum {
-			v5 = float32(-int32(1))
-		} else {
-			v5 = sum
-		}
-		*(*opus_val32)(unsafe.Pointer(xcorr + uintptr(i)*4)) = v5
-		goto _3
-	_3:
-		;
-		i = i + 1
-	}
+	pitchXcorrCoarse(x_lp4, y_lp4, len1>>2, max_pitch>>2, xcorr)
 	find_best_pitch(tls, xcorr, y_lp4, len1>>int32(2), max_pitch>>int32(2), bp)
 	/* Finer search with 2x decimation */
-	i = 0
-	for {
-		if !(i < max_pitch>>int32(1)) {
-			break
-		}
-		sum1 = float32(0)
+	// Only lags near the two coarse candidates are evaluated; batch them so
+	// that four independent accumulation chains run at once.
+	var lags [4]int32
+	nlags := 0
+	for i = 0; i < max_pitch>>1; i++ {
 		*(*opus_val32)(unsafe.Pointer(xcorr + uintptr(i)*4)) = float32(0)
 		if libc.Xabs(tls, i-int32(2)*(*(*[2]int32)(unsafe.Pointer(bp)))[0]) > int32(2) && libc.Xabs(tls, i-int32(2)*(*(*[2]int32)(unsafe.Pointer(bp)))[int32(1)]) > int32(2) {
-			goto _6
+			continue
 		}
-		j = 0
-		for {
-			if !(j < len1>>int32(1)) {
-				break
-			}
-			sum1 = sum1 + opus_val32(*(*opus_val16)(unsafe.Pointer(x_lp + uintptr(j)*4))**(*opus_val16)(unsafe.Pointer(y + uintptr(i+j)*4)))
-			goto _7
-		_7:
-			;
-			j = j + 1
+		lags[nlags] = i
+		nlags++
+		if nlags == 4 {
+			pitchXcorrFine(x_lp, y, len1>>1, lags[:], xcorr)
+			nlags = 0
 		}
-		if float32(-int32(1)) > sum1 {
-			v5 = float32(-int32(1))
-		} else {
-			v5 = sum1
-		}
-		*(*opus_val32)(unsafe.Pointer(xcorr + uintptr(i)*4)) = v5
-		goto _6
-	_6:
-		;
-		i = i + 1
+	}
+	if nlags > 0 {
+		pitchXcorrFine(x_lp, y, len1>>1, lags[:nlags], xcorr)
 	}
 	find_best_pitch(tls, xcorr, y, len1>>int32(1), max_pitch>>int32(1), bp)
 	/* Refine by pseudo-interpolation */
@@ -15653,6 +15525,142 @@ func pitch_search(tls *libc.TLS, x_lp uintptr, y uintptr, len1 int32, max_pitch 
 		offset = 0
 	}
 	*(*int32)(unsafe.Pointer(pitch)) = int32(2)*(*(*[2]int32)(unsafe.Pointer(bp)))[0] - offset
+}
+
+// pitchXcorrCoarse computes xcorr[i] = max(-1, <x, y+i>) for i < lags. Each
+// correlation uses the same four interleaved fused accumulators as the scalar
+// version, but four lags are evaluated together to keep the FPU busy.
+func pitchXcorrCoarse(x, y uintptr, n, lags int32, xcorr uintptr) {
+	xs := unsafe.Slice((*float32)(unsafe.Pointer(x)), n)
+	out := unsafe.Slice((*float32)(unsafe.Pointer(xcorr)), lags)
+	n4 := int(n) &^ 3
+	i := 0
+	for ; i+4 <= int(lags); i += 4 {
+		ys := unsafe.Slice((*float32)(unsafe.Pointer(y+uintptr(i)*4)), int(n)+3)
+		var a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3 float32
+		xp, yp := x, y+uintptr(i)*4
+		for xe := x + uintptr(n4)*4; xp < xe; xp, yp = xp+16, yp+16 {
+			xv := (*[4]float32)(unsafe.Pointer(xp))
+			yv := (*[7]float32)(unsafe.Pointer(yp))
+			x0, x1, x2, x3 := xv[0], xv[1], xv[2], xv[3]
+			y0, y1, y2, y3, y4, y5, y6 := yv[0], yv[1], yv[2], yv[3], yv[4], yv[5], yv[6]
+			a0 += x0 * y0
+			a1 += x1 * y1
+			a2 += x2 * y2
+			a3 += x3 * y3
+			b0 += x0 * y1
+			b1 += x1 * y2
+			b2 += x2 * y3
+			b3 += x3 * y4
+			c0 += x0 * y2
+			c1 += x1 * y3
+			c2 += x2 * y4
+			c3 += x3 * y5
+			d0 += x0 * y3
+			d1 += x1 * y4
+			d2 += x2 * y5
+			d3 += x3 * y6
+		}
+		a0 += a1 + a2 + a3
+		b0 += b1 + b2 + b3
+		c0 += c1 + c2 + c3
+		d0 += d1 + d2 + d3
+		for j := n4; j < int(n); j++ {
+			a0 += xs[j] * ys[j]
+			b0 += xs[j] * ys[j+1]
+			c0 += xs[j] * ys[j+2]
+			d0 += xs[j] * ys[j+3]
+		}
+		out[i] = clampXcorr(a0)
+		out[i+1] = clampXcorr(b0)
+		out[i+2] = clampXcorr(c0)
+		out[i+3] = clampXcorr(d0)
+	}
+	for ; i < int(lags); i++ {
+		ys := unsafe.Slice((*float32)(unsafe.Pointer(y+uintptr(i)*4)), n)
+		var a0, a1, a2, a3 float32
+		for j := 0; j < n4; j += 4 {
+			a0 += xs[j] * ys[j]
+			a1 += xs[j+1] * ys[j+1]
+			a2 += xs[j+2] * ys[j+2]
+			a3 += xs[j+3] * ys[j+3]
+		}
+		a0 += a1 + a2 + a3
+		for j := n4; j < int(n); j++ {
+			a0 += xs[j] * ys[j]
+		}
+		out[i] = clampXcorr(a0)
+	}
+}
+
+// pitchXcorrFine computes xcorr[lag] = max(-1, <x, y+lag>) for the given lags
+// with plain sequential (unfused) accumulation.
+func pitchXcorrFine(x, y uintptr, n int32, lags []int32, xcorr uintptr) {
+	var ys [4]uintptr
+	for k, lag := range lags {
+		ys[k] = y + uintptr(lag)*4
+	}
+	for k := len(lags); k < 4; k++ {
+		ys[k] = ys[0]
+	}
+	s0, s1, s2, s3 := dotSerial4(x, ys[0], ys[1], ys[2], ys[3], n)
+	sums := [4]float32{s0, s1, s2, s3}
+	for k, lag := range lags {
+		*(*opus_val32)(unsafe.Pointer(xcorr + uintptr(lag)*4)) = clampXcorr(sums[k])
+	}
+}
+
+func clampXcorr(sum float32) float32 {
+	if float32(-1) > sum {
+		return -1
+	}
+	return sum
+}
+
+// dotSerial4 returns the dot products of x with y0..y3 over n elements. Each
+// sum is accumulated in order as sum = sum + float32(a*b), exactly like the
+// scalar loops it replaces, while the four chains proceed in parallel.
+func dotSerial4(x, y0, y1, y2, y3 uintptr, n int32) (s0, s1, s2, s3 float32) {
+	return dotSerial4From(0, 0, 0, 0, x, y0, y1, y2, y3, n)
+}
+
+// dotSerial4From is dotSerial4 continuing from the partial sums s0..s3.
+func dotSerial4From(s0, s1, s2, s3 float32, x, y0, y1, y2, y3 uintptr, n int32) (float32, float32, float32, float32) {
+	xs := unsafe.Slice((*float32)(unsafe.Pointer(x)), n)
+	ya := unsafe.Slice((*float32)(unsafe.Pointer(y0)), n)[:len(xs)]
+	yb := unsafe.Slice((*float32)(unsafe.Pointer(y1)), n)[:len(xs)]
+	yc := unsafe.Slice((*float32)(unsafe.Pointer(y2)), n)[:len(xs)]
+	yd := unsafe.Slice((*float32)(unsafe.Pointer(y3)), n)[:len(xs)]
+	for j, a := range xs {
+		s0 = s0 + float32(a*ya[j])
+		s1 = s1 + float32(a*yb[j])
+		s2 = s2 + float32(a*yc[j])
+		s3 = s3 + float32(a*yd[j])
+	}
+	return s0, s1, s2, s3
+}
+
+// doublingCorr2 evaluates the remove_doubling correlations for two (T1, T1b)
+// candidate pairs. Per candidate the accumulation order is identical to the
+// scalar loop: xy += x*x[-T1], yy += x[-T1]^2, xy += x*x[-T1b], yy += x[-T1b]^2.
+func doublingCorr2(x uintptr, n, t1a, t1ba, t1c, t1bc int32) (xya, yya, xyc, yyc float32) {
+	xs := unsafe.Slice((*float32)(unsafe.Pointer(x)), n)
+	pa := unsafe.Slice((*float32)(unsafe.Pointer(x-uintptr(t1a)*4)), n)[:len(xs)]
+	pba := unsafe.Slice((*float32)(unsafe.Pointer(x-uintptr(t1ba)*4)), n)[:len(xs)]
+	pc := unsafe.Slice((*float32)(unsafe.Pointer(x-uintptr(t1c)*4)), n)[:len(xs)]
+	pbc := unsafe.Slice((*float32)(unsafe.Pointer(x-uintptr(t1bc)*4)), n)[:len(xs)]
+	for i, v := range xs {
+		a, ba, c, bc := pa[i], pba[i], pc[i], pbc[i]
+		xya = xya + float32(v*a)
+		yya = yya + float32(a*a)
+		xyc = xyc + float32(v*c)
+		yyc = yyc + float32(c*c)
+		xya = xya + float32(v*ba)
+		yya = yya + float32(ba*ba)
+		xyc = xyc + float32(v*bc)
+		yyc = yyc + float32(bc*bc)
+	}
+	return
 }
 
 var second_check = [16]int32{
@@ -15715,43 +15723,38 @@ func remove_doubling(tls *libc.TLS, x uintptr, maxperiod int32, minperiod int32,
 	g0 = v5
 	g = v5
 	/* Look for any pitch at T/k */
-	k = int32(2)
-	for {
-		if !(k <= int32(15)) {
-			break
-		}
-		cont = float32(0)
-		T1 = (int32(2)*T0 + k) / (int32(2) * k)
+	// The correlations for each k are independent of the selection, so they
+	// are computed two at a time up front; the selection then runs in order.
+	var t1s, t1bs [16]int32
+	var xys, yys [16]opus_val32
+	kEnd := int32(2)
+	for ; kEnd <= 15; kEnd++ {
+		T1 = (int32(2)*T0 + kEnd) / (int32(2) * kEnd)
 		if T1 < minperiod {
 			break
 		}
-		/* Look for another strong correlation at T1b */
-		if k == int32(2) {
+		if kEnd == int32(2) {
 			if T1+T0 > maxperiod {
 				T1b = T0
 			} else {
 				T1b = T0 + T1
 			}
 		} else {
-			T1b = (int32(2)*second_check[k]*T0 + k) / (int32(2) * k)
+			T1b = (int32(2)*second_check[kEnd]*T0 + kEnd) / (int32(2) * kEnd)
 		}
-		v2 = float32(0)
-		yy = v2
-		xy = v2
-		i = 0
-		for {
-			if !(i < N) {
-				break
-			}
-			xy = xy + opus_val32(*(*opus_val16)(unsafe.Pointer(x + uintptr(i)*4))**(*opus_val16)(unsafe.Pointer(x + uintptr(i-T1)*4)))
-			yy = yy + opus_val32(*(*opus_val16)(unsafe.Pointer(x + uintptr(i-T1)*4))**(*opus_val16)(unsafe.Pointer(x + uintptr(i-T1)*4)))
-			xy = xy + opus_val32(*(*opus_val16)(unsafe.Pointer(x + uintptr(i)*4))**(*opus_val16)(unsafe.Pointer(x + uintptr(i-T1b)*4)))
-			yy = yy + opus_val32(*(*opus_val16)(unsafe.Pointer(x + uintptr(i-T1b)*4))**(*opus_val16)(unsafe.Pointer(x + uintptr(i-T1b)*4)))
-			goto _8
-		_8:
-			;
-			i = i + 1
+		t1s[kEnd], t1bs[kEnd] = T1, T1b
+	}
+	for k = 2; k < kEnd; k += 2 {
+		if k+1 < kEnd {
+			xys[k], yys[k], xys[k+1], yys[k+1] = doublingCorr2(x, N, t1s[k], t1bs[k], t1s[k+1], t1bs[k+1])
+		} else {
+			xys[k], yys[k], _, _ = doublingCorr2(x, N, t1s[k], t1bs[k], t1s[k], t1bs[k])
 		}
+	}
+	for k = 2; k < kEnd; k++ {
+		T1 = t1s[k]
+		xy, yy = xys[k], yys[k]
+		cont = float32(0)
 		g1 = xy / float32(math.Sqrt(float64(float32(1)+float32(float32(float32(libc.Float32FromFloat32(2)*xx)*libc.Float32FromFloat32(1))*yy))))
 		if libc.Xabs(tls, T1-prev_period) <= int32(1) {
 			cont = prev_gain
@@ -15768,40 +15771,13 @@ func remove_doubling(tls *libc.TLS, x uintptr, maxperiod int32, minperiod int32,
 			T = T1
 			g = g1
 		}
-		goto _6
-	_6:
-		;
-		k = k + 1
 	}
 	if best_yy <= best_xy {
 		pg = libc.Float32FromFloat32(1)
 	} else {
 		pg = best_xy / (best_yy + float32(1))
 	}
-	k = 0
-	for {
-		if !(k < int32(3)) {
-			break
-		}
-		T11 = T + k - int32(1)
-		xy = float32(0)
-		i = 0
-		for {
-			if !(i < N) {
-				break
-			}
-			xy = xy + opus_val32(*(*opus_val16)(unsafe.Pointer(x + uintptr(i)*4))**(*opus_val16)(unsafe.Pointer(x + uintptr(i-T11)*4)))
-			goto _10
-		_10:
-			;
-			i = i + 1
-		}
-		xcorr[k] = xy
-		goto _9
-	_9:
-		;
-		k = k + 1
-	}
+	xcorr[0], xcorr[1], xcorr[2], _ = dotSerial4(x, x-uintptr(T-1)*4, x-uintptr(T)*4, x-uintptr(T+1)*4, x-uintptr(T+1)*4, N)
 	if xcorr[int32(2)]-xcorr[0] > float32(libc.Float32FromFloat32(0.7)*(xcorr[int32(1)]-xcorr[0])) {
 		offset = int32(1)
 	} else {
@@ -19186,33 +19162,18 @@ func opus_decode(tls *libc.TLS, st uintptr, data uintptr, len1 int32, pcm uintpt
 	out = _arenaAlloc(uint64(4)*uint64(frame_size*(*OpusDecoder)(unsafe.Pointer(st)).Fchannels))
 	ret = opus_decode_native(tls, st, data, len1, out, frame_size, decode_fec, 0, libc.UintptrFromInt32(0))
 	if ret > 0 {
-		i = 0
-		for {
-			if !(i < ret*(*OpusDecoder)(unsafe.Pointer(st)).Fchannels) {
-				break
+		n := ret * (*OpusDecoder)(unsafe.Pointer(st)).Fchannels
+		src := unsafe.Slice((*float32)(unsafe.Pointer(out)), n)
+		dst := unsafe.Slice((*opus_int16)(unsafe.Pointer(pcm)), n)[:len(src)]
+		for i, v := range src {
+			v = float32(v * 32768)
+			if !(v > -32768) {
+				v = -32768
 			}
-			v2 = *(*float32)(unsafe.Pointer(out + uintptr(i)*4))
-			v2 = float32(v2 * libc.Float32FromFloat32(32768))
-			if v2 > float32(-int32(32768)) {
-				v3 = v2
-			} else {
-				v3 = float32(-int32(32768))
+			if !(v < 32767) {
+				v = 32767
 			}
-			v2 = v3
-			if v2 < float32(int32(32767)) {
-				v4 = v2
-			} else {
-				v4 = float32(int32(32767))
-			}
-			v2 = v4
-			v5 = int16(int32(math.Floor(float64(0.5)+float64(v2))))
-			goto _6
-		_6:
-			*(*opus_int16)(unsafe.Pointer(pcm + uintptr(i)*2)) = v5
-			goto _1
-		_1:
-			;
-			i = i + 1
+			dst[i] = int16(int32(math.Floor(0.5 + float64(v))))
 		}
 	}
 	return ret
