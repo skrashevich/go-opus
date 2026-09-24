@@ -19,28 +19,45 @@ This is a complete Opus codec (SILK + CELT + Hybrid modes) — unlike other pure
 
 ## Performance
 
-Benchmarked on Apple M1 Pro, encoding/decoding a 3:41 stereo 48kHz file at 128 kbps (median of 3 runs, user CPU time):
+### Whole-file comparison
+
+Benchmarked on Apple M1 Pro, encoding/decoding the same 3:41 stereo 48 kHz PCM file at 128 kbps (median of 3 runs, user CPU time, with real output files). The Go CLI includes the `pitch_search` optimization.
 
 | Implementation | Encode | Decode | Notes |
 |---|---|---|---|
-| C original (RFC 6716) | 1.51s (1.0x) | 0.60s (1.0x) | Baseline |
-| **Go transpiled (this)** | **2.64s (1.7x)** | **0.96s (1.6x)** | Pure Go, no CGo |
-| FFmpeg libopus | 1.84s (1.2x) | 0.54s (0.9x) | SIMD-optimized |
+| C original (RFC 6716) | 1.51s (1.0x) | 0.61s (1.0x) | Baseline |
+| **Go optimized (this)** | **2.25s (1.5x)** | **0.96s (1.6x)** | Pure Go, no CGo |
+| FFmpeg libopus | 1.86s (1.2x) | 0.56s (0.9x) | SIMD-optimized |
 
-~1.7x slower than C — excellent for automatic transpilation. Encode runs at 84x realtime, decode at 230x realtime.
-
-### Detailed benchmarks (3 runs, user CPU time)
+The optimized Go version encodes at 99x realtime and decodes at 231x realtime. Its encode user CPU time fell from 2.67s before the optimization to 2.25s on this file.
 
 | Implementation | Run 1 | Run 2 | Run 3 | Median | vs C |
 |---|---|---|---|---|---|
 | **Encode** | | | | | |
-| C original | 1.50s | 1.53s | 1.51s | 1.51s | 1.0x |
-| Go transpiled | 2.67s | 2.64s | 2.64s | 2.64s | 1.7x |
-| FFmpeg libopus | 1.84s | 1.84s | 1.87s | 1.84s | 1.2x |
+| C original | 1.78s | 1.50s | 1.51s | 1.51s | 1.0x |
+| Go optimized | 2.31s | 2.25s | 2.24s | 2.25s | 1.5x |
+| FFmpeg libopus | 1.86s | 1.86s | 1.83s | 1.86s | 1.2x |
 | **Decode** | | | | | |
-| C original | 0.60s | 0.61s | 0.60s | 0.60s | 1.0x |
-| Go transpiled | 0.96s | 0.96s | 0.96s | 0.96s | 1.6x |
-| FFmpeg libopus | 0.54s | 0.54s | 0.54s | 0.54s | 0.9x |
+| C original | 0.71s | 0.61s | 0.61s | 0.61s | 1.0x |
+| Go optimized | 0.98s | 0.96s | 0.96s | 0.96s | 1.6x |
+| FFmpeg libopus | 0.56s | 0.55s | 0.56s | 0.56s | 0.9x |
+
+### Current Go microbenchmarks
+
+Microbenchmarks on Apple M1 Pro (Go 1.27.1, darwin/arm64). Each iteration processes a 48 kHz stereo frame with 960 samples per channel (20 ms), using the default encoder settings. The benchmarks reuse codec state and exclude setup and file I/O. Results are the median of five 1-second runs with `-cpu=1`:
+
+| Operation | Original (`a5b3880d806b`) | Optimized | Change |
+|---|---:|---:|---:|
+| Encode | 176,445 ns/frame | 137,252 ns/frame | 22% less time |
+| Decode | 70,910 ns/frame | 68,995 ns/frame | Similar |
+
+Both operations report 0 allocations per frame. The encode gain comes from the coarse correlation loop in `pitch_search`.
+
+To reproduce the current Go measurements:
+
+```bash
+go test -run '^$' -bench 'Benchmark(Encode|Decode)$' -benchtime=1s -count=5 -cpu=1
+```
 
 ## Installation
 

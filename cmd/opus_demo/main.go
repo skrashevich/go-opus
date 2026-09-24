@@ -13304,7 +13304,7 @@ func pitch_search(tls *libc.TLS, x_lp uintptr, y uintptr, len1 int32, max_pitch 
 	defer tls.Free(16)
 	var a, b, c, sum, sum1, v5 opus_val32
 	var i, j, lag, offset int32
-	var x_lp4, xcorr, y_lp4 uintptr
+	var x_lp4, xcorr, y_lp4, xp, yp uintptr
 	var _ /* best_pitch at bp+0 */ [2]int32
 	_, _, _, _, _, _, _, _, _, _, _, _, _ = a, b, c, i, j, lag, offset, sum, sum1, x_lp4, xcorr, y_lp4, v5
 	_sp := _arenaSave(); defer _arenaRestore(_sp)
@@ -13343,16 +13343,23 @@ func pitch_search(tls *libc.TLS, x_lp uintptr, y uintptr, len1 int32, max_pitch 
 			break
 		}
 		sum = libc.Float32FromInt32(0)
-		j = 0
-		for {
-			if !(j < len1>>int32(2)) {
-				break
-			}
-			sum = sum + opus_val32(*(*opus_val16)(unsafe.Pointer(x_lp4 + uintptr(j)*4))**(*opus_val16)(unsafe.Pointer(y_lp4 + uintptr(i+j)*4)))
-			goto _4
-		_4:
-			;
-			j = j + 1
+		xp, yp = x_lp4, y_lp4+uintptr(i)*4
+		// Independent sums hide the dependency between successive additions.
+		var sum2, sum3, sum4 opus_val32
+		count := len1 >> 2
+		for j = 0; j+4 <= count; j += 4 {
+			sum += *(*opus_val16)(unsafe.Pointer(xp)) * *(*opus_val16)(unsafe.Pointer(yp))
+			sum2 += *(*opus_val16)(unsafe.Pointer(xp + 4)) * *(*opus_val16)(unsafe.Pointer(yp + 4))
+			sum3 += *(*opus_val16)(unsafe.Pointer(xp + 8)) * *(*opus_val16)(unsafe.Pointer(yp + 8))
+			sum4 += *(*opus_val16)(unsafe.Pointer(xp + 12)) * *(*opus_val16)(unsafe.Pointer(yp + 12))
+			xp += 16
+			yp += 16
+		}
+		sum += sum2 + sum3 + sum4
+		for ; j < count; j++ {
+			sum += *(*opus_val16)(unsafe.Pointer(xp)) * *(*opus_val16)(unsafe.Pointer(yp))
+			xp += 4
+			yp += 4
 		}
 		if float32(-libc.Int32FromInt32(1)) > sum {
 			v5 = float32(-libc.Int32FromInt32(1))
