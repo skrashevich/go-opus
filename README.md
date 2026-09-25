@@ -104,11 +104,33 @@ go-opus/
 
 ## Alternatives
 
-| Library | Type | SILK | CELT | Hybrid | CGo |
-|---|---|---|---|---|---|
-| **go-opus (this)** | Pure Go | Yes | Yes | Yes | No |
-| [pion/opus](https://github.com/pion/opus) | Pure Go | Yes | No | No | No |
-| [hraban/opus](https://github.com/hraban/opus) | CGo wrapper | Yes | Yes | Yes | Yes |
+| Library | Type | Decoder | Encoder | CGo |
+|---|---|---|---|---|
+| **go-opus (this)** | Pure Go | SILK, CELT, Hybrid | SILK, CELT, Hybrid | No |
+| [pion/opus](https://github.com/pion/opus) | Pure Go | SILK, CELT, Hybrid | CELT (48 kHz, 20 ms), mono SILK | No |
+| [hraban/opus](https://github.com/hraban/opus) | CGo wrapper | SILK, CELT, Hybrid | SILK, CELT, Hybrid | Yes |
+
+### Comparison with pion/opus
+
+pion/opus at commit `86ced73`, same machine and 3:41 file as above. Both libraries are called in one Go process, and the time is user CPU spent inside the encode/decode calls (median of 3 runs).
+
+**Decoding.** The input streams were produced by the C reference encoder. Accuracy is measured against the C reference decoder output with the RFC 6716 `opus_compare` tool. A stream passes at 0% or above, and 100% means identical output.
+
+| Stream | go-opus | pion/opus |
+|---|---|---|
+| CELT, 128 kb/s stereo | 0.72 s, 99.9% | 0.78 s, 99.5% |
+| Hybrid, 24 kb/s stereo | 0.78 s, 99.9% | 0.50 s, fails (SNR 38.8 dB vs. reference) |
+| SILK, 16 kb/s mono 16 kHz | 0.16 s, bit-exact | 0.18 s, bit-exact |
+
+**Encoding** 48 kHz stereo at 128 kb/s with constrained VBR and complexity 10 (pion/opus supports only 20 ms CELT frames at 48 kHz here). Both produce about 128.4 kb/s of Opus payload. They were decoded with the C reference decoder and compared with the original input:
+
+| | go-opus | pion/opus |
+|---|---|---|
+| Encode time | 1.55 s | 3.17 s |
+| SNR | 18.9 dB | 18.4 dB |
+| `opus_compare` weighted error (lower is closer) | 0.97 | 0.45 |
+
+go-opus encodes about twice as fast. The quality measures point in different directions: go-opus has a slightly higher waveform SNR, while pion/opus keeps the per-band energies closer to the original. Neither is a full perceptual score. With the same settings, the C reference encoder (RFC 6716) scores the same as go-opus: 18.85 dB and 0.97.
 
 ## Platform Support
 
