@@ -2,6 +2,7 @@ package opus
 
 import (
 	"crypto/sha256"
+	"encoding/binary"
 	"fmt"
 	"math"
 	"runtime"
@@ -73,6 +74,7 @@ func TestCodecOutput(t *testing.T) {
 			out := cBuf[int16](int(tc.frameSize * tc.channels))
 			packet := cBuf[byte](1275)
 			h := sha256.New()
+			pcmLE := make([]byte, 0, 2*len(out))
 			seed := uint32(1)
 			for frame := range tc.frames {
 				for i := range pcm {
@@ -104,7 +106,12 @@ func TestCodecOutput(t *testing.T) {
 				if got <= 0 || got > tc.frameSize {
 					t.Fatalf("decode frame %d: %d", frame, got)
 				}
-				h.Write(unsafe.Slice((*byte)(unsafe.Pointer(&out[0])), int(got*tc.channels*2)))
+				// Hash PCM little-endian so the digests hold on big-endian targets too.
+				pcmLE = pcmLE[:0]
+				for _, s := range out[:got*tc.channels] {
+					pcmLE = binary.LittleEndian.AppendUint16(pcmLE, uint16(s))
+				}
+				h.Write(pcmLE)
 			}
 			runtime.KeepAlive(pcm)
 			runtime.KeepAlive(out)

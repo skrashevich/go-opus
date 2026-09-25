@@ -134,7 +134,22 @@ go-opus encodes about twice as fast. The quality measures point in different dir
 
 ## Platform Support
 
-Currently built for `darwin/arm64`. To add other platforms, re-run the ccgo transpilation on the target platform.
+The code was transpiled on `darwin/arm64`, but it is portable to other 64-bit targets. On every platform marked "bit-exact" below, `TestCodecOutput` passes, so encoded packets and decoded PCM match `darwin/arm64` exactly.
+
+| Platform | Build | Status | Tested with |
+|---|---|---|---|
+| `darwin/arm64` | ✅ | bit-exact | native |
+| `darwin/amd64` | ✅ | bit-exact | Rosetta 2 |
+| `linux/amd64`, `linux/arm64` | ✅ | bit-exact | Docker |
+| `linux/riscv64` | ✅ | bit-exact | Docker + QEMU |
+| `linux/s390x` (big-endian) | ✅ | bit-exact | Docker + QEMU |
+| `windows/amd64` | ✅ | bit-exact | Wine |
+| `linux/ppc64le` | ✅ | **broken**: SILK/hybrid output is wrong in optimized builds (correct with `-gcflags='-N -l'`); CELT is fine | Docker + QEMU |
+| `windows/arm64`, `freebsd/amd64`, `linux/loong64` | ✅ | builds, not run | — |
+| `linux/386`, `linux/arm` (32-bit) | ❌ | `size_t` is hard-coded as 64-bit | — |
+| `wasip1/wasm`, `js/wasm` | ❌ | not supported by `modernc.org/libc` | — |
+
+On Windows, `cmd/opus_demo` does not build because `modernc.org/libc` has no `feof` there. The library itself works.
 
 ## License
 
