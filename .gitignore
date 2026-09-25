@@ -4,3 +4,4 @@
 *.opus
 *.wav
 .DS_Store
+.omc
