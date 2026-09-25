@@ -349,11 +349,11 @@ func check_alloc(tls *libc.TLS, _ptr uintptr) (r uintptr) {
 }
 
 func opus_malloc(tls *libc.TLS, _size size_t) (r uintptr) {
-	return check_alloc(tls, libc.Xmalloc(tls, _size))
+	return check_alloc(tls, xmalloc(tls, _size))
 }
 
 func opus_realloc(tls *libc.TLS, _ptr uintptr, _size size_t) (r uintptr) {
-	return check_alloc(tls, libc.Xrealloc(tls, _ptr, _size))
+	return check_alloc(tls, xrealloc(tls, _ptr, _size))
 }
 
 func read_pcm16(tls *libc.TLS, _samples uintptr, _fin uintptr, _nchannels int32) (r size_t) {
@@ -369,7 +369,7 @@ func read_pcm16(tls *libc.TLS, _samples uintptr, _fin uintptr, _nchannels int32)
 	csamples = v1
 	nsamples = v1
 	for {
-		nread = libc.Xfread(tls, bp, libc.Uint64FromInt32(int32(2)*_nchannels), libc.Uint64FromInt32(int32(1024)/(int32(2)*_nchannels)), _fin)
+		nread = xfread(tls, bp, libc.Uint64FromInt32(int32(2)*_nchannels), libc.Uint64FromInt32(int32(1024)/(int32(2)*_nchannels)), _fin)
 		if nread <= uint64(0) {
 			break
 		}
@@ -598,16 +598,16 @@ func main1(tls *libc.TLS, _argc int32, _argv uintptr) (r1 int32) {
 		return int32(EXIT_FAILURE)
 	}
 	nchannels = int32(1)
-	if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(_argv + 1*8)), __ccgo_ts+230) == 0 {
+	if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(_argv + 1*ptrSize)), __ccgo_ts+230) == 0 {
 		nchannels = int32(2)
-		_argv += 8
+		_argv += ptrSize
 	}
 	rate = uint32(48000)
 	ybands = int32(NBANDS)
 	yfreqs = int32(NFREQS)
 	downsample = int32(1)
-	if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(_argv + 1*8)), __ccgo_ts+233) == 0 {
-		rate = libc.Uint32FromInt32(libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(_argv + 2*8))))
+	if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(_argv + 1*ptrSize)), __ccgo_ts+233) == 0 {
+		rate = libc.Uint32FromInt32(libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(_argv + 2*ptrSize))))
 		if rate != uint32(8000) && rate != uint32(12000) && rate != uint32(16000) && rate != uint32(24000) && rate != uint32(48000) {
 			libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+236, 0)
 			return int32(EXIT_FAILURE)
@@ -625,16 +625,16 @@ func main1(tls *libc.TLS, _argc int32, _argv uintptr) (r1 int32) {
 			break
 		}
 		yfreqs = int32(NFREQS) / downsample
-		_argv = _argv + uintptr(2)*8
+		_argv = _argv + uintptr(2)*ptrSize
 	}
-	fin1 = libc.Xfopen(tls, *(*uintptr)(unsafe.Pointer(_argv + 1*8)), __ccgo_ts+295)
+	fin1 = libc.Xfopen(tls, *(*uintptr)(unsafe.Pointer(_argv + 1*ptrSize)), __ccgo_ts+295)
 	if fin1 == libc.UintptrFromInt32(0) {
-		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+298, libc.VaList(bp+24, *(*uintptr)(unsafe.Pointer(_argv + 1*8))))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+298, libc.VaList(bp+24, *(*uintptr)(unsafe.Pointer(_argv + 1*ptrSize))))
 		return int32(EXIT_FAILURE)
 	}
-	fin2 = libc.Xfopen(tls, *(*uintptr)(unsafe.Pointer(_argv + 2*8)), __ccgo_ts+295)
+	fin2 = libc.Xfopen(tls, *(*uintptr)(unsafe.Pointer(_argv + 2*ptrSize)), __ccgo_ts+295)
 	if fin2 == libc.UintptrFromInt32(0) {
-		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+298, libc.VaList(bp+24, *(*uintptr)(unsafe.Pointer(_argv + 2*8))))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+298, libc.VaList(bp+24, *(*uintptr)(unsafe.Pointer(_argv + 2*ptrSize))))
 		libc.Xfclose(tls, fin1)
 		return int32(EXIT_FAILURE)
 	}

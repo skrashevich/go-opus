@@ -410,11 +410,11 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 	}
 	libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1326, libc.VaList(bp+40, opus.GetVersionString(tls)))
 	args = int32(1)
-	if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1330) == 0 {
+	if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1330) == 0 {
 		encode_only = int32(1)
 		args = args + 1
 	} else {
-		if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1333) == 0 {
+		if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1333) == 0 {
 			decode_only = int32(1)
 			args = args + 1
 		}
@@ -424,14 +424,14 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 		return int32(EXIT_FAILURE)
 	}
 	if !(decode_only != 0) {
-		if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1336) == 0 {
+		if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1336) == 0 {
 			application = int32(OPUS_APPLICATION_VOIP)
 		} else {
-			if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1341) == 0 {
+			if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1341) == 0 {
 				application = int32(OPUS_APPLICATION_RESTRICTED_LOWDELAY)
 			} else {
-				if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1361) != 0 {
-					libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1367, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8))))
+				if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1361) != 0 {
+					libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1367, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize))))
 					print_usage(tls, argv)
 					return int32(EXIT_FAILURE)
 				}
@@ -439,12 +439,12 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 		}
 		args = args + 1
 	}
-	sampling_rate = int32(libc.Xatol(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8))))
+	sampling_rate = int32(libc.Xatol(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize))))
 	args = args + 1
-	channels = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)))
+	channels = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)))
 	args = args + 1
 	if !(decode_only != 0) {
-		bitrate_bps = int32(libc.Xatol(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8))))
+		bitrate_bps = int32(libc.Xatol(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize))))
 		args = args + 1
 	}
 	if sampling_rate != int32(8000) && sampling_rate != int32(12000) && sampling_rate != int32(16000) && sampling_rate != int32(24000) && sampling_rate != int32(48000) {
@@ -465,29 +465,29 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 	curr_read = 0
 	for args < argc-int32(2) {
 		/* process command line options */
-		if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1459) == 0 {
+		if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1459) == 0 {
 			check_encoder_option(tls, decode_only, __ccgo_ts+1459)
 			use_vbr = 0
 			args = args + 1
 		} else {
-			if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1464) == 0 {
+			if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1464) == 0 {
 				check_encoder_option(tls, decode_only, __ccgo_ts+1464)
-				if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1475) == 0 {
+				if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1475) == 0 {
 					bandwidth = int32(OPUS_BANDWIDTH_NARROWBAND)
 				} else {
-					if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1478) == 0 {
+					if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1478) == 0 {
 						bandwidth = int32(OPUS_BANDWIDTH_MEDIUMBAND)
 					} else {
-						if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1481) == 0 {
+						if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1481) == 0 {
 							bandwidth = int32(OPUS_BANDWIDTH_WIDEBAND)
 						} else {
-							if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1484) == 0 {
+							if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1484) == 0 {
 								bandwidth = int32(OPUS_BANDWIDTH_SUPERWIDEBAND)
 							} else {
-								if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1488) == 0 {
+								if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1488) == 0 {
 									bandwidth = int32(OPUS_BANDWIDTH_FULLBAND)
 								} else {
-									libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1491, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8))))
+									libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1491, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize))))
 									return int32(EXIT_FAILURE)
 								}
 							}
@@ -496,27 +496,27 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 				}
 				args = args + int32(2)
 			} else {
-				if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1549) == 0 {
+				if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1549) == 0 {
 					check_encoder_option(tls, decode_only, __ccgo_ts+1549)
-					if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1560) == 0 {
+					if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1560) == 0 {
 						frame_size = sampling_rate / int32(400)
 					} else {
-						if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1564) == 0 {
+						if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1564) == 0 {
 							frame_size = sampling_rate / int32(200)
 						} else {
-							if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1566) == 0 {
+							if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1566) == 0 {
 								frame_size = sampling_rate / int32(100)
 							} else {
-								if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1569) == 0 {
+								if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1569) == 0 {
 									frame_size = sampling_rate / int32(50)
 								} else {
-									if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1572) == 0 {
+									if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1572) == 0 {
 										frame_size = sampling_rate / int32(25)
 									} else {
-										if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)), __ccgo_ts+1575) == 0 {
+										if libc.Xstrcmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)), __ccgo_ts+1575) == 0 {
 											frame_size = int32(3) * sampling_rate / int32(50)
 										} else {
-											libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1578, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8))))
+											libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1578, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize))))
 											return int32(EXIT_FAILURE)
 										}
 									}
@@ -526,103 +526,103 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 					}
 					args = args + int32(2)
 				} else {
-					if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1648) == 0 {
+					if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1648) == 0 {
 						check_encoder_option(tls, decode_only, __ccgo_ts+1648)
-						max_payload_bytes = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)))
+						max_payload_bytes = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)))
 						args = args + int32(2)
 					} else {
-						if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1661) == 0 {
+						if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1661) == 0 {
 							check_encoder_option(tls, decode_only, __ccgo_ts+1661)
-							complexity = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)))
+							complexity = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)))
 							args = args + int32(2)
 						} else {
-							if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1673) == 0 {
+							if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1673) == 0 {
 								use_inbandfec = int32(1)
 								args = args + 1
 							} else {
-								if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1684) == 0 {
+								if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1684) == 0 {
 									check_encoder_option(tls, decode_only, __ccgo_ts+1684)
 									forcechannels = int32(1)
 									args = args + 1
 								} else {
-									if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1695) == 0 {
+									if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1695) == 0 {
 										check_encoder_option(tls, decode_only, __ccgo_ts+1695)
 										cvbr = int32(1)
 										args = args + 1
 									} else {
-										if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1701) == 0 {
+										if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1701) == 0 {
 											check_encoder_option(tls, decode_only, __ccgo_ts+1701)
 											use_dtx = int32(1)
 											args = args + 1
 										} else {
-											if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1706) == 0 {
+											if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1706) == 0 {
 												check_decoder_option(tls, encode_only, __ccgo_ts+1706)
-												packet_loss_perc = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)))
+												packet_loss_perc = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)))
 												args = args + int32(2)
 											} else {
-												if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1712) == 0 {
+												if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1712) == 0 {
 													check_encoder_option(tls, decode_only, __ccgo_ts+1712)
-													sweep_bps = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)))
+													sweep_bps = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)))
 													args = args + int32(2)
 												} else {
-													if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1719) == 0 {
+													if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1719) == 0 {
 														check_encoder_option(tls, decode_only, __ccgo_ts+1719)
 														random_framesize = int32(1)
 														args = args + 1
 													} else {
-														if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1737) == 0 {
+														if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1737) == 0 {
 															check_encoder_option(tls, decode_only, __ccgo_ts+1737)
-															sweep_max = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*8)))
+															sweep_max = libc.Xatoi(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args+int32(1))*ptrSize)))
 															args = args + int32(2)
 														} else {
-															if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1748) == 0 {
+															if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1748) == 0 {
 																check_encoder_option(tls, decode_only, __ccgo_ts+1748)
 																random_fec = int32(1)
 																args = args + 1
 															} else {
-																if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1760) == 0 {
+																if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1760) == 0 {
 																	check_encoder_option(tls, decode_only, __ccgo_ts+1760)
 																	mode_list = uintptr(unsafe.Pointer(&silk8_test))
 																	nb_modes_in_list = int32(8)
 																	args = args + 1
 																} else {
-																	if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1773) == 0 {
+																	if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1773) == 0 {
 																		check_encoder_option(tls, decode_only, __ccgo_ts+1773)
 																		mode_list = uintptr(unsafe.Pointer(&silk12_test))
 																		nb_modes_in_list = int32(8)
 																		args = args + 1
 																	} else {
-																		if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1787) == 0 {
+																		if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1787) == 0 {
 																			check_encoder_option(tls, decode_only, __ccgo_ts+1787)
 																			mode_list = uintptr(unsafe.Pointer(&silk16_test))
 																			nb_modes_in_list = int32(8)
 																			args = args + 1
 																		} else {
-																			if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1801) == 0 {
+																			if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1801) == 0 {
 																				check_encoder_option(tls, decode_only, __ccgo_ts+1801)
 																				mode_list = uintptr(unsafe.Pointer(&hybrid24_test))
 																				nb_modes_in_list = int32(4)
 																				args = args + 1
 																			} else {
-																				if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1817) == 0 {
+																				if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1817) == 0 {
 																					check_encoder_option(tls, decode_only, __ccgo_ts+1817)
 																					mode_list = uintptr(unsafe.Pointer(&hybrid48_test))
 																					nb_modes_in_list = int32(4)
 																					args = args + 1
 																				} else {
-																					if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1833) == 0 {
+																					if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1833) == 0 {
 																						check_encoder_option(tls, decode_only, __ccgo_ts+1833)
 																						mode_list = uintptr(unsafe.Pointer(&celt_test))
 																						nb_modes_in_list = int32(32)
 																						args = args + 1
 																					} else {
-																						if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8)), __ccgo_ts+1844) == 0 {
+																						if libc.Xstrcasecmp(tls, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize)), __ccgo_ts+1844) == 0 {
 																							check_encoder_option(tls, decode_only, __ccgo_ts+1844)
 																							mode_list = uintptr(unsafe.Pointer(&celt_hq_test))
 																							nb_modes_in_list = int32(4)
 																							args = args + 1
 																						} else {
-																							libc.Xprintf(tls, __ccgo_ts+1858, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*8))))
+																							libc.Xprintf(tls, __ccgo_ts+1858, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(args)*ptrSize))))
 																							print_usage(tls, argv)
 																							return int32(EXIT_FAILURE)
 																						}
@@ -654,10 +654,10 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1892, libc.VaList(bp+40, int32(MAX_PACKET)))
 		return int32(EXIT_FAILURE)
 	}
-	inFile = *(*uintptr)(unsafe.Pointer(argv + uintptr(argc-int32(2))*8))
+	inFile = *(*uintptr)(unsafe.Pointer(argv + uintptr(argc-int32(2))*ptrSize))
 	fin = libc.Xfopen(tls, inFile, __ccgo_ts+1936)
 	if !(fin != 0) {
-		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1939, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(argc-int32(2))*8))))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1939, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(argc-int32(2))*ptrSize))))
 		return int32(EXIT_FAILURE)
 	}
 	if mode_list != 0 {
@@ -668,10 +668,10 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 		mode_switch_time = libc.Int32FromUint64(libc.Uint64FromInt32(size) / uint64(2) / libc.Uint64FromInt32(channels) / libc.Uint64FromInt32(nb_modes_in_list))
 		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+1992, libc.VaList(bp+40, mode_switch_time))
 	}
-	outFile = *(*uintptr)(unsafe.Pointer(argv + uintptr(argc-int32(1))*8))
+	outFile = *(*uintptr)(unsafe.Pointer(argv + uintptr(argc-int32(1))*ptrSize))
 	fout = libc.Xfopen(tls, outFile, __ccgo_ts+2025)
 	if !(fout != 0) {
-		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+2029, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(argc-int32(1))*8))))
+		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+2029, libc.VaList(bp+40, *(*uintptr)(unsafe.Pointer(argv + uintptr(argc-int32(1))*ptrSize))))
 		libc.Xfclose(tls, fin)
 		return int32(EXIT_FAILURE)
 	}
@@ -734,12 +734,12 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 	} else {
 		libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+2224, libc.VaList(bp+40, int64(sampling_rate), float64(float64(bitrate_bps)*float64(0.001)), bandwidth_string, frame_size))
 	}
-	in = libc.Xmalloc(tls, libc.Uint64FromInt32(max_frame_size*channels)*uint64(2))
-	out = libc.Xmalloc(tls, libc.Uint64FromInt32(max_frame_size*channels)*uint64(2))
-	fbytes = libc.Xmalloc(tls, libc.Uint64FromInt32(max_frame_size*channels)*uint64(2))
-	data[0] = libc.Xcalloc(tls, libc.Uint64FromInt32(max_payload_bytes), uint64(1))
+	in = xmalloc(tls, libc.Uint64FromInt32(max_frame_size*channels)*uint64(2))
+	out = xmalloc(tls, libc.Uint64FromInt32(max_frame_size*channels)*uint64(2))
+	fbytes = xmalloc(tls, libc.Uint64FromInt32(max_frame_size*channels)*uint64(2))
+	data[0] = xcalloc(tls, libc.Uint64FromInt32(max_payload_bytes), uint64(1))
 	if use_inbandfec != 0 {
-		data[int32(1)] = libc.Xcalloc(tls, libc.Uint64FromInt32(max_payload_bytes), uint64(1))
+		data[int32(1)] = xcalloc(tls, libc.Uint64FromInt32(max_payload_bytes), uint64(1))
 	}
 	for !(stop != 0) {
 		if delayed_celt != 0 {
@@ -780,7 +780,7 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 			opus.EncoderCtl(tls, enc, int32(OPUS_SET_INBAND_FEC_REQUEST), libc.VaList(bp+40, libc.BoolInt32(libc.Xrand(tls)%libc.Int32FromInt32(4) == libc.Int32FromInt32(0))))
 		}
 		if decode_only != 0 {
-			*(*int32)(unsafe.Pointer(bp)) = libc.Int32FromUint64(libc.Xfread(tls, bp+20, uint64(1), uint64(4), fin))
+			*(*int32)(unsafe.Pointer(bp)) = libc.Int32FromUint64(xfread(tls, bp+20, uint64(1), uint64(4), fin))
 			if libc.Xfeof(tls, fin) != 0 {
 				break
 			}
@@ -789,9 +789,9 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 				libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+2294, libc.VaList(bp+40, len1[toggle]))
 				break
 			}
-			*(*int32)(unsafe.Pointer(bp)) = libc.Int32FromUint64(libc.Xfread(tls, bp+20, uint64(1), uint64(4), fin))
+			*(*int32)(unsafe.Pointer(bp)) = libc.Int32FromUint64(xfread(tls, bp+20, uint64(1), uint64(4), fin))
 			(*(*[2]opus_uint32)(unsafe.Pointer(bp + 8)))[toggle] = char_to_int(tls, bp+20)
-			*(*int32)(unsafe.Pointer(bp)) = libc.Int32FromUint64(libc.Xfread(tls, data[toggle], uint64(1), libc.Uint64FromInt32(len1[toggle]), fin))
+			*(*int32)(unsafe.Pointer(bp)) = libc.Int32FromUint64(xfread(tls, data[toggle], uint64(1), libc.Uint64FromInt32(len1[toggle]), fin))
 			if *(*int32)(unsafe.Pointer(bp)) < len1[toggle] {
 				libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+2322, libc.VaList(bp+40, len1[toggle], *(*int32)(unsafe.Pointer(bp))))
 				break
@@ -806,7 +806,7 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 				opus.EncoderCtl(tls, enc, int32(OPUS_SET_FORCE_CHANNELS_REQUEST), libc.VaList(bp+40, *(*int32)(unsafe.Pointer(mode_list + uintptr(curr_mode)*16 + 3*4))))
 				frame_size = *(*int32)(unsafe.Pointer(mode_list + uintptr(curr_mode)*16 + 2*4))
 			}
-			*(*int32)(unsafe.Pointer(bp)) = libc.Int32FromUint64(libc.Xfread(tls, fbytes, uint64(2)*libc.Uint64FromInt32(channels), libc.Uint64FromInt32(frame_size), fin))
+			*(*int32)(unsafe.Pointer(bp)) = libc.Int32FromUint64(xfread(tls, fbytes, uint64(2)*libc.Uint64FromInt32(channels), libc.Uint64FromInt32(frame_size), fin))
 			curr_read = *(*int32)(unsafe.Pointer(bp))
 			i = 0
 			for {
@@ -869,16 +869,16 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 		}
 		if encode_only != 0 {
 			int_to_char(tls, libc.Uint32FromInt32(len1[toggle]), bp+24)
-			if libc.Xfwrite(tls, bp+24, uint64(1), uint64(4), fout) != uint64(4) {
+			if xfwrite(tls, bp+24, uint64(1), uint64(4), fout) != uint64(4) {
 				libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+2394, 0)
 				return int32(EXIT_FAILURE)
 			}
 			int_to_char(tls, (*(*[2]opus_uint32)(unsafe.Pointer(bp + 8)))[toggle], bp+24)
-			if libc.Xfwrite(tls, bp+24, uint64(1), uint64(4), fout) != uint64(4) {
+			if xfwrite(tls, bp+24, uint64(1), uint64(4), fout) != uint64(4) {
 				libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+2394, 0)
 				return int32(EXIT_FAILURE)
 			}
-			if libc.Xfwrite(tls, data[toggle], uint64(1), libc.Uint64FromInt32(len1[toggle]), fout) != uint64(libc.Uint32FromInt32(len1[toggle])) {
+			if xfwrite(tls, data[toggle], uint64(1), libc.Uint64FromInt32(len1[toggle]), fout) != uint64(libc.Uint32FromInt32(len1[toggle])) {
 				libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+2394, 0)
 				return int32(EXIT_FAILURE)
 			}
@@ -922,7 +922,7 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 							;
 							i1 = i1 + 1
 						}
-						if libc.Xfwrite(tls, fbytes, uint64(2)*libc.Uint64FromInt32(channels), libc.Uint64FromInt32(output_samples-*(*int32)(unsafe.Pointer(bp + 4))), fout) != uint64(libc.Uint32FromInt32(output_samples-*(*int32)(unsafe.Pointer(bp + 4)))) {
+						if xfwrite(tls, fbytes, uint64(2)*libc.Uint64FromInt32(channels), libc.Uint64FromInt32(output_samples-*(*int32)(unsafe.Pointer(bp + 4))), fout) != uint64(libc.Uint32FromInt32(output_samples-*(*int32)(unsafe.Pointer(bp + 4)))) {
 							libc.Xfprintf(tls, libc.Xstderr, __ccgo_ts+2394, 0)
 							return int32(EXIT_FAILURE)
 						}

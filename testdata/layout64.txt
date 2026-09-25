@@ -1,0 +1,1239 @@
+OpusCustomMode size=160
+OpusCustomMode.FFs off=0
+OpusCustomMode.Foverlap off=4
+OpusCustomMode.FnbEBands off=8
+OpusCustomMode.FeffEBands off=12
+OpusCustomMode.Fpreemph off=16 size=16 stride=4
+OpusCustomMode.Fpreemph[0] off=16
+OpusCustomMode.FeBands off=32
+OpusCustomMode.FmaxLM off=40
+OpusCustomMode.FnbShortMdcts off=44
+OpusCustomMode.FshortMdctSize off=48
+OpusCustomMode.FnbAllocVectors off=52
+OpusCustomMode.FallocVectors off=56
+OpusCustomMode.FlogN off=64
+OpusCustomMode.Fwindow off=72
+OpusCustomMode.Fmdct.Fn off=80
+OpusCustomMode.Fmdct.Fmaxshift off=84
+OpusCustomMode.Fmdct.Fkfft off=88 size=32 stride=8
+OpusCustomMode.Fmdct.Fkfft[0] off=88 size=8
+OpusCustomMode.Fmdct.Ftrig off=120 size=8
+OpusCustomMode.Fcache.Fsize off=128
+OpusCustomMode.Fcache.Findex off=136
+OpusCustomMode.Fcache.Fbits off=144
+OpusCustomMode.Fcache.Fcaps off=152 size=8
+ec_ctx size=56
+ec_ctx.Fbuf off=0
+ec_ctx.Fstorage off=8
+ec_ctx.Fend_offs off=12
+ec_ctx.Fend_window off=16
+ec_ctx.Fnend_bits off=20
+ec_ctx.Fnbits_total off=24
+ec_ctx.Foffs off=28
+ec_ctx.Frng off=32
+ec_ctx.Fval off=36
+ec_ctx.Fext off=40
+ec_ctx.Frem off=44
+ec_ctx.Ferror1 off=48
+ec_enc size=56
+ec_enc.Fbuf off=0
+ec_enc.Fstorage off=8
+ec_enc.Fend_offs off=12
+ec_enc.Fend_window off=16
+ec_enc.Fnend_bits off=20
+ec_enc.Fnbits_total off=24
+ec_enc.Foffs off=28
+ec_enc.Frng off=32
+ec_enc.Fval off=36
+ec_enc.Fext off=40
+ec_enc.Frem off=44
+ec_enc.Ferror1 off=48
+ec_dec size=56
+ec_dec.Fbuf off=0
+ec_dec.Fstorage off=8
+ec_dec.Fend_offs off=12
+ec_dec.Fend_window off=16
+ec_dec.Fnend_bits off=20
+ec_dec.Fnbits_total off=24
+ec_dec.Foffs off=28
+ec_dec.Frng off=32
+ec_dec.Fval off=36
+ec_dec.Fext off=40
+ec_dec.Frem off=44
+ec_dec.Ferror1 off=48
+kiss_fft_cpx size=8
+kiss_fft_cpx.Fr off=0
+kiss_fft_cpx.Fi off=4
+kiss_twiddle_cpx size=8
+kiss_twiddle_cpx.Fr off=0
+kiss_twiddle_cpx.Fi off=4
+kiss_fft_state size=64
+kiss_fft_state.Fnfft off=0
+kiss_fft_state.Fscale off=4
+kiss_fft_state.Fshift off=8
+kiss_fft_state.Ffactors off=12 size=32 stride=2
+kiss_fft_state.Ffactors[0] off=12
+kiss_fft_state.Fbitrev off=48
+kiss_fft_state.Ftwiddles off=56 size=8
+mdct_lookup size=48
+mdct_lookup.Fn off=0
+mdct_lookup.Fmaxshift off=4
+mdct_lookup.Fkfft off=8 size=32 stride=8
+mdct_lookup.Fkfft[0] off=8 size=8
+mdct_lookup.Ftrig off=40 size=8
+PulseCache size=32
+PulseCache.Fsize off=0
+PulseCache.Findex off=8
+PulseCache.Fbits off=16
+PulseCache.Fcaps off=24 size=8
+OpusCustomEncoder size=152
+OpusCustomEncoder.Fmode off=0
+OpusCustomEncoder.Foverlap off=8
+OpusCustomEncoder.Fchannels off=12
+OpusCustomEncoder.Fstream_channels off=16
+OpusCustomEncoder.Fforce_intra off=20
+OpusCustomEncoder.Fclip off=24
+OpusCustomEncoder.Fdisable_pf off=28
+OpusCustomEncoder.Fcomplexity off=32
+OpusCustomEncoder.Fupsample off=36
+OpusCustomEncoder.Fstart off=40
+OpusCustomEncoder.Fend off=44
+OpusCustomEncoder.Fbitrate off=48
+OpusCustomEncoder.Fvbr off=52
+OpusCustomEncoder.Fsignalling off=56
+OpusCustomEncoder.Fconstrained_vbr off=60
+OpusCustomEncoder.Floss_rate off=64
+OpusCustomEncoder.Frng off=68
+OpusCustomEncoder.Fspread_decision off=72
+OpusCustomEncoder.FdelayedIntra off=76
+OpusCustomEncoder.Ftonal_average off=80
+OpusCustomEncoder.FlastCodedBands off=84
+OpusCustomEncoder.Fhf_average off=88
+OpusCustomEncoder.Ftapset_decision off=92
+OpusCustomEncoder.Fprefilter_period off=96
+OpusCustomEncoder.Fprefilter_gain off=100
+OpusCustomEncoder.Fprefilter_tapset off=104
+OpusCustomEncoder.Fconsec_transient off=108
+OpusCustomEncoder.Fpreemph_memE off=112 size=8 stride=4
+OpusCustomEncoder.Fpreemph_memE[0] off=112
+OpusCustomEncoder.Fpreemph_memD off=120 size=8 stride=4
+OpusCustomEncoder.Fpreemph_memD[0] off=120
+OpusCustomEncoder.Fvbr_reservoir off=128
+OpusCustomEncoder.Fvbr_drift off=132
+OpusCustomEncoder.Fvbr_offset off=136
+OpusCustomEncoder.Fvbr_count off=140
+OpusCustomEncoder.Fin_mem off=144 size=4 stride=4
+OpusCustomEncoder.Fin_mem[0] off=144
+OpusCustomDecoder size=88
+OpusCustomDecoder.Fmode off=0
+OpusCustomDecoder.Foverlap off=8
+OpusCustomDecoder.Fchannels off=12
+OpusCustomDecoder.Fstream_channels off=16
+OpusCustomDecoder.Fdownsample off=20
+OpusCustomDecoder.Fstart off=24
+OpusCustomDecoder.Fend off=28
+OpusCustomDecoder.Fsignalling off=32
+OpusCustomDecoder.Frng off=36
+OpusCustomDecoder.Ferror1 off=40
+OpusCustomDecoder.Flast_pitch_index off=44
+OpusCustomDecoder.Floss_count off=48
+OpusCustomDecoder.Fpostfilter_period off=52
+OpusCustomDecoder.Fpostfilter_period_old off=56
+OpusCustomDecoder.Fpostfilter_gain off=60
+OpusCustomDecoder.Fpostfilter_gain_old off=64
+OpusCustomDecoder.Fpostfilter_tapset off=68
+OpusCustomDecoder.Fpostfilter_tapset_old off=72
+OpusCustomDecoder.Fpreemph_memD off=76 size=8 stride=4
+OpusCustomDecoder.Fpreemph_memD[0] off=76
+OpusCustomDecoder.F_decode_mem off=84 size=4 stride=4
+OpusCustomDecoder.F_decode_mem[0] off=84
+OpusRepacketizer size=496
+OpusRepacketizer.Ftoc off=0
+OpusRepacketizer.Fnb_frames off=4
+OpusRepacketizer.Fframes off=8 size=384 stride=8
+OpusRepacketizer.Fframes[0] off=8 size=8
+OpusRepacketizer.Flen1 off=392 size=96 stride=2
+OpusRepacketizer.Flen1[0] off=392
+OpusRepacketizer.Fframesize off=488
+OpusDecoder size=68
+OpusDecoder.Fcelt_dec_offset off=0
+OpusDecoder.Fsilk_dec_offset off=4
+OpusDecoder.Fchannels off=8
+OpusDecoder.FFs off=12
+OpusDecoder.FDecControl.FnChannelsAPI off=16
+OpusDecoder.FDecControl.FnChannelsInternal off=20
+OpusDecoder.FDecControl.FAPI_sampleRate off=24
+OpusDecoder.FDecControl.FinternalSampleRate off=28
+OpusDecoder.FDecControl.FpayloadSize_ms off=32
+OpusDecoder.FDecControl.FprevPitchLag off=36
+OpusDecoder.Fstream_channels off=40
+OpusDecoder.Fbandwidth off=44
+OpusDecoder.Fmode off=48
+OpusDecoder.Fprev_mode off=52
+OpusDecoder.Fframe_size off=56
+OpusDecoder.Fprev_redundancy off=60
+OpusDecoder.FrangeFinal off=64
+silk_EncControlStruct size=84
+silk_EncControlStruct.FnChannelsAPI off=0
+silk_EncControlStruct.FnChannelsInternal off=4
+silk_EncControlStruct.FAPI_sampleRate off=8
+silk_EncControlStruct.FmaxInternalSampleRate off=12
+silk_EncControlStruct.FminInternalSampleRate off=16
+silk_EncControlStruct.FdesiredInternalSampleRate off=20
+silk_EncControlStruct.FpayloadSize_ms off=24
+silk_EncControlStruct.FbitRate off=28
+silk_EncControlStruct.FpacketLossPercentage off=32
+silk_EncControlStruct.Fcomplexity off=36
+silk_EncControlStruct.FuseInBandFEC off=40
+silk_EncControlStruct.FuseDTX off=44
+silk_EncControlStruct.FuseCBR off=48
+silk_EncControlStruct.FmaxBits off=52
+silk_EncControlStruct.FtoMono off=56
+silk_EncControlStruct.FopusCanSwitch off=60
+silk_EncControlStruct.FinternalSampleRate off=64
+silk_EncControlStruct.FallowBandwidthSwitch off=68
+silk_EncControlStruct.FinWBmodeWithoutVariableLP off=72
+silk_EncControlStruct.FstereoWidth_Q14 off=76
+silk_EncControlStruct.FswitchReady off=80
+silk_DecControlStruct size=24
+silk_DecControlStruct.FnChannelsAPI off=0
+silk_DecControlStruct.FnChannelsInternal off=4
+silk_DecControlStruct.FAPI_sampleRate off=8
+silk_DecControlStruct.FinternalSampleRate off=12
+silk_DecControlStruct.FpayloadSize_ms off=16
+silk_DecControlStruct.FprevPitchLag off=20
+silk_TOC_struct size=20
+silk_TOC_struct.FVADFlag off=0
+silk_TOC_struct.FVADFlags off=4 size=12 stride=4
+silk_TOC_struct.FVADFlags[0] off=4
+silk_TOC_struct.FinbandFECFlag off=16
+silk_resampler_state_struct size=304
+silk_resampler_state_struct.FsIIR off=0 size=24 stride=4
+silk_resampler_state_struct.FsIIR[0] off=0
+silk_resampler_state_struct.FsFIR off=24 size=144 stride=4
+silk_resampler_state_struct.FsFIR[0] off=24
+silk_resampler_state_struct.FdelayBuf off=168 size=96 stride=2
+silk_resampler_state_struct.FdelayBuf[0] off=168
+silk_resampler_state_struct.Fresampler_function off=264
+silk_resampler_state_struct.FbatchSize off=268
+silk_resampler_state_struct.FinvRatio_Q16 off=272
+silk_resampler_state_struct.FFIR_Order off=276
+silk_resampler_state_struct.FFIR_Fracs off=280
+silk_resampler_state_struct.FFs_in_kHz off=284
+silk_resampler_state_struct.FFs_out_kHz off=288
+silk_resampler_state_struct.FinputDelay off=292
+silk_resampler_state_struct.FCoefs off=296 size=8
+silk_nsq_state size=4380
+silk_nsq_state.Fxq off=0 size=1280 stride=2
+silk_nsq_state.Fxq[0] off=0
+silk_nsq_state.FsLTP_shp_Q14 off=1280 size=2560 stride=4
+silk_nsq_state.FsLTP_shp_Q14[0] off=1280
+silk_nsq_state.FsLPC_Q14 off=3840 size=448 stride=4
+silk_nsq_state.FsLPC_Q14[0] off=3840
+silk_nsq_state.FsAR2_Q14 off=4288 size=64 stride=4
+silk_nsq_state.FsAR2_Q14[0] off=4288
+silk_nsq_state.FsLF_AR_shp_Q14 off=4352
+silk_nsq_state.FlagPrev off=4356
+silk_nsq_state.FsLTP_buf_idx off=4360
+silk_nsq_state.FsLTP_shp_buf_idx off=4364
+silk_nsq_state.Frand_seed off=4368
+silk_nsq_state.Fprev_gain_Q16 off=4372
+silk_nsq_state.Frewhite_flag off=4376
+silk_VAD_state size=112
+silk_VAD_state.FAnaState off=0 size=8 stride=4
+silk_VAD_state.FAnaState[0] off=0
+silk_VAD_state.FAnaState1 off=8 size=8 stride=4
+silk_VAD_state.FAnaState1[0] off=8
+silk_VAD_state.FAnaState2 off=16 size=8 stride=4
+silk_VAD_state.FAnaState2[0] off=16
+silk_VAD_state.FXnrgSubfr off=24 size=16 stride=4
+silk_VAD_state.FXnrgSubfr[0] off=24
+silk_VAD_state.FNrgRatioSmth_Q8 off=40 size=16 stride=4
+silk_VAD_state.FNrgRatioSmth_Q8[0] off=40
+silk_VAD_state.FHPstate off=56
+silk_VAD_state.FNL off=60 size=16 stride=4
+silk_VAD_state.FNL[0] off=60
+silk_VAD_state.Finv_NL off=76 size=16 stride=4
+silk_VAD_state.Finv_NL[0] off=76
+silk_VAD_state.FNoiseLevelBias off=92 size=16 stride=4
+silk_VAD_state.FNoiseLevelBias[0] off=92
+silk_VAD_state.Fcounter off=108
+silk_LP_state size=16
+silk_LP_state.FIn_LP_State off=0 size=8 stride=4
+silk_LP_state.FIn_LP_State[0] off=0
+silk_LP_state.Ftransition_frame_no off=8
+silk_LP_state.Fmode off=12
+silk_NLSF_CB_struct size=64
+silk_NLSF_CB_struct.FnVectors off=0
+silk_NLSF_CB_struct.Forder off=2
+silk_NLSF_CB_struct.FquantStepSize_Q16 off=4
+silk_NLSF_CB_struct.FinvQuantStepSize_Q6 off=6
+silk_NLSF_CB_struct.FCB1_NLSF_Q8 off=8
+silk_NLSF_CB_struct.FCB1_iCDF off=16
+silk_NLSF_CB_struct.Fpred_Q8 off=24
+silk_NLSF_CB_struct.Fec_sel off=32
+silk_NLSF_CB_struct.Fec_iCDF off=40
+silk_NLSF_CB_struct.Fec_Rates_Q5 off=48
+silk_NLSF_CB_struct.FdeltaMin_Q15 off=56 size=8
+stereo_enc_state size=56
+stereo_enc_state.Fpred_prev_Q13 off=0 size=4 stride=2
+stereo_enc_state.Fpred_prev_Q13[0] off=0
+stereo_enc_state.FsMid off=4 size=4 stride=2
+stereo_enc_state.FsMid[0] off=4
+stereo_enc_state.FsSide off=8 size=4 stride=2
+stereo_enc_state.FsSide[0] off=8
+stereo_enc_state.Fmid_side_amp_Q0 off=12 size=16 stride=4
+stereo_enc_state.Fmid_side_amp_Q0[0] off=12
+stereo_enc_state.Fsmth_width_Q14 off=28
+stereo_enc_state.Fwidth_prev_Q14 off=30
+stereo_enc_state.Fsilent_side_len off=32
+stereo_enc_state.FpredIx off=34 size=18 stride=6
+stereo_enc_state.FpredIx[0] off=34 size=6 stride=3
+stereo_enc_state.FpredIx[0][0] off=34 size=3 stride=1
+stereo_enc_state.FpredIx[0][0][0] off=34
+stereo_enc_state.Fmid_only_flags off=52 size=3 stride=1
+stereo_enc_state.Fmid_only_flags[0] off=52
+stereo_dec_state size=12
+stereo_dec_state.Fpred_prev_Q13 off=0 size=4 stride=2
+stereo_dec_state.Fpred_prev_Q13[0] off=0
+stereo_dec_state.FsMid off=4 size=4 stride=2
+stereo_dec_state.FsMid[0] off=4
+stereo_dec_state.FsSide off=8 size=4 stride=2
+stereo_dec_state.FsSide[0] off=8
+SideInfoIndices size=36
+SideInfoIndices.FGainsIndices off=0 size=4 stride=1
+SideInfoIndices.FGainsIndices[0] off=0
+SideInfoIndices.FLTPIndex off=4 size=4 stride=1
+SideInfoIndices.FLTPIndex[0] off=4
+SideInfoIndices.FNLSFIndices off=8 size=17 stride=1
+SideInfoIndices.FNLSFIndices[0] off=8
+SideInfoIndices.FlagIndex off=26
+SideInfoIndices.FcontourIndex off=28
+SideInfoIndices.FsignalType off=29
+SideInfoIndices.FquantOffsetType off=30
+SideInfoIndices.FNLSFInterpCoef_Q2 off=31
+SideInfoIndices.FPERIndex off=32
+SideInfoIndices.FLTP_scaleIndex off=33
+SideInfoIndices.FSeed off=34
+silk_encoder_state size=7216
+silk_encoder_state.FIn_HP_State off=0 size=8 stride=4
+silk_encoder_state.FIn_HP_State[0] off=0
+silk_encoder_state.Fvariable_HP_smth1_Q15 off=8
+silk_encoder_state.Fvariable_HP_smth2_Q15 off=12
+silk_encoder_state.FsLP.FIn_LP_State off=16 size=8 stride=4
+silk_encoder_state.FsLP.FIn_LP_State[0] off=16
+silk_encoder_state.FsLP.Ftransition_frame_no off=24
+silk_encoder_state.FsLP.Fmode off=28
+silk_encoder_state.FsVAD.FAnaState off=32 size=8 stride=4
+silk_encoder_state.FsVAD.FAnaState[0] off=32
+silk_encoder_state.FsVAD.FAnaState1 off=40 size=8 stride=4
+silk_encoder_state.FsVAD.FAnaState1[0] off=40
+silk_encoder_state.FsVAD.FAnaState2 off=48 size=8 stride=4
+silk_encoder_state.FsVAD.FAnaState2[0] off=48
+silk_encoder_state.FsVAD.FXnrgSubfr off=56 size=16 stride=4
+silk_encoder_state.FsVAD.FXnrgSubfr[0] off=56
+silk_encoder_state.FsVAD.FNrgRatioSmth_Q8 off=72 size=16 stride=4
+silk_encoder_state.FsVAD.FNrgRatioSmth_Q8[0] off=72
+silk_encoder_state.FsVAD.FHPstate off=88
+silk_encoder_state.FsVAD.FNL off=92 size=16 stride=4
+silk_encoder_state.FsVAD.FNL[0] off=92
+silk_encoder_state.FsVAD.Finv_NL off=108 size=16 stride=4
+silk_encoder_state.FsVAD.Finv_NL[0] off=108
+silk_encoder_state.FsVAD.FNoiseLevelBias off=124 size=16 stride=4
+silk_encoder_state.FsVAD.FNoiseLevelBias[0] off=124
+silk_encoder_state.FsVAD.Fcounter off=140
+silk_encoder_state.FsNSQ.Fxq off=144 size=1280 stride=2
+silk_encoder_state.FsNSQ.Fxq[0] off=144
+silk_encoder_state.FsNSQ.FsLTP_shp_Q14 off=1424 size=2560 stride=4
+silk_encoder_state.FsNSQ.FsLTP_shp_Q14[0] off=1424
+silk_encoder_state.FsNSQ.FsLPC_Q14 off=3984 size=448 stride=4
+silk_encoder_state.FsNSQ.FsLPC_Q14[0] off=3984
+silk_encoder_state.FsNSQ.FsAR2_Q14 off=4432 size=64 stride=4
+silk_encoder_state.FsNSQ.FsAR2_Q14[0] off=4432
+silk_encoder_state.FsNSQ.FsLF_AR_shp_Q14 off=4496
+silk_encoder_state.FsNSQ.FlagPrev off=4500
+silk_encoder_state.FsNSQ.FsLTP_buf_idx off=4504
+silk_encoder_state.FsNSQ.FsLTP_shp_buf_idx off=4508
+silk_encoder_state.FsNSQ.Frand_seed off=4512
+silk_encoder_state.FsNSQ.Fprev_gain_Q16 off=4516
+silk_encoder_state.FsNSQ.Frewhite_flag off=4520
+silk_encoder_state.Fprev_NLSFq_Q15 off=4524 size=32 stride=2
+silk_encoder_state.Fprev_NLSFq_Q15[0] off=4524
+silk_encoder_state.Fspeech_activity_Q8 off=4556
+silk_encoder_state.Fallow_bandwidth_switch off=4560
+silk_encoder_state.FLBRRprevLastGainIndex off=4564
+silk_encoder_state.FprevSignalType off=4565
+silk_encoder_state.FprevLag off=4568
+silk_encoder_state.Fpitch_LPC_win_length off=4572
+silk_encoder_state.Fmax_pitch_lag off=4576
+silk_encoder_state.FAPI_fs_Hz off=4580
+silk_encoder_state.Fprev_API_fs_Hz off=4584
+silk_encoder_state.FmaxInternal_fs_Hz off=4588
+silk_encoder_state.FminInternal_fs_Hz off=4592
+silk_encoder_state.FdesiredInternal_fs_Hz off=4596
+silk_encoder_state.Ffs_kHz off=4600
+silk_encoder_state.Fnb_subfr off=4604
+silk_encoder_state.Fframe_length off=4608
+silk_encoder_state.Fsubfr_length off=4612
+silk_encoder_state.Fltp_mem_length off=4616
+silk_encoder_state.Fla_pitch off=4620
+silk_encoder_state.Fla_shape off=4624
+silk_encoder_state.FshapeWinLength off=4628
+silk_encoder_state.FTargetRate_bps off=4632
+silk_encoder_state.FPacketSize_ms off=4636
+silk_encoder_state.FPacketLoss_perc off=4640
+silk_encoder_state.FframeCounter off=4644
+silk_encoder_state.FComplexity off=4648
+silk_encoder_state.FnStatesDelayedDecision off=4652
+silk_encoder_state.FuseInterpolatedNLSFs off=4656
+silk_encoder_state.FshapingLPCOrder off=4660
+silk_encoder_state.FpredictLPCOrder off=4664
+silk_encoder_state.FpitchEstimationComplexity off=4668
+silk_encoder_state.FpitchEstimationLPCOrder off=4672
+silk_encoder_state.FpitchEstimationThreshold_Q16 off=4676
+silk_encoder_state.FLTPQuantLowComplexity off=4680
+silk_encoder_state.Fmu_LTP_Q9 off=4684
+silk_encoder_state.FNLSF_MSVQ_Survivors off=4688
+silk_encoder_state.Ffirst_frame_after_reset off=4692
+silk_encoder_state.Fcontrolled_since_last_payload off=4696
+silk_encoder_state.Fwarping_Q16 off=4700
+silk_encoder_state.FuseCBR off=4704
+silk_encoder_state.FprefillFlag off=4708
+silk_encoder_state.Fpitch_lag_low_bits_iCDF off=4712
+silk_encoder_state.Fpitch_contour_iCDF off=4720
+silk_encoder_state.FpsNLSF_CB off=4728
+silk_encoder_state.Finput_quality_bands_Q15 off=4736 size=16 stride=4
+silk_encoder_state.Finput_quality_bands_Q15[0] off=4736
+silk_encoder_state.Finput_tilt_Q15 off=4752
+silk_encoder_state.FSNR_dB_Q7 off=4756
+silk_encoder_state.FVAD_flags off=4760 size=3 stride=1
+silk_encoder_state.FVAD_flags[0] off=4760
+silk_encoder_state.FLBRR_flag off=4763
+silk_encoder_state.FLBRR_flags off=4764 size=12 stride=4
+silk_encoder_state.FLBRR_flags[0] off=4764
+silk_encoder_state.Findices.FGainsIndices off=4776 size=4 stride=1
+silk_encoder_state.Findices.FGainsIndices[0] off=4776
+silk_encoder_state.Findices.FLTPIndex off=4780 size=4 stride=1
+silk_encoder_state.Findices.FLTPIndex[0] off=4780
+silk_encoder_state.Findices.FNLSFIndices off=4784 size=17 stride=1
+silk_encoder_state.Findices.FNLSFIndices[0] off=4784
+silk_encoder_state.Findices.FlagIndex off=4802
+silk_encoder_state.Findices.FcontourIndex off=4804
+silk_encoder_state.Findices.FsignalType off=4805
+silk_encoder_state.Findices.FquantOffsetType off=4806
+silk_encoder_state.Findices.FNLSFInterpCoef_Q2 off=4807
+silk_encoder_state.Findices.FPERIndex off=4808
+silk_encoder_state.Findices.FLTP_scaleIndex off=4809
+silk_encoder_state.Findices.FSeed off=4810
+silk_encoder_state.Fpulses off=4812 size=320 stride=1
+silk_encoder_state.Fpulses[0] off=4812
+silk_encoder_state.FinputBuf off=5132 size=644 stride=2
+silk_encoder_state.FinputBuf[0] off=5132
+silk_encoder_state.FinputBufIx off=5776
+silk_encoder_state.FnFramesPerPacket off=5780
+silk_encoder_state.FnFramesEncoded off=5784
+silk_encoder_state.FnChannelsAPI off=5788
+silk_encoder_state.FnChannelsInternal off=5792
+silk_encoder_state.FchannelNb off=5796
+silk_encoder_state.Fframes_since_onset off=5800
+silk_encoder_state.Fec_prevSignalType off=5804
+silk_encoder_state.Fec_prevLagIndex off=5808
+silk_encoder_state.Fresampler_state.FsIIR off=5816 size=24 stride=4
+silk_encoder_state.Fresampler_state.FsIIR[0] off=5816
+silk_encoder_state.Fresampler_state.FsFIR off=5840 size=144 stride=4
+silk_encoder_state.Fresampler_state.FsFIR[0] off=5840
+silk_encoder_state.Fresampler_state.FdelayBuf off=5984 size=96 stride=2
+silk_encoder_state.Fresampler_state.FdelayBuf[0] off=5984
+silk_encoder_state.Fresampler_state.Fresampler_function off=6080
+silk_encoder_state.Fresampler_state.FbatchSize off=6084
+silk_encoder_state.Fresampler_state.FinvRatio_Q16 off=6088
+silk_encoder_state.Fresampler_state.FFIR_Order off=6092
+silk_encoder_state.Fresampler_state.FFIR_Fracs off=6096
+silk_encoder_state.Fresampler_state.FFs_in_kHz off=6100
+silk_encoder_state.Fresampler_state.FFs_out_kHz off=6104
+silk_encoder_state.Fresampler_state.FinputDelay off=6108
+silk_encoder_state.Fresampler_state.FCoefs off=6112 size=8
+silk_encoder_state.FuseDTX off=6120
+silk_encoder_state.FinDTX off=6124
+silk_encoder_state.FnoSpeechCounter off=6128
+silk_encoder_state.FuseInBandFEC off=6132
+silk_encoder_state.FLBRR_enabled off=6136
+silk_encoder_state.FLBRR_GainIncreases off=6140
+silk_encoder_state.Findices_LBRR off=6144 size=108 stride=36
+silk_encoder_state.Findices_LBRR[0].FGainsIndices off=6144 size=4 stride=1
+silk_encoder_state.Findices_LBRR[0].FGainsIndices[0] off=6144
+silk_encoder_state.Findices_LBRR[0].FLTPIndex off=6148 size=4 stride=1
+silk_encoder_state.Findices_LBRR[0].FLTPIndex[0] off=6148
+silk_encoder_state.Findices_LBRR[0].FNLSFIndices off=6152 size=17 stride=1
+silk_encoder_state.Findices_LBRR[0].FNLSFIndices[0] off=6152
+silk_encoder_state.Findices_LBRR[0].FlagIndex off=6170
+silk_encoder_state.Findices_LBRR[0].FcontourIndex off=6172
+silk_encoder_state.Findices_LBRR[0].FsignalType off=6173
+silk_encoder_state.Findices_LBRR[0].FquantOffsetType off=6174
+silk_encoder_state.Findices_LBRR[0].FNLSFInterpCoef_Q2 off=6175
+silk_encoder_state.Findices_LBRR[0].FPERIndex off=6176
+silk_encoder_state.Findices_LBRR[0].FLTP_scaleIndex off=6177
+silk_encoder_state.Findices_LBRR[0].FSeed off=6178
+silk_encoder_state.Fpulses_LBRR off=6252 size=960 stride=320
+silk_encoder_state.Fpulses_LBRR[0] off=6252 size=320 stride=1
+silk_encoder_state.Fpulses_LBRR[0][0] off=6252
+silk_PLC_struct size=92
+silk_PLC_struct.FpitchL_Q8 off=0
+silk_PLC_struct.FLTPCoef_Q14 off=4 size=10 stride=2
+silk_PLC_struct.FLTPCoef_Q14[0] off=4
+silk_PLC_struct.FprevLPC_Q12 off=14 size=32 stride=2
+silk_PLC_struct.FprevLPC_Q12[0] off=14
+silk_PLC_struct.Flast_frame_lost off=48
+silk_PLC_struct.Frand_seed off=52
+silk_PLC_struct.FrandScale_Q14 off=56
+silk_PLC_struct.Fconc_energy off=60
+silk_PLC_struct.Fconc_energy_shift off=64
+silk_PLC_struct.FprevLTP_scale_Q14 off=68
+silk_PLC_struct.FprevGain_Q16 off=72 size=8 stride=4
+silk_PLC_struct.FprevGain_Q16[0] off=72
+silk_PLC_struct.Ffs_kHz off=80
+silk_PLC_struct.Fnb_subfr off=84
+silk_PLC_struct.Fsubfr_length off=88
+silk_CNG_struct size=1388
+silk_CNG_struct.FCNG_exc_buf_Q14 off=0 size=1280 stride=4
+silk_CNG_struct.FCNG_exc_buf_Q14[0] off=0
+silk_CNG_struct.FCNG_smth_NLSF_Q15 off=1280 size=32 stride=2
+silk_CNG_struct.FCNG_smth_NLSF_Q15[0] off=1280
+silk_CNG_struct.FCNG_synth_state off=1312 size=64 stride=4
+silk_CNG_struct.FCNG_synth_state[0] off=1312
+silk_CNG_struct.FCNG_smth_Gain_Q16 off=1376
+silk_CNG_struct.Frand_seed off=1380
+silk_CNG_struct.Ffs_kHz off=1384
+silk_decoder_state size=4288
+silk_decoder_state.Fprev_gain_Q16 off=0
+silk_decoder_state.Fexc_Q14 off=4 size=1280 stride=4
+silk_decoder_state.Fexc_Q14[0] off=4
+silk_decoder_state.FsLPC_Q14_buf off=1284 size=64 stride=4
+silk_decoder_state.FsLPC_Q14_buf[0] off=1284
+silk_decoder_state.FoutBuf off=1348 size=960 stride=2
+silk_decoder_state.FoutBuf[0] off=1348
+silk_decoder_state.FlagPrev off=2308
+silk_decoder_state.FLastGainIndex off=2312
+silk_decoder_state.Ffs_kHz off=2316
+silk_decoder_state.Ffs_API_hz off=2320
+silk_decoder_state.Fnb_subfr off=2324
+silk_decoder_state.Fframe_length off=2328
+silk_decoder_state.Fsubfr_length off=2332
+silk_decoder_state.Fltp_mem_length off=2336
+silk_decoder_state.FLPC_order off=2340
+silk_decoder_state.FprevNLSF_Q15 off=2344 size=32 stride=2
+silk_decoder_state.FprevNLSF_Q15[0] off=2344
+silk_decoder_state.Ffirst_frame_after_reset off=2376
+silk_decoder_state.Fpitch_lag_low_bits_iCDF off=2384
+silk_decoder_state.Fpitch_contour_iCDF off=2392
+silk_decoder_state.FnFramesDecoded off=2400
+silk_decoder_state.FnFramesPerPacket off=2404
+silk_decoder_state.Fec_prevSignalType off=2408
+silk_decoder_state.Fec_prevLagIndex off=2412
+silk_decoder_state.FVAD_flags off=2416 size=12 stride=4
+silk_decoder_state.FVAD_flags[0] off=2416
+silk_decoder_state.FLBRR_flag off=2428
+silk_decoder_state.FLBRR_flags off=2432 size=12 stride=4
+silk_decoder_state.FLBRR_flags[0] off=2432
+silk_decoder_state.Fresampler_state.FsIIR off=2448 size=24 stride=4
+silk_decoder_state.Fresampler_state.FsIIR[0] off=2448
+silk_decoder_state.Fresampler_state.FsFIR off=2472 size=144 stride=4
+silk_decoder_state.Fresampler_state.FsFIR[0] off=2472
+silk_decoder_state.Fresampler_state.FdelayBuf off=2616 size=96 stride=2
+silk_decoder_state.Fresampler_state.FdelayBuf[0] off=2616
+silk_decoder_state.Fresampler_state.Fresampler_function off=2712
+silk_decoder_state.Fresampler_state.FbatchSize off=2716
+silk_decoder_state.Fresampler_state.FinvRatio_Q16 off=2720
+silk_decoder_state.Fresampler_state.FFIR_Order off=2724
+silk_decoder_state.Fresampler_state.FFIR_Fracs off=2728
+silk_decoder_state.Fresampler_state.FFs_in_kHz off=2732
+silk_decoder_state.Fresampler_state.FFs_out_kHz off=2736
+silk_decoder_state.Fresampler_state.FinputDelay off=2740
+silk_decoder_state.Fresampler_state.FCoefs off=2744 size=8
+silk_decoder_state.FpsNLSF_CB off=2752
+silk_decoder_state.Findices.FGainsIndices off=2760 size=4 stride=1
+silk_decoder_state.Findices.FGainsIndices[0] off=2760
+silk_decoder_state.Findices.FLTPIndex off=2764 size=4 stride=1
+silk_decoder_state.Findices.FLTPIndex[0] off=2764
+silk_decoder_state.Findices.FNLSFIndices off=2768 size=17 stride=1
+silk_decoder_state.Findices.FNLSFIndices[0] off=2768
+silk_decoder_state.Findices.FlagIndex off=2786
+silk_decoder_state.Findices.FcontourIndex off=2788
+silk_decoder_state.Findices.FsignalType off=2789
+silk_decoder_state.Findices.FquantOffsetType off=2790
+silk_decoder_state.Findices.FNLSFInterpCoef_Q2 off=2791
+silk_decoder_state.Findices.FPERIndex off=2792
+silk_decoder_state.Findices.FLTP_scaleIndex off=2793
+silk_decoder_state.Findices.FSeed off=2794
+silk_decoder_state.FsCNG.FCNG_exc_buf_Q14 off=2796 size=1280 stride=4
+silk_decoder_state.FsCNG.FCNG_exc_buf_Q14[0] off=2796
+silk_decoder_state.FsCNG.FCNG_smth_NLSF_Q15 off=4076 size=32 stride=2
+silk_decoder_state.FsCNG.FCNG_smth_NLSF_Q15[0] off=4076
+silk_decoder_state.FsCNG.FCNG_synth_state off=4108 size=64 stride=4
+silk_decoder_state.FsCNG.FCNG_synth_state[0] off=4108
+silk_decoder_state.FsCNG.FCNG_smth_Gain_Q16 off=4172
+silk_decoder_state.FsCNG.Frand_seed off=4176
+silk_decoder_state.FsCNG.Ffs_kHz off=4180
+silk_decoder_state.FlossCnt off=4184
+silk_decoder_state.FprevSignalType off=4188
+silk_decoder_state.FsPLC.FpitchL_Q8 off=4192
+silk_decoder_state.FsPLC.FLTPCoef_Q14 off=4196 size=10 stride=2
+silk_decoder_state.FsPLC.FLTPCoef_Q14[0] off=4196
+silk_decoder_state.FsPLC.FprevLPC_Q12 off=4206 size=32 stride=2
+silk_decoder_state.FsPLC.FprevLPC_Q12[0] off=4206
+silk_decoder_state.FsPLC.Flast_frame_lost off=4240
+silk_decoder_state.FsPLC.Frand_seed off=4244
+silk_decoder_state.FsPLC.FrandScale_Q14 off=4248
+silk_decoder_state.FsPLC.Fconc_energy off=4252
+silk_decoder_state.FsPLC.Fconc_energy_shift off=4256
+silk_decoder_state.FsPLC.FprevLTP_scale_Q14 off=4260
+silk_decoder_state.FsPLC.FprevGain_Q16 off=4264 size=8 stride=4
+silk_decoder_state.FsPLC.FprevGain_Q16[0] off=4264
+silk_decoder_state.FsPLC.Ffs_kHz off=4272
+silk_decoder_state.FsPLC.Fnb_subfr off=4276
+silk_decoder_state.FsPLC.Fsubfr_length off=4280
+silk_decoder_control size=140
+silk_decoder_control.FpitchL off=0 size=16 stride=4
+silk_decoder_control.FpitchL[0] off=0
+silk_decoder_control.FGains_Q16 off=16 size=16 stride=4
+silk_decoder_control.FGains_Q16[0] off=16
+silk_decoder_control.FPredCoef_Q12 off=32 size=64 stride=32
+silk_decoder_control.FPredCoef_Q12[0] off=32 size=32 stride=2
+silk_decoder_control.FPredCoef_Q12[0][0] off=32
+silk_decoder_control.FLTPCoef_Q14 off=96 size=40 stride=2
+silk_decoder_control.FLTPCoef_Q14[0] off=96
+silk_decoder_control.FLTP_scale_Q14 off=136
+OpusEncoder size=4052
+OpusEncoder.Fcelt_enc_offset off=0
+OpusEncoder.Fsilk_enc_offset off=4
+OpusEncoder.Fsilk_mode.FnChannelsAPI off=8
+OpusEncoder.Fsilk_mode.FnChannelsInternal off=12
+OpusEncoder.Fsilk_mode.FAPI_sampleRate off=16
+OpusEncoder.Fsilk_mode.FmaxInternalSampleRate off=20
+OpusEncoder.Fsilk_mode.FminInternalSampleRate off=24
+OpusEncoder.Fsilk_mode.FdesiredInternalSampleRate off=28
+OpusEncoder.Fsilk_mode.FpayloadSize_ms off=32
+OpusEncoder.Fsilk_mode.FbitRate off=36
+OpusEncoder.Fsilk_mode.FpacketLossPercentage off=40
+OpusEncoder.Fsilk_mode.Fcomplexity off=44
+OpusEncoder.Fsilk_mode.FuseInBandFEC off=48
+OpusEncoder.Fsilk_mode.FuseDTX off=52
+OpusEncoder.Fsilk_mode.FuseCBR off=56
+OpusEncoder.Fsilk_mode.FmaxBits off=60
+OpusEncoder.Fsilk_mode.FtoMono off=64
+OpusEncoder.Fsilk_mode.FopusCanSwitch off=68
+OpusEncoder.Fsilk_mode.FinternalSampleRate off=72
+OpusEncoder.Fsilk_mode.FallowBandwidthSwitch off=76
+OpusEncoder.Fsilk_mode.FinWBmodeWithoutVariableLP off=80
+OpusEncoder.Fsilk_mode.FstereoWidth_Q14 off=84
+OpusEncoder.Fsilk_mode.FswitchReady off=88
+OpusEncoder.Fapplication off=92
+OpusEncoder.Fchannels off=96
+OpusEncoder.Fdelay_compensation off=100
+OpusEncoder.Fforce_channels off=104
+OpusEncoder.Fsignal_type off=108
+OpusEncoder.Fuser_bandwidth off=112
+OpusEncoder.Fmax_bandwidth off=116
+OpusEncoder.Fuser_forced_mode off=120
+OpusEncoder.Fvoice_ratio off=124
+OpusEncoder.FFs off=128
+OpusEncoder.Fuse_vbr off=132
+OpusEncoder.Fvbr_constraint off=136
+OpusEncoder.Fbitrate_bps off=140
+OpusEncoder.Fuser_bitrate_bps off=144
+OpusEncoder.Fencoder_buffer off=148
+OpusEncoder.Fstream_channels off=152
+OpusEncoder.Fhybrid_stereo_width_Q14 off=156
+OpusEncoder.Fvariable_HP_smth2_Q15 off=160
+OpusEncoder.Fhp_mem off=164 size=16 stride=4
+OpusEncoder.Fhp_mem[0] off=164
+OpusEncoder.Fmode off=180
+OpusEncoder.Fprev_mode off=184
+OpusEncoder.Fprev_channels off=188
+OpusEncoder.Fprev_framesize off=192
+OpusEncoder.Fbandwidth off=196
+OpusEncoder.Fsilk_bw_switch off=200
+OpusEncoder.Ffirst off=204
+OpusEncoder.Fdelay_buffer off=208 size=3840 stride=4
+OpusEncoder.Fdelay_buffer[0] off=208
+OpusEncoder.FrangeFinal off=4048
+silk_shape_state_FLP size=16
+silk_shape_state_FLP.FLastGainIndex off=0
+silk_shape_state_FLP.FHarmBoost_smth off=4
+silk_shape_state_FLP.FHarmShapeGain_smth off=8
+silk_shape_state_FLP.FTilt_smth off=12
+silk_prefilter_state_FLP size=2140
+silk_prefilter_state_FLP.FsLTP_shp off=0 size=2048 stride=4
+silk_prefilter_state_FLP.FsLTP_shp[0] off=0
+silk_prefilter_state_FLP.FsAR_shp off=2048 size=68 stride=4
+silk_prefilter_state_FLP.FsAR_shp[0] off=2048
+silk_prefilter_state_FLP.FsLTP_shp_buf_idx off=2116
+silk_prefilter_state_FLP.FsLF_AR_shp off=2120
+silk_prefilter_state_FLP.FsLF_MA_shp off=2124
+silk_prefilter_state_FLP.FsHarmHP off=2128
+silk_prefilter_state_FLP.Frand_seed off=2132
+silk_prefilter_state_FLP.FlagPrev off=2136
+silk_encoder_state_FLP size=12256
+silk_encoder_state_FLP.FsCmn.FIn_HP_State off=0 size=8 stride=4
+silk_encoder_state_FLP.FsCmn.FIn_HP_State[0] off=0
+silk_encoder_state_FLP.FsCmn.Fvariable_HP_smth1_Q15 off=8
+silk_encoder_state_FLP.FsCmn.Fvariable_HP_smth2_Q15 off=12
+silk_encoder_state_FLP.FsCmn.FsLP.FIn_LP_State off=16 size=8 stride=4
+silk_encoder_state_FLP.FsCmn.FsLP.FIn_LP_State[0] off=16
+silk_encoder_state_FLP.FsCmn.FsLP.Ftransition_frame_no off=24
+silk_encoder_state_FLP.FsCmn.FsLP.Fmode off=28
+silk_encoder_state_FLP.FsCmn.FsVAD.FAnaState off=32 size=8 stride=4
+silk_encoder_state_FLP.FsCmn.FsVAD.FAnaState[0] off=32
+silk_encoder_state_FLP.FsCmn.FsVAD.FAnaState1 off=40 size=8 stride=4
+silk_encoder_state_FLP.FsCmn.FsVAD.FAnaState1[0] off=40
+silk_encoder_state_FLP.FsCmn.FsVAD.FAnaState2 off=48 size=8 stride=4
+silk_encoder_state_FLP.FsCmn.FsVAD.FAnaState2[0] off=48
+silk_encoder_state_FLP.FsCmn.FsVAD.FXnrgSubfr off=56 size=16 stride=4
+silk_encoder_state_FLP.FsCmn.FsVAD.FXnrgSubfr[0] off=56
+silk_encoder_state_FLP.FsCmn.FsVAD.FNrgRatioSmth_Q8 off=72 size=16 stride=4
+silk_encoder_state_FLP.FsCmn.FsVAD.FNrgRatioSmth_Q8[0] off=72
+silk_encoder_state_FLP.FsCmn.FsVAD.FHPstate off=88
+silk_encoder_state_FLP.FsCmn.FsVAD.FNL off=92 size=16 stride=4
+silk_encoder_state_FLP.FsCmn.FsVAD.FNL[0] off=92
+silk_encoder_state_FLP.FsCmn.FsVAD.Finv_NL off=108 size=16 stride=4
+silk_encoder_state_FLP.FsCmn.FsVAD.Finv_NL[0] off=108
+silk_encoder_state_FLP.FsCmn.FsVAD.FNoiseLevelBias off=124 size=16 stride=4
+silk_encoder_state_FLP.FsCmn.FsVAD.FNoiseLevelBias[0] off=124
+silk_encoder_state_FLP.FsCmn.FsVAD.Fcounter off=140
+silk_encoder_state_FLP.FsCmn.FsNSQ.Fxq off=144 size=1280 stride=2
+silk_encoder_state_FLP.FsCmn.FsNSQ.Fxq[0] off=144
+silk_encoder_state_FLP.FsCmn.FsNSQ.FsLTP_shp_Q14 off=1424 size=2560 stride=4
+silk_encoder_state_FLP.FsCmn.FsNSQ.FsLTP_shp_Q14[0] off=1424
+silk_encoder_state_FLP.FsCmn.FsNSQ.FsLPC_Q14 off=3984 size=448 stride=4
+silk_encoder_state_FLP.FsCmn.FsNSQ.FsLPC_Q14[0] off=3984
+silk_encoder_state_FLP.FsCmn.FsNSQ.FsAR2_Q14 off=4432 size=64 stride=4
+silk_encoder_state_FLP.FsCmn.FsNSQ.FsAR2_Q14[0] off=4432
+silk_encoder_state_FLP.FsCmn.FsNSQ.FsLF_AR_shp_Q14 off=4496
+silk_encoder_state_FLP.FsCmn.FsNSQ.FlagPrev off=4500
+silk_encoder_state_FLP.FsCmn.FsNSQ.FsLTP_buf_idx off=4504
+silk_encoder_state_FLP.FsCmn.FsNSQ.FsLTP_shp_buf_idx off=4508
+silk_encoder_state_FLP.FsCmn.FsNSQ.Frand_seed off=4512
+silk_encoder_state_FLP.FsCmn.FsNSQ.Fprev_gain_Q16 off=4516
+silk_encoder_state_FLP.FsCmn.FsNSQ.Frewhite_flag off=4520
+silk_encoder_state_FLP.FsCmn.Fprev_NLSFq_Q15 off=4524 size=32 stride=2
+silk_encoder_state_FLP.FsCmn.Fprev_NLSFq_Q15[0] off=4524
+silk_encoder_state_FLP.FsCmn.Fspeech_activity_Q8 off=4556
+silk_encoder_state_FLP.FsCmn.Fallow_bandwidth_switch off=4560
+silk_encoder_state_FLP.FsCmn.FLBRRprevLastGainIndex off=4564
+silk_encoder_state_FLP.FsCmn.FprevSignalType off=4565
+silk_encoder_state_FLP.FsCmn.FprevLag off=4568
+silk_encoder_state_FLP.FsCmn.Fpitch_LPC_win_length off=4572
+silk_encoder_state_FLP.FsCmn.Fmax_pitch_lag off=4576
+silk_encoder_state_FLP.FsCmn.FAPI_fs_Hz off=4580
+silk_encoder_state_FLP.FsCmn.Fprev_API_fs_Hz off=4584
+silk_encoder_state_FLP.FsCmn.FmaxInternal_fs_Hz off=4588
+silk_encoder_state_FLP.FsCmn.FminInternal_fs_Hz off=4592
+silk_encoder_state_FLP.FsCmn.FdesiredInternal_fs_Hz off=4596
+silk_encoder_state_FLP.FsCmn.Ffs_kHz off=4600
+silk_encoder_state_FLP.FsCmn.Fnb_subfr off=4604
+silk_encoder_state_FLP.FsCmn.Fframe_length off=4608
+silk_encoder_state_FLP.FsCmn.Fsubfr_length off=4612
+silk_encoder_state_FLP.FsCmn.Fltp_mem_length off=4616
+silk_encoder_state_FLP.FsCmn.Fla_pitch off=4620
+silk_encoder_state_FLP.FsCmn.Fla_shape off=4624
+silk_encoder_state_FLP.FsCmn.FshapeWinLength off=4628
+silk_encoder_state_FLP.FsCmn.FTargetRate_bps off=4632
+silk_encoder_state_FLP.FsCmn.FPacketSize_ms off=4636
+silk_encoder_state_FLP.FsCmn.FPacketLoss_perc off=4640
+silk_encoder_state_FLP.FsCmn.FframeCounter off=4644
+silk_encoder_state_FLP.FsCmn.FComplexity off=4648
+silk_encoder_state_FLP.FsCmn.FnStatesDelayedDecision off=4652
+silk_encoder_state_FLP.FsCmn.FuseInterpolatedNLSFs off=4656
+silk_encoder_state_FLP.FsCmn.FshapingLPCOrder off=4660
+silk_encoder_state_FLP.FsCmn.FpredictLPCOrder off=4664
+silk_encoder_state_FLP.FsCmn.FpitchEstimationComplexity off=4668
+silk_encoder_state_FLP.FsCmn.FpitchEstimationLPCOrder off=4672
+silk_encoder_state_FLP.FsCmn.FpitchEstimationThreshold_Q16 off=4676
+silk_encoder_state_FLP.FsCmn.FLTPQuantLowComplexity off=4680
+silk_encoder_state_FLP.FsCmn.Fmu_LTP_Q9 off=4684
+silk_encoder_state_FLP.FsCmn.FNLSF_MSVQ_Survivors off=4688
+silk_encoder_state_FLP.FsCmn.Ffirst_frame_after_reset off=4692
+silk_encoder_state_FLP.FsCmn.Fcontrolled_since_last_payload off=4696
+silk_encoder_state_FLP.FsCmn.Fwarping_Q16 off=4700
+silk_encoder_state_FLP.FsCmn.FuseCBR off=4704
+silk_encoder_state_FLP.FsCmn.FprefillFlag off=4708
+silk_encoder_state_FLP.FsCmn.Fpitch_lag_low_bits_iCDF off=4712
+silk_encoder_state_FLP.FsCmn.Fpitch_contour_iCDF off=4720
+silk_encoder_state_FLP.FsCmn.FpsNLSF_CB off=4728
+silk_encoder_state_FLP.FsCmn.Finput_quality_bands_Q15 off=4736 size=16 stride=4
+silk_encoder_state_FLP.FsCmn.Finput_quality_bands_Q15[0] off=4736
+silk_encoder_state_FLP.FsCmn.Finput_tilt_Q15 off=4752
+silk_encoder_state_FLP.FsCmn.FSNR_dB_Q7 off=4756
+silk_encoder_state_FLP.FsCmn.FVAD_flags off=4760 size=3 stride=1
+silk_encoder_state_FLP.FsCmn.FVAD_flags[0] off=4760
+silk_encoder_state_FLP.FsCmn.FLBRR_flag off=4763
+silk_encoder_state_FLP.FsCmn.FLBRR_flags off=4764 size=12 stride=4
+silk_encoder_state_FLP.FsCmn.FLBRR_flags[0] off=4764
+silk_encoder_state_FLP.FsCmn.Findices.FGainsIndices off=4776 size=4 stride=1
+silk_encoder_state_FLP.FsCmn.Findices.FGainsIndices[0] off=4776
+silk_encoder_state_FLP.FsCmn.Findices.FLTPIndex off=4780 size=4 stride=1
+silk_encoder_state_FLP.FsCmn.Findices.FLTPIndex[0] off=4780
+silk_encoder_state_FLP.FsCmn.Findices.FNLSFIndices off=4784 size=17 stride=1
+silk_encoder_state_FLP.FsCmn.Findices.FNLSFIndices[0] off=4784
+silk_encoder_state_FLP.FsCmn.Findices.FlagIndex off=4802
+silk_encoder_state_FLP.FsCmn.Findices.FcontourIndex off=4804
+silk_encoder_state_FLP.FsCmn.Findices.FsignalType off=4805
+silk_encoder_state_FLP.FsCmn.Findices.FquantOffsetType off=4806
+silk_encoder_state_FLP.FsCmn.Findices.FNLSFInterpCoef_Q2 off=4807
+silk_encoder_state_FLP.FsCmn.Findices.FPERIndex off=4808
+silk_encoder_state_FLP.FsCmn.Findices.FLTP_scaleIndex off=4809
+silk_encoder_state_FLP.FsCmn.Findices.FSeed off=4810
+silk_encoder_state_FLP.FsCmn.Fpulses off=4812 size=320 stride=1
+silk_encoder_state_FLP.FsCmn.Fpulses[0] off=4812
+silk_encoder_state_FLP.FsCmn.FinputBuf off=5132 size=644 stride=2
+silk_encoder_state_FLP.FsCmn.FinputBuf[0] off=5132
+silk_encoder_state_FLP.FsCmn.FinputBufIx off=5776
+silk_encoder_state_FLP.FsCmn.FnFramesPerPacket off=5780
+silk_encoder_state_FLP.FsCmn.FnFramesEncoded off=5784
+silk_encoder_state_FLP.FsCmn.FnChannelsAPI off=5788
+silk_encoder_state_FLP.FsCmn.FnChannelsInternal off=5792
+silk_encoder_state_FLP.FsCmn.FchannelNb off=5796
+silk_encoder_state_FLP.FsCmn.Fframes_since_onset off=5800
+silk_encoder_state_FLP.FsCmn.Fec_prevSignalType off=5804
+silk_encoder_state_FLP.FsCmn.Fec_prevLagIndex off=5808
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FsIIR off=5816 size=24 stride=4
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FsIIR[0] off=5816
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FsFIR off=5840 size=144 stride=4
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FsFIR[0] off=5840
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FdelayBuf off=5984 size=96 stride=2
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FdelayBuf[0] off=5984
+silk_encoder_state_FLP.FsCmn.Fresampler_state.Fresampler_function off=6080
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FbatchSize off=6084
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FinvRatio_Q16 off=6088
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FFIR_Order off=6092
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FFIR_Fracs off=6096
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FFs_in_kHz off=6100
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FFs_out_kHz off=6104
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FinputDelay off=6108
+silk_encoder_state_FLP.FsCmn.Fresampler_state.FCoefs off=6112 size=8
+silk_encoder_state_FLP.FsCmn.FuseDTX off=6120
+silk_encoder_state_FLP.FsCmn.FinDTX off=6124
+silk_encoder_state_FLP.FsCmn.FnoSpeechCounter off=6128
+silk_encoder_state_FLP.FsCmn.FuseInBandFEC off=6132
+silk_encoder_state_FLP.FsCmn.FLBRR_enabled off=6136
+silk_encoder_state_FLP.FsCmn.FLBRR_GainIncreases off=6140
+silk_encoder_state_FLP.FsCmn.Findices_LBRR off=6144 size=108 stride=36
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FGainsIndices off=6144 size=4 stride=1
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FGainsIndices[0] off=6144
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FLTPIndex off=6148 size=4 stride=1
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FLTPIndex[0] off=6148
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FNLSFIndices off=6152 size=17 stride=1
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FNLSFIndices[0] off=6152
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FlagIndex off=6170
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FcontourIndex off=6172
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FsignalType off=6173
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FquantOffsetType off=6174
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FNLSFInterpCoef_Q2 off=6175
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FPERIndex off=6176
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FLTP_scaleIndex off=6177
+silk_encoder_state_FLP.FsCmn.Findices_LBRR[0].FSeed off=6178
+silk_encoder_state_FLP.FsCmn.Fpulses_LBRR off=6252 size=960 stride=320
+silk_encoder_state_FLP.FsCmn.Fpulses_LBRR[0] off=6252 size=320 stride=1
+silk_encoder_state_FLP.FsCmn.Fpulses_LBRR[0][0] off=6252
+silk_encoder_state_FLP.FsShape.FLastGainIndex off=7216
+silk_encoder_state_FLP.FsShape.FHarmBoost_smth off=7220
+silk_encoder_state_FLP.FsShape.FHarmShapeGain_smth off=7224
+silk_encoder_state_FLP.FsShape.FTilt_smth off=7228
+silk_encoder_state_FLP.FsPrefilt.FsLTP_shp off=7232 size=2048 stride=4
+silk_encoder_state_FLP.FsPrefilt.FsLTP_shp[0] off=7232
+silk_encoder_state_FLP.FsPrefilt.FsAR_shp off=9280 size=68 stride=4
+silk_encoder_state_FLP.FsPrefilt.FsAR_shp[0] off=9280
+silk_encoder_state_FLP.FsPrefilt.FsLTP_shp_buf_idx off=9348
+silk_encoder_state_FLP.FsPrefilt.FsLF_AR_shp off=9352
+silk_encoder_state_FLP.FsPrefilt.FsLF_MA_shp off=9356
+silk_encoder_state_FLP.FsPrefilt.FsHarmHP off=9360
+silk_encoder_state_FLP.FsPrefilt.Frand_seed off=9364
+silk_encoder_state_FLP.FsPrefilt.FlagPrev off=9368
+silk_encoder_state_FLP.Fx_buf off=9372 size=2880 stride=4
+silk_encoder_state_FLP.Fx_buf[0] off=9372
+silk_encoder_state_FLP.FLTPCorr off=12252
+silk_encoder_control_FLP size=912
+silk_encoder_control_FLP.FGains off=0 size=16 stride=4
+silk_encoder_control_FLP.FGains[0] off=0
+silk_encoder_control_FLP.FPredCoef off=16 size=128 stride=64
+silk_encoder_control_FLP.FPredCoef[0] off=16 size=64 stride=4
+silk_encoder_control_FLP.FPredCoef[0][0] off=16
+silk_encoder_control_FLP.FLTPCoef off=144 size=80 stride=4
+silk_encoder_control_FLP.FLTPCoef[0] off=144
+silk_encoder_control_FLP.FLTP_scale off=224
+silk_encoder_control_FLP.FpitchL off=228 size=16 stride=4
+silk_encoder_control_FLP.FpitchL[0] off=228
+silk_encoder_control_FLP.FAR1 off=244 size=256 stride=4
+silk_encoder_control_FLP.FAR1[0] off=244
+silk_encoder_control_FLP.FAR2 off=500 size=256 stride=4
+silk_encoder_control_FLP.FAR2[0] off=500
+silk_encoder_control_FLP.FLF_MA_shp off=756 size=16 stride=4
+silk_encoder_control_FLP.FLF_MA_shp[0] off=756
+silk_encoder_control_FLP.FLF_AR_shp off=772 size=16 stride=4
+silk_encoder_control_FLP.FLF_AR_shp[0] off=772
+silk_encoder_control_FLP.FGainsPre off=788 size=16 stride=4
+silk_encoder_control_FLP.FGainsPre[0] off=788
+silk_encoder_control_FLP.FHarmBoost off=804 size=16 stride=4
+silk_encoder_control_FLP.FHarmBoost[0] off=804
+silk_encoder_control_FLP.FTilt off=820 size=16 stride=4
+silk_encoder_control_FLP.FTilt[0] off=820
+silk_encoder_control_FLP.FHarmShapeGain off=836 size=16 stride=4
+silk_encoder_control_FLP.FHarmShapeGain[0] off=836
+silk_encoder_control_FLP.FLambda off=852
+silk_encoder_control_FLP.Finput_quality off=856
+silk_encoder_control_FLP.Fcoding_quality off=860
+silk_encoder_control_FLP.Fsparseness off=864
+silk_encoder_control_FLP.FpredGain off=868
+silk_encoder_control_FLP.FLTPredCodGain off=872
+silk_encoder_control_FLP.FResNrg off=876 size=16 stride=4
+silk_encoder_control_FLP.FResNrg[0] off=876
+silk_encoder_control_FLP.FGainsUnq_Q16 off=892 size=16 stride=4
+silk_encoder_control_FLP.FGainsUnq_Q16[0] off=892
+silk_encoder_control_FLP.FlastGainIndexPrev off=908
+silk_encoder size=24600
+silk_encoder.Fstate_Fxx off=0 size=24512 stride=12256
+silk_encoder.Fstate_Fxx[0].FsCmn.FIn_HP_State off=0 size=8 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FIn_HP_State[0] off=0
+silk_encoder.Fstate_Fxx[0].FsCmn.Fvariable_HP_smth1_Q15 off=8
+silk_encoder.Fstate_Fxx[0].FsCmn.Fvariable_HP_smth2_Q15 off=12
+silk_encoder.Fstate_Fxx[0].FsCmn.FsLP.FIn_LP_State off=16 size=8 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsLP.FIn_LP_State[0] off=16
+silk_encoder.Fstate_Fxx[0].FsCmn.FsLP.Ftransition_frame_no off=24
+silk_encoder.Fstate_Fxx[0].FsCmn.FsLP.Fmode off=28
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FAnaState off=32 size=8 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FAnaState[0] off=32
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FAnaState1 off=40 size=8 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FAnaState1[0] off=40
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FAnaState2 off=48 size=8 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FAnaState2[0] off=48
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FXnrgSubfr off=56 size=16 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FXnrgSubfr[0] off=56
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FNrgRatioSmth_Q8 off=72 size=16 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FNrgRatioSmth_Q8[0] off=72
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FHPstate off=88
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FNL off=92 size=16 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FNL[0] off=92
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.Finv_NL off=108 size=16 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.Finv_NL[0] off=108
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FNoiseLevelBias off=124 size=16 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.FNoiseLevelBias[0] off=124
+silk_encoder.Fstate_Fxx[0].FsCmn.FsVAD.Fcounter off=140
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.Fxq off=144 size=1280 stride=2
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.Fxq[0] off=144
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.FsLTP_shp_Q14 off=1424 size=2560 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.FsLTP_shp_Q14[0] off=1424
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.FsLPC_Q14 off=3984 size=448 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.FsLPC_Q14[0] off=3984
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.FsAR2_Q14 off=4432 size=64 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.FsAR2_Q14[0] off=4432
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.FsLF_AR_shp_Q14 off=4496
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.FlagPrev off=4500
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.FsLTP_buf_idx off=4504
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.FsLTP_shp_buf_idx off=4508
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.Frand_seed off=4512
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.Fprev_gain_Q16 off=4516
+silk_encoder.Fstate_Fxx[0].FsCmn.FsNSQ.Frewhite_flag off=4520
+silk_encoder.Fstate_Fxx[0].FsCmn.Fprev_NLSFq_Q15 off=4524 size=32 stride=2
+silk_encoder.Fstate_Fxx[0].FsCmn.Fprev_NLSFq_Q15[0] off=4524
+silk_encoder.Fstate_Fxx[0].FsCmn.Fspeech_activity_Q8 off=4556
+silk_encoder.Fstate_Fxx[0].FsCmn.Fallow_bandwidth_switch off=4560
+silk_encoder.Fstate_Fxx[0].FsCmn.FLBRRprevLastGainIndex off=4564
+silk_encoder.Fstate_Fxx[0].FsCmn.FprevSignalType off=4565
+silk_encoder.Fstate_Fxx[0].FsCmn.FprevLag off=4568
+silk_encoder.Fstate_Fxx[0].FsCmn.Fpitch_LPC_win_length off=4572
+silk_encoder.Fstate_Fxx[0].FsCmn.Fmax_pitch_lag off=4576
+silk_encoder.Fstate_Fxx[0].FsCmn.FAPI_fs_Hz off=4580
+silk_encoder.Fstate_Fxx[0].FsCmn.Fprev_API_fs_Hz off=4584
+silk_encoder.Fstate_Fxx[0].FsCmn.FmaxInternal_fs_Hz off=4588
+silk_encoder.Fstate_Fxx[0].FsCmn.FminInternal_fs_Hz off=4592
+silk_encoder.Fstate_Fxx[0].FsCmn.FdesiredInternal_fs_Hz off=4596
+silk_encoder.Fstate_Fxx[0].FsCmn.Ffs_kHz off=4600
+silk_encoder.Fstate_Fxx[0].FsCmn.Fnb_subfr off=4604
+silk_encoder.Fstate_Fxx[0].FsCmn.Fframe_length off=4608
+silk_encoder.Fstate_Fxx[0].FsCmn.Fsubfr_length off=4612
+silk_encoder.Fstate_Fxx[0].FsCmn.Fltp_mem_length off=4616
+silk_encoder.Fstate_Fxx[0].FsCmn.Fla_pitch off=4620
+silk_encoder.Fstate_Fxx[0].FsCmn.Fla_shape off=4624
+silk_encoder.Fstate_Fxx[0].FsCmn.FshapeWinLength off=4628
+silk_encoder.Fstate_Fxx[0].FsCmn.FTargetRate_bps off=4632
+silk_encoder.Fstate_Fxx[0].FsCmn.FPacketSize_ms off=4636
+silk_encoder.Fstate_Fxx[0].FsCmn.FPacketLoss_perc off=4640
+silk_encoder.Fstate_Fxx[0].FsCmn.FframeCounter off=4644
+silk_encoder.Fstate_Fxx[0].FsCmn.FComplexity off=4648
+silk_encoder.Fstate_Fxx[0].FsCmn.FnStatesDelayedDecision off=4652
+silk_encoder.Fstate_Fxx[0].FsCmn.FuseInterpolatedNLSFs off=4656
+silk_encoder.Fstate_Fxx[0].FsCmn.FshapingLPCOrder off=4660
+silk_encoder.Fstate_Fxx[0].FsCmn.FpredictLPCOrder off=4664
+silk_encoder.Fstate_Fxx[0].FsCmn.FpitchEstimationComplexity off=4668
+silk_encoder.Fstate_Fxx[0].FsCmn.FpitchEstimationLPCOrder off=4672
+silk_encoder.Fstate_Fxx[0].FsCmn.FpitchEstimationThreshold_Q16 off=4676
+silk_encoder.Fstate_Fxx[0].FsCmn.FLTPQuantLowComplexity off=4680
+silk_encoder.Fstate_Fxx[0].FsCmn.Fmu_LTP_Q9 off=4684
+silk_encoder.Fstate_Fxx[0].FsCmn.FNLSF_MSVQ_Survivors off=4688
+silk_encoder.Fstate_Fxx[0].FsCmn.Ffirst_frame_after_reset off=4692
+silk_encoder.Fstate_Fxx[0].FsCmn.Fcontrolled_since_last_payload off=4696
+silk_encoder.Fstate_Fxx[0].FsCmn.Fwarping_Q16 off=4700
+silk_encoder.Fstate_Fxx[0].FsCmn.FuseCBR off=4704
+silk_encoder.Fstate_Fxx[0].FsCmn.FprefillFlag off=4708
+silk_encoder.Fstate_Fxx[0].FsCmn.Fpitch_lag_low_bits_iCDF off=4712
+silk_encoder.Fstate_Fxx[0].FsCmn.Fpitch_contour_iCDF off=4720
+silk_encoder.Fstate_Fxx[0].FsCmn.FpsNLSF_CB off=4728
+silk_encoder.Fstate_Fxx[0].FsCmn.Finput_quality_bands_Q15 off=4736 size=16 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.Finput_quality_bands_Q15[0] off=4736
+silk_encoder.Fstate_Fxx[0].FsCmn.Finput_tilt_Q15 off=4752
+silk_encoder.Fstate_Fxx[0].FsCmn.FSNR_dB_Q7 off=4756
+silk_encoder.Fstate_Fxx[0].FsCmn.FVAD_flags off=4760 size=3 stride=1
+silk_encoder.Fstate_Fxx[0].FsCmn.FVAD_flags[0] off=4760
+silk_encoder.Fstate_Fxx[0].FsCmn.FLBRR_flag off=4763
+silk_encoder.Fstate_Fxx[0].FsCmn.FLBRR_flags off=4764 size=12 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.FLBRR_flags[0] off=4764
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FGainsIndices off=4776 size=4 stride=1
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FGainsIndices[0] off=4776
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FLTPIndex off=4780 size=4 stride=1
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FLTPIndex[0] off=4780
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FNLSFIndices off=4784 size=17 stride=1
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FNLSFIndices[0] off=4784
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FlagIndex off=4802
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FcontourIndex off=4804
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FsignalType off=4805
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FquantOffsetType off=4806
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FNLSFInterpCoef_Q2 off=4807
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FPERIndex off=4808
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FLTP_scaleIndex off=4809
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices.FSeed off=4810
+silk_encoder.Fstate_Fxx[0].FsCmn.Fpulses off=4812 size=320 stride=1
+silk_encoder.Fstate_Fxx[0].FsCmn.Fpulses[0] off=4812
+silk_encoder.Fstate_Fxx[0].FsCmn.FinputBuf off=5132 size=644 stride=2
+silk_encoder.Fstate_Fxx[0].FsCmn.FinputBuf[0] off=5132
+silk_encoder.Fstate_Fxx[0].FsCmn.FinputBufIx off=5776
+silk_encoder.Fstate_Fxx[0].FsCmn.FnFramesPerPacket off=5780
+silk_encoder.Fstate_Fxx[0].FsCmn.FnFramesEncoded off=5784
+silk_encoder.Fstate_Fxx[0].FsCmn.FnChannelsAPI off=5788
+silk_encoder.Fstate_Fxx[0].FsCmn.FnChannelsInternal off=5792
+silk_encoder.Fstate_Fxx[0].FsCmn.FchannelNb off=5796
+silk_encoder.Fstate_Fxx[0].FsCmn.Fframes_since_onset off=5800
+silk_encoder.Fstate_Fxx[0].FsCmn.Fec_prevSignalType off=5804
+silk_encoder.Fstate_Fxx[0].FsCmn.Fec_prevLagIndex off=5808
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FsIIR off=5816 size=24 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FsIIR[0] off=5816
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FsFIR off=5840 size=144 stride=4
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FsFIR[0] off=5840
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FdelayBuf off=5984 size=96 stride=2
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FdelayBuf[0] off=5984
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.Fresampler_function off=6080
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FbatchSize off=6084
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FinvRatio_Q16 off=6088
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FFIR_Order off=6092
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FFIR_Fracs off=6096
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FFs_in_kHz off=6100
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FFs_out_kHz off=6104
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FinputDelay off=6108
+silk_encoder.Fstate_Fxx[0].FsCmn.Fresampler_state.FCoefs off=6112 size=8
+silk_encoder.Fstate_Fxx[0].FsCmn.FuseDTX off=6120
+silk_encoder.Fstate_Fxx[0].FsCmn.FinDTX off=6124
+silk_encoder.Fstate_Fxx[0].FsCmn.FnoSpeechCounter off=6128
+silk_encoder.Fstate_Fxx[0].FsCmn.FuseInBandFEC off=6132
+silk_encoder.Fstate_Fxx[0].FsCmn.FLBRR_enabled off=6136
+silk_encoder.Fstate_Fxx[0].FsCmn.FLBRR_GainIncreases off=6140
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR off=6144 size=108 stride=36
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FGainsIndices off=6144 size=4 stride=1
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FGainsIndices[0] off=6144
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FLTPIndex off=6148 size=4 stride=1
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FLTPIndex[0] off=6148
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FNLSFIndices off=6152 size=17 stride=1
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FNLSFIndices[0] off=6152
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FlagIndex off=6170
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FcontourIndex off=6172
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FsignalType off=6173
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FquantOffsetType off=6174
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FNLSFInterpCoef_Q2 off=6175
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FPERIndex off=6176
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FLTP_scaleIndex off=6177
+silk_encoder.Fstate_Fxx[0].FsCmn.Findices_LBRR[0].FSeed off=6178
+silk_encoder.Fstate_Fxx[0].FsCmn.Fpulses_LBRR off=6252 size=960 stride=320
+silk_encoder.Fstate_Fxx[0].FsCmn.Fpulses_LBRR[0] off=6252 size=320 stride=1
+silk_encoder.Fstate_Fxx[0].FsCmn.Fpulses_LBRR[0][0] off=6252
+silk_encoder.Fstate_Fxx[0].FsShape.FLastGainIndex off=7216
+silk_encoder.Fstate_Fxx[0].FsShape.FHarmBoost_smth off=7220
+silk_encoder.Fstate_Fxx[0].FsShape.FHarmShapeGain_smth off=7224
+silk_encoder.Fstate_Fxx[0].FsShape.FTilt_smth off=7228
+silk_encoder.Fstate_Fxx[0].FsPrefilt.FsLTP_shp off=7232 size=2048 stride=4
+silk_encoder.Fstate_Fxx[0].FsPrefilt.FsLTP_shp[0] off=7232
+silk_encoder.Fstate_Fxx[0].FsPrefilt.FsAR_shp off=9280 size=68 stride=4
+silk_encoder.Fstate_Fxx[0].FsPrefilt.FsAR_shp[0] off=9280
+silk_encoder.Fstate_Fxx[0].FsPrefilt.FsLTP_shp_buf_idx off=9348
+silk_encoder.Fstate_Fxx[0].FsPrefilt.FsLF_AR_shp off=9352
+silk_encoder.Fstate_Fxx[0].FsPrefilt.FsLF_MA_shp off=9356
+silk_encoder.Fstate_Fxx[0].FsPrefilt.FsHarmHP off=9360
+silk_encoder.Fstate_Fxx[0].FsPrefilt.Frand_seed off=9364
+silk_encoder.Fstate_Fxx[0].FsPrefilt.FlagPrev off=9368
+silk_encoder.Fstate_Fxx[0].Fx_buf off=9372 size=2880 stride=4
+silk_encoder.Fstate_Fxx[0].Fx_buf[0] off=9372
+silk_encoder.Fstate_Fxx[0].FLTPCorr off=12252
+silk_encoder.FsStereo.Fpred_prev_Q13 off=24512 size=4 stride=2
+silk_encoder.FsStereo.Fpred_prev_Q13[0] off=24512
+silk_encoder.FsStereo.FsMid off=24516 size=4 stride=2
+silk_encoder.FsStereo.FsMid[0] off=24516
+silk_encoder.FsStereo.FsSide off=24520 size=4 stride=2
+silk_encoder.FsStereo.FsSide[0] off=24520
+silk_encoder.FsStereo.Fmid_side_amp_Q0 off=24524 size=16 stride=4
+silk_encoder.FsStereo.Fmid_side_amp_Q0[0] off=24524
+silk_encoder.FsStereo.Fsmth_width_Q14 off=24540
+silk_encoder.FsStereo.Fwidth_prev_Q14 off=24542
+silk_encoder.FsStereo.Fsilent_side_len off=24544
+silk_encoder.FsStereo.FpredIx off=24546 size=18 stride=6
+silk_encoder.FsStereo.FpredIx[0] off=24546 size=6 stride=3
+silk_encoder.FsStereo.FpredIx[0][0] off=24546 size=3 stride=1
+silk_encoder.FsStereo.FpredIx[0][0][0] off=24546
+silk_encoder.FsStereo.Fmid_only_flags off=24564 size=3 stride=1
+silk_encoder.FsStereo.Fmid_only_flags[0] off=24564
+silk_encoder.FnBitsExceeded off=24568
+silk_encoder.FnChannelsAPI off=24572
+silk_encoder.FnChannelsInternal off=24576
+silk_encoder.FnPrevChannelsInternal off=24580
+silk_encoder.FtimeSinceSwitchAllowed_ms off=24584
+silk_encoder.FallowBandwidthSwitch off=24588
+silk_encoder.Fprev_decode_only_middle off=24592
+OpusMSEncoder size=272
+OpusMSEncoder.Flayout.Fnb_channels off=0
+OpusMSEncoder.Flayout.Fnb_streams off=4
+OpusMSEncoder.Flayout.Fnb_coupled_streams off=8
+OpusMSEncoder.Flayout.Fmapping off=12 size=256 stride=1
+OpusMSEncoder.Flayout.Fmapping[0] off=12
+OpusMSEncoder.Fbitrate off=268
+OpusMSDecoder size=268
+OpusMSDecoder.Flayout.Fnb_channels off=0
+OpusMSDecoder.Flayout.Fnb_streams off=4
+OpusMSDecoder.Flayout.Fnb_coupled_streams off=8
+OpusMSDecoder.Flayout.Fmapping off=12 size=256 stride=1
+OpusMSDecoder.Flayout.Fmapping[0] off=12
+ChannelLayout size=268
+ChannelLayout.Fnb_channels off=0
+ChannelLayout.Fnb_streams off=4
+ChannelLayout.Fnb_coupled_streams off=8
+ChannelLayout.Fmapping off=12 size=256 stride=1
+ChannelLayout.Fmapping[0] off=12
+NSQ_del_dec_struct size=1168
+NSQ_del_dec_struct.FsLPC_Q14 off=0 size=448 stride=4
+NSQ_del_dec_struct.FsLPC_Q14[0] off=0
+NSQ_del_dec_struct.FRandState off=448 size=128 stride=4
+NSQ_del_dec_struct.FRandState[0] off=448
+NSQ_del_dec_struct.FQ_Q10 off=576 size=128 stride=4
+NSQ_del_dec_struct.FQ_Q10[0] off=576
+NSQ_del_dec_struct.FXq_Q14 off=704 size=128 stride=4
+NSQ_del_dec_struct.FXq_Q14[0] off=704
+NSQ_del_dec_struct.FPred_Q15 off=832 size=128 stride=4
+NSQ_del_dec_struct.FPred_Q15[0] off=832
+NSQ_del_dec_struct.FShape_Q14 off=960 size=128 stride=4
+NSQ_del_dec_struct.FShape_Q14[0] off=960
+NSQ_del_dec_struct.FsAR2_Q14 off=1088 size=64 stride=4
+NSQ_del_dec_struct.FsAR2_Q14[0] off=1088
+NSQ_del_dec_struct.FLF_AR_Q14 off=1152
+NSQ_del_dec_struct.FSeed off=1156
+NSQ_del_dec_struct.FSeedInit off=1160
+NSQ_del_dec_struct.FRD_Q10 off=1164
+NSQ_sample_struct size=24
+NSQ_sample_struct.FQ_Q10 off=0
+NSQ_sample_struct.FRD_Q10 off=4
+NSQ_sample_struct.Fxq_Q14 off=8
+NSQ_sample_struct.FLF_AR_Q14 off=12
+NSQ_sample_struct.FsLTP_shp_Q14 off=16
+NSQ_sample_struct.FLPC_exc_Q14 off=20
+silk_decoder size=8600
+silk_decoder.Fchannel_state off=0 size=8576 stride=4288
+silk_decoder.Fchannel_state[0].Fprev_gain_Q16 off=0
+silk_decoder.Fchannel_state[0].Fexc_Q14 off=4 size=1280 stride=4
+silk_decoder.Fchannel_state[0].Fexc_Q14[0] off=4
+silk_decoder.Fchannel_state[0].FsLPC_Q14_buf off=1284 size=64 stride=4
+silk_decoder.Fchannel_state[0].FsLPC_Q14_buf[0] off=1284
+silk_decoder.Fchannel_state[0].FoutBuf off=1348 size=960 stride=2
+silk_decoder.Fchannel_state[0].FoutBuf[0] off=1348
+silk_decoder.Fchannel_state[0].FlagPrev off=2308
+silk_decoder.Fchannel_state[0].FLastGainIndex off=2312
+silk_decoder.Fchannel_state[0].Ffs_kHz off=2316
+silk_decoder.Fchannel_state[0].Ffs_API_hz off=2320
+silk_decoder.Fchannel_state[0].Fnb_subfr off=2324
+silk_decoder.Fchannel_state[0].Fframe_length off=2328
+silk_decoder.Fchannel_state[0].Fsubfr_length off=2332
+silk_decoder.Fchannel_state[0].Fltp_mem_length off=2336
+silk_decoder.Fchannel_state[0].FLPC_order off=2340
+silk_decoder.Fchannel_state[0].FprevNLSF_Q15 off=2344 size=32 stride=2
+silk_decoder.Fchannel_state[0].FprevNLSF_Q15[0] off=2344
+silk_decoder.Fchannel_state[0].Ffirst_frame_after_reset off=2376
+silk_decoder.Fchannel_state[0].Fpitch_lag_low_bits_iCDF off=2384
+silk_decoder.Fchannel_state[0].Fpitch_contour_iCDF off=2392
+silk_decoder.Fchannel_state[0].FnFramesDecoded off=2400
+silk_decoder.Fchannel_state[0].FnFramesPerPacket off=2404
+silk_decoder.Fchannel_state[0].Fec_prevSignalType off=2408
+silk_decoder.Fchannel_state[0].Fec_prevLagIndex off=2412
+silk_decoder.Fchannel_state[0].FVAD_flags off=2416 size=12 stride=4
+silk_decoder.Fchannel_state[0].FVAD_flags[0] off=2416
+silk_decoder.Fchannel_state[0].FLBRR_flag off=2428
+silk_decoder.Fchannel_state[0].FLBRR_flags off=2432 size=12 stride=4
+silk_decoder.Fchannel_state[0].FLBRR_flags[0] off=2432
+silk_decoder.Fchannel_state[0].Fresampler_state.FsIIR off=2448 size=24 stride=4
+silk_decoder.Fchannel_state[0].Fresampler_state.FsIIR[0] off=2448
+silk_decoder.Fchannel_state[0].Fresampler_state.FsFIR off=2472 size=144 stride=4
+silk_decoder.Fchannel_state[0].Fresampler_state.FsFIR[0] off=2472
+silk_decoder.Fchannel_state[0].Fresampler_state.FdelayBuf off=2616 size=96 stride=2
+silk_decoder.Fchannel_state[0].Fresampler_state.FdelayBuf[0] off=2616
+silk_decoder.Fchannel_state[0].Fresampler_state.Fresampler_function off=2712
+silk_decoder.Fchannel_state[0].Fresampler_state.FbatchSize off=2716
+silk_decoder.Fchannel_state[0].Fresampler_state.FinvRatio_Q16 off=2720
+silk_decoder.Fchannel_state[0].Fresampler_state.FFIR_Order off=2724
+silk_decoder.Fchannel_state[0].Fresampler_state.FFIR_Fracs off=2728
+silk_decoder.Fchannel_state[0].Fresampler_state.FFs_in_kHz off=2732
+silk_decoder.Fchannel_state[0].Fresampler_state.FFs_out_kHz off=2736
+silk_decoder.Fchannel_state[0].Fresampler_state.FinputDelay off=2740
+silk_decoder.Fchannel_state[0].Fresampler_state.FCoefs off=2744 size=8
+silk_decoder.Fchannel_state[0].FpsNLSF_CB off=2752
+silk_decoder.Fchannel_state[0].Findices.FGainsIndices off=2760 size=4 stride=1
+silk_decoder.Fchannel_state[0].Findices.FGainsIndices[0] off=2760
+silk_decoder.Fchannel_state[0].Findices.FLTPIndex off=2764 size=4 stride=1
+silk_decoder.Fchannel_state[0].Findices.FLTPIndex[0] off=2764
+silk_decoder.Fchannel_state[0].Findices.FNLSFIndices off=2768 size=17 stride=1
+silk_decoder.Fchannel_state[0].Findices.FNLSFIndices[0] off=2768
+silk_decoder.Fchannel_state[0].Findices.FlagIndex off=2786
+silk_decoder.Fchannel_state[0].Findices.FcontourIndex off=2788
+silk_decoder.Fchannel_state[0].Findices.FsignalType off=2789
+silk_decoder.Fchannel_state[0].Findices.FquantOffsetType off=2790
+silk_decoder.Fchannel_state[0].Findices.FNLSFInterpCoef_Q2 off=2791
+silk_decoder.Fchannel_state[0].Findices.FPERIndex off=2792
+silk_decoder.Fchannel_state[0].Findices.FLTP_scaleIndex off=2793
+silk_decoder.Fchannel_state[0].Findices.FSeed off=2794
+silk_decoder.Fchannel_state[0].FsCNG.FCNG_exc_buf_Q14 off=2796 size=1280 stride=4
+silk_decoder.Fchannel_state[0].FsCNG.FCNG_exc_buf_Q14[0] off=2796
+silk_decoder.Fchannel_state[0].FsCNG.FCNG_smth_NLSF_Q15 off=4076 size=32 stride=2
+silk_decoder.Fchannel_state[0].FsCNG.FCNG_smth_NLSF_Q15[0] off=4076
+silk_decoder.Fchannel_state[0].FsCNG.FCNG_synth_state off=4108 size=64 stride=4
+silk_decoder.Fchannel_state[0].FsCNG.FCNG_synth_state[0] off=4108
+silk_decoder.Fchannel_state[0].FsCNG.FCNG_smth_Gain_Q16 off=4172
+silk_decoder.Fchannel_state[0].FsCNG.Frand_seed off=4176
+silk_decoder.Fchannel_state[0].FsCNG.Ffs_kHz off=4180
+silk_decoder.Fchannel_state[0].FlossCnt off=4184
+silk_decoder.Fchannel_state[0].FprevSignalType off=4188
+silk_decoder.Fchannel_state[0].FsPLC.FpitchL_Q8 off=4192
+silk_decoder.Fchannel_state[0].FsPLC.FLTPCoef_Q14 off=4196 size=10 stride=2
+silk_decoder.Fchannel_state[0].FsPLC.FLTPCoef_Q14[0] off=4196
+silk_decoder.Fchannel_state[0].FsPLC.FprevLPC_Q12 off=4206 size=32 stride=2
+silk_decoder.Fchannel_state[0].FsPLC.FprevLPC_Q12[0] off=4206
+silk_decoder.Fchannel_state[0].FsPLC.Flast_frame_lost off=4240
+silk_decoder.Fchannel_state[0].FsPLC.Frand_seed off=4244
+silk_decoder.Fchannel_state[0].FsPLC.FrandScale_Q14 off=4248
+silk_decoder.Fchannel_state[0].FsPLC.Fconc_energy off=4252
+silk_decoder.Fchannel_state[0].FsPLC.Fconc_energy_shift off=4256
+silk_decoder.Fchannel_state[0].FsPLC.FprevLTP_scale_Q14 off=4260
+silk_decoder.Fchannel_state[0].FsPLC.FprevGain_Q16 off=4264 size=8 stride=4
+silk_decoder.Fchannel_state[0].FsPLC.FprevGain_Q16[0] off=4264
+silk_decoder.Fchannel_state[0].FsPLC.Ffs_kHz off=4272
+silk_decoder.Fchannel_state[0].FsPLC.Fnb_subfr off=4276
+silk_decoder.Fchannel_state[0].FsPLC.Fsubfr_length off=4280
+silk_decoder.FsStereo.Fpred_prev_Q13 off=8576 size=4 stride=2
+silk_decoder.FsStereo.Fpred_prev_Q13[0] off=8576
+silk_decoder.FsStereo.FsMid off=8580 size=4 stride=2
+silk_decoder.FsStereo.FsMid[0] off=8580
+silk_decoder.FsStereo.FsSide off=8584 size=4 stride=2
+silk_decoder.FsStereo.FsSide[0] off=8584
+silk_decoder.FnChannelsAPI off=8588
+silk_decoder.FnChannelsInternal off=8592
+silk_decoder.Fprev_decode_only_middle off=8596

@@ -88,6 +88,9 @@ go-opus/
 ├── export.go               # Exported encoder/decoder entry points used by the CLI
 ├── lib_test.go             # Bit-exact codec output tests and benchmarks
 ├── lib_kernels_test.go     # Optimized kernels vs. the generated reference code
+├── ptr64.go                # 64-bit struct layout on 32-bit targets
+├── libc_shim.go            # size_t wrappers for 32-bit targets
+├── layout_test.go          # Struct layout check against testdata/layout64.txt
 ├── cmd/
 │   ├── opus_demo/main.go   # Encoder/decoder CLI (opus_demo.c) on top of package opus
 │   └── opus_compare/main.go # Audio comparison CLI
@@ -134,7 +137,7 @@ go-opus encodes about twice as fast. The quality measures point in different dir
 
 ## Platform Support
 
-The code was transpiled on `darwin/arm64`, but it is portable to other 64-bit targets. On every platform marked "bit-exact" below, `TestCodecOutput` passes, so encoded packets and decoded PCM match `darwin/arm64` exactly.
+The code was transpiled on `darwin/arm64`, but it runs on other 64-bit targets and on 32-bit little-endian targets. On every platform marked "bit-exact" below, `TestCodecOutput` passes, so encoded packets and decoded PCM match `darwin/arm64` exactly.
 
 | Platform | Build | Status | Tested with |
 |---|---|---|---|
@@ -146,10 +149,13 @@ The code was transpiled on `darwin/arm64`, but it is portable to other 64-bit ta
 | `windows/amd64` | ✅ | bit-exact | Wine |
 | `linux/ppc64le` | ✅ | **broken**: SILK/hybrid output is wrong in optimized builds (correct with `-gcflags='-N -l'`); CELT is fine | Docker + QEMU |
 | `windows/arm64`, `freebsd/amd64`, `linux/loong64` | ✅ | builds, not run | — |
-| `linux/386`, `linux/arm` (32-bit) | ❌ | `size_t` is hard-coded as 64-bit | — |
+| `linux/386`, `linux/arm` (32-bit) | ✅ | bit-exact | Docker + QEMU |
+| `windows/386` | ✅ | bit-exact | Wine |
 | `wasip1/wasm`, `js/wasm` | ❌ | not supported by `modernc.org/libc` | — |
 
 On Windows, `cmd/opus_demo` does not build because `modernc.org/libc` has no `feof` there. The library itself works.
+
+32-bit targets keep the 64-bit memory layout: each C pointer field is padded to 8 bytes and 8-byte aligned (`ptr64.go`), and `size_t` arguments go through small wrappers (`libc_shim.go`). `TestStructLayout` checks the layout of every codec struct against `testdata/layout64.txt`. This only works on little-endian targets, so 32-bit big-endian targets (MIPS, PowerPC) are not supported.
 
 ## License
 

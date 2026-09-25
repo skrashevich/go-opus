@@ -534,8 +534,8 @@ func TestDeemphasis(t *testing.T) {
 		down := []int{1, 1, 2, 3}[r.IntN(4)]
 		n := down * (1 + r.IntN(480))
 		in := [2][]float32{randFloats(r, n, 30000), randFloats(r, n, 30000)}
-		ins := cBuf[uintptr](2)
-		ins[0], ins[1] = ptr(in[0]), ptr(in[1])
+		ins := cBuf[ptrslot](2)
+		ins[0][0], ins[1][0] = ptr(in[0]), ptr(in[1])
 		wmem, gmem := cBuf[float32](2), cBuf[float32](2)
 		wmem[0], wmem[1] = r.Float32()*1000, r.Float32()*1000
 		copy(gmem, wmem)
@@ -562,7 +562,7 @@ func ref_kf_bfly2(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 		}
 		Fout = Fout_beg + uintptr(i*mm)*8
 		Fout2 = Fout + uintptr(m)*8
-		tw1 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+		tw1 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0]
 		j = 0
 		for {
 			if !(j < m) {
@@ -606,7 +606,7 @@ func ref_ki_bfly2(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 		}
 		Fout = Fout_beg + uintptr(i*mm)*8
 		Fout2 = Fout + uintptr(m)*8
-		tw1 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+		tw1 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0]
 		j = 0
 		for {
 			if !(j < m) {
@@ -642,14 +642,14 @@ func ref_kf_bfly3(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	_, _, _, _, _, _, _, _, _, _ = Fout_beg, epi3, i, k, m2, scratch, tw1, tw2, v2, v3
 	m2 = uint64(int32(2) * m)
 	Fout_beg = Fout
-	epi3 = *(*kiss_twiddle_cpx)(unsafe.Pointer((*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles + uintptr(fstride*uint64(m))*8))
+	epi3 = *(*kiss_twiddle_cpx)(unsafe.Pointer((*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0] + uintptr(fstride*uint64(m))*8))
 	i = 0
 	for {
 		if !(i < N) {
 			break
 		}
 		Fout = Fout_beg + uintptr(i*mm)*8
-		v2 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+		v2 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0]
 		tw2 = v2
 		tw1 = v2
 		k = uint64(m)
@@ -700,14 +700,14 @@ func ref_ki_bfly3(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	_, _, _, _, _, _, _, _, _, _ = Fout_beg, epi3, i, k, m2, scratch, tw1, tw2, v2, v3
 	m2 = uint64(int32(2) * m)
 	Fout_beg = Fout
-	epi3 = *(*kiss_twiddle_cpx)(unsafe.Pointer((*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles + uintptr(fstride*uint64(m))*8))
+	epi3 = *(*kiss_twiddle_cpx)(unsafe.Pointer((*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0] + uintptr(fstride*uint64(m))*8))
 	i = 0
 	for {
 		if !(i < N) {
 			break
 		}
 		Fout = Fout_beg + uintptr(i*mm)*8
-		v2 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+		v2 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0]
 		tw2 = v2
 		tw1 = v2
 		k = m
@@ -764,7 +764,7 @@ func ref_kf_bfly4(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 			break
 		}
 		Fout = Fout_beg + uintptr(i*mm)*8
-		v3 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+		v3 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0]
 		tw1 = v3
 		v2 = v3
 		tw2 = v2
@@ -831,7 +831,7 @@ func ref_ki_bfly4(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 			break
 		}
 		Fout = Fout_beg + uintptr(i*mm)*8
-		v3 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+		v3 = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0]
 		tw1 = v3
 		v2 = v3
 		tw2 = v2
@@ -885,11 +885,11 @@ func ref_kf_bfly5(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	var scratch [13]kiss_fft_cpx
 	var ya, yb kiss_twiddle_cpx
 	_, _, _, _, _, _, _, _, _, _, _, _, _ = Fout0, Fout1, Fout2, Fout3, Fout4, Fout_beg, i, scratch, tw, twiddles, u, ya, yb
-	twiddles = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	twiddles = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0]
 	Fout_beg = Fout
 	ya = *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(m))*8))
 	yb = *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(2)*uint64(m))*8))
-	tw = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	tw = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0]
 	i = 0
 	for {
 		if !(i < N) {
@@ -964,11 +964,11 @@ func ref_ki_bfly5(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	var scratch [13]kiss_fft_cpx
 	var ya, yb kiss_twiddle_cpx
 	_, _, _, _, _, _, _, _, _, _, _, _, _ = Fout0, Fout1, Fout2, Fout3, Fout4, Fout_beg, i, scratch, tw, twiddles, u, ya, yb
-	twiddles = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	twiddles = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0]
 	Fout_beg = Fout
 	ya = *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(m))*8))
 	yb = *(*kiss_twiddle_cpx)(unsafe.Pointer(twiddles + uintptr(fstride*uint64(2)*uint64(m))*8))
-	tw = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles
+	tw = (*kiss_fft_state)(unsafe.Pointer(st)).Ftwiddles[0]
 	i = 0
 	for {
 		if !(i < N) {
@@ -1059,7 +1059,7 @@ func TestFFTButterflies(t *testing.T) {
 		mm := c.radix * m
 		fstride := 1 + r.IntN(4)
 		tw := randFloats(r, 2*(fstride*c.radix*m+1), 1)
-		st[0].Ftwiddles = ptr(tw)
+		st[0].Ftwiddles[0] = ptr(tw)
 		data := randFloats(r, 2*n*mm, 1000)
 		want := append([]float32(nil), data...)
 		got := append([]float32(nil), data...)
@@ -1156,7 +1156,7 @@ func ref_clt_mdct_backward(tls *libc.TLS, l uintptr, in uintptr, out uintptr, wi
 	xp1 = in
 	xp2 = in + uintptr(stride*(N2-int32(1)))*4
 	yp = f2
-	t = (*mdct_lookup)(unsafe.Pointer(l)).Ftrig
+	t = (*mdct_lookup)(unsafe.Pointer(l)).Ftrig[0]
 	i = 0
 	for {
 		if !(i < N4) {
@@ -1182,7 +1182,7 @@ func ref_clt_mdct_backward(tls *libc.TLS, l uintptr, in uintptr, out uintptr, wi
 	opus_ifft(tls, *(*uintptr)(unsafe.Pointer(l + 8 + uintptr(shift)*8)), f2, f)
 	/* Post-rotate */
 	fp = f
-	t1 = (*mdct_lookup)(unsafe.Pointer(l)).Ftrig
+	t1 = (*mdct_lookup)(unsafe.Pointer(l)).Ftrig[0]
 	i = 0
 	for {
 		if !(i < N4) {
