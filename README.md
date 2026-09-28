@@ -24,13 +24,13 @@ Apple M1 Pro, encoding and decoding a 3:41 stereo 48 kHz PCM file at 128 kb/s. T
 
 | Implementation | Encode | Decode | Notes |
 |---|---:|---:|---|
-| C original (RFC 6716) | 1.50 s (1.0x) | 0.61 s (1.0x) | Reference implementation, `-O2` |
-| **go-opus** | **1.58 s (1.05x)** | **0.77 s (1.26x)** | Pure Go, no CGo |
-| FFmpeg libopus | 1.83 s (1.22x) | 0.57 s (0.93x) | SIMD-optimized |
+| C original (RFC 6716) | 1.47 s (1.0x) | 0.59 s (1.0x) | Reference implementation, `-O2` |
+| **go-opus** | **1.54 s (1.05x)** | **0.75 s (1.27x)** | Pure Go, no CGo |
+| FFmpeg libopus | 1.78 s (1.21x) | 0.54 s (0.92x) | SIMD-optimized |
 
-go-opus encodes at 140x realtime and decodes at 288x realtime on this file.
+go-opus encodes at 144x realtime and decodes at 295x realtime on this file.
 
-Go microbenchmarks for one 20 ms stereo 48 kHz frame (default encoder settings, codec state reused, no file I/O): encode 79 µs, decode 48 µs, with 0 allocations per frame. To reproduce:
+Go microbenchmarks for one 20 ms stereo 48 kHz frame (default encoder settings, codec state reused, no file I/O): encode 79 µs, decode 51 µs, with 0 allocations per frame. To reproduce:
 
 ```bash
 go test -run '^$' -bench 'Benchmark(Encode|Decode)$' -benchtime=1s -count=5 -cpu=1
@@ -152,25 +152,27 @@ go-opus/
 
 ### Comparison with pion/opus
 
-pion/opus at commit `86ced73`, same machine and 3:41 file as above. Both libraries are called in one Go process, and the time is user CPU spent inside the encode/decode calls (median of 3 runs).
+pion/opus at commit `b10510e`, same machine and 3:41 file as above. Both libraries are called in one Go process, and the time is user CPU spent inside the encode/decode calls (median of 3 runs).
 
 **Decoding.** The input streams were produced by the C reference encoder. Accuracy is measured against the C reference decoder output with the RFC 6716 `opus_compare` tool. A stream passes at 0% or above, and 100% means identical output.
 
 | Stream | go-opus | pion/opus |
 |---|---|---|
-| CELT, 128 kb/s stereo | 0.72 s, 99.9% | 0.78 s, 99.5% |
-| Hybrid, 24 kb/s stereo | 0.78 s, 99.9% | 0.50 s, fails (SNR 38.8 dB vs. reference) |
-| SILK, 16 kb/s mono 16 kHz | 0.16 s, bit-exact | 0.18 s, bit-exact |
+| CELT, 128 kb/s stereo | 0.71 s, 99.9% | 0.61 s, 99.5% |
+| Hybrid, 24 kb/s stereo | 0.65 s, 99.9% | 0.47 s, fails (SNR 38.8 dB vs. reference) |
+| SILK, 16 kb/s mono 16 kHz | 0.15 s, bit-exact | 0.17 s, bit-exact |
+
+pion/opus decodes CELT and Hybrid streams faster; go-opus is closer to the reference output and is the only one of the two that passes on Hybrid.
 
 **Encoding** 48 kHz stereo at 128 kb/s with constrained VBR and complexity 10 (pion/opus supports only 20 ms CELT frames at 48 kHz here). Both produce about 128.4 kb/s of Opus payload. They were decoded with the C reference decoder and compared with the original input:
 
 | | go-opus | pion/opus |
 |---|---|---|
-| Encode time | 1.55 s | 3.17 s |
+| Encode time | 1.53 s | 2.87 s |
 | SNR | 18.9 dB | 18.4 dB |
 | `opus_compare` weighted error (lower is closer) | 0.97 | 0.45 |
 
-go-opus encodes about twice as fast. The quality measures point in different directions: go-opus has a slightly higher waveform SNR, while pion/opus keeps the per-band energies closer to the original. Neither is a full perceptual score. With the same settings, the C reference encoder (RFC 6716) scores the same as go-opus: 18.85 dB and 0.97.
+go-opus encodes 1.9 times as fast. The quality measures point in different directions: go-opus has a slightly higher waveform SNR, while pion/opus keeps the per-band energies closer to the original. Neither is a full perceptual score. With the same settings, the C reference encoder (RFC 6716) scores the same as go-opus: 18.85 dB and 0.97.
 
 ## Platform Support
 
