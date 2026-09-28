@@ -498,7 +498,7 @@ func refdeemphasis(tls *libc.TLS, in uintptr, pcm uintptr, N int32, C int32, dow
 			/* Technically the store could be moved outside of the if because
 			   the stores we don't want will just be overwritten */
 			if count == 0 {
-				*(*opus_val16)(unsafe.Pointer(y)) = opus_val16(SIG2WORD16(tls, tmp) * (float32(1) / libc.Float32FromFloat32(32768)))
+				*(*opus_val16)(unsafe.Pointer(y)) = opus_val16(sig2Word16(tls, tmp) * (float32(1) / libc.Float32FromFloat32(32768)))
 			}
 			count = count + 1
 			v1 = count

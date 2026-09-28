@@ -2,6 +2,7 @@ package opus
 
 import (
 	"runtime"
+	"sync"
 	"testing"
 	"time"
 	"unsafe"
@@ -18,12 +19,6 @@ func cString(p uintptr) string {
 // foreignCtx stands in for a caller's own context type, such as
 // *modernc.org/libc.TLS in code written against earlier versions.
 type foreignCtx struct{ _ [64]byte }
-
-func foreignCount() int {
-	n := 0
-	foreignTLS.Range(func(_, _ any) bool { n++; return true })
-	return n
-}
 
 // roundTrip encodes and decodes a few frames through the exported API.
 func roundTrip[T any](t *testing.T, tls *T) []byte {
@@ -78,29 +73,68 @@ func TestExportedAPIContexts(t *testing.T) {
 		t.Fatal("empty version string")
 	}
 	want := roundTrip(t, tls)
-	if foreignCount() != 0 {
-		t.Fatal("a *TLS must be used directly, not mapped")
-	}
 
-	// Any other pointer type is accepted as a context key and mapped to an
-	// internal TLS; the results must be the same.
-	func() {
-		key := new(foreignCtx)
-		if got := roundTrip(t, key); string(got) != string(want) {
-			t.Fatal("output with a foreign context differs")
+	// Any other pointer type is accepted as a context; the results must be
+	// the same.
+	if got := roundTrip(t, new(foreignCtx)); string(got) != string(want) {
+		t.Fatal("output with a foreign context differs")
+	}
+	if got := roundTrip(t, (*foreignCtx)(nil)); string(got) != string(want) {
+		t.Fatal("output with a nil foreign context differs")
+	}
+}
+
+// TestForeignContextChurn uses a fresh foreign context for every codec
+// instance on several goroutines while the GC runs, so freed context
+// addresses are reused. Borrowed contexts must never be shared or released
+// while a call is using them.
+func TestForeignContextChurn(t *testing.T) {
+	stop := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+				runtime.GC()
+				time.Sleep(time.Millisecond)
+			}
 		}
-		if foreignCount() != 1 {
-			t.Fatalf("foreign contexts mapped: %d, want 1", foreignCount())
-		}
-		runtime.KeepAlive(key)
 	}()
+	defer close(stop)
 
-	// The mapped TLS is released once the key is garbage collected.
-	for deadline := time.Now().Add(5 * time.Second); foreignCount() != 0; {
-		if time.Now().After(deadline) {
-			t.Fatal("foreign context was not released after GC")
-		}
-		runtime.GC()
-		time.Sleep(10 * time.Millisecond)
+	const frame, ch = 960, 2
+	var wg sync.WaitGroup
+	deadline := time.Now().Add(2 * time.Second)
+	for g := 0; g < max(4, runtime.GOMAXPROCS(0)); g++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			errp := Malloc(4)
+			pcm := Malloc(frame * ch * 2)
+			pkt := Malloc(1500)
+			defer Free(errp)
+			defer Free(pcm)
+			defer Free(pkt)
+			s := unsafe.Slice((*int16)(unsafe.Pointer(pcm)), frame*ch)
+			for i := 0; time.Now().Before(deadline); i++ {
+				enc := EncoderCreate(new(foreignCtx), 48000, ch, OPUS_APPLICATION_AUDIO, errp)
+				if enc == 0 {
+					t.Error("create failed")
+					return
+				}
+				for f := 0; f < 5; f++ {
+					for j := range s {
+						s[j] = int16((i*977 + j*131 + f) % 20000)
+					}
+					if n := Encode(new(foreignCtx), enc, pcm, frame, pkt, 1500); n <= 0 {
+						t.Errorf("encode: %d", n)
+						return
+					}
+				}
+				EncoderDestroy(new(foreignCtx), enc)
+			}
+		}()
 	}
+	wg.Wait()
 }

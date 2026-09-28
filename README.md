@@ -82,7 +82,7 @@ n := opus.Encode(tls, enc, pcm, 960, pkt, 1500)                // n bytes at pkt
 
 Buffers passed to the codec must come from `opus.Malloc`, not from Go slices: C memory lives outside the Go heap, so the garbage collector never moves or frees it and `-race` (checkptr) accepts the pointer arithmetic.
 
-**Compatibility with earlier versions.** Earlier versions required `modernc.org/libc` and took a `*libc.TLS`. The context parameter is now generic, so that code still compiles and produces the same output: any pointer other than `*opus.TLS` is used as a key for an internal context, which is released when the key is garbage collected. Memory from `libc.Xmalloc` and `libc.VaList` works as before. New code should use `opus.NewTLS`, `opus.Malloc`, `opus.Free` and `opus.VaList`, and needs no dependency.
+**Compatibility with earlier versions.** Earlier versions required `modernc.org/libc` and took a `*libc.TLS`. The context parameter is now generic, so direct calls with a `*libc.TLS` still compile and produce the same output: for any pointer other than `*opus.TLS`, the call borrows an internal context for its duration and never touches the pointer. Memory from `libc.Xmalloc` and `libc.VaList` works as before. Two forms no longer compile: taking a function value without a type (`f := opus.Encode`; write `opus.Encode[libc.TLS]`) and passing an untyped `nil` context. New code should use `opus.NewTLS`, `opus.Malloc`, `opus.Free` and `opus.VaList`, and needs no dependency.
 
 ### Command-line
 
@@ -140,7 +140,7 @@ go-opus/
 2. Each `.c` file compiled to `.o.go` using `ccgo -c` with flags: `-DUSE_ALLOCA -Drestrict= -DOPUS_BUILD`
 3. Object files linked into final Go source with `ccgo`
 4. The runtime from [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) was replaced by `internal/libc`, which implements only what `lib.go` uses. `alloca` memory lives on the per-context C stack, so codec instances on different goroutines never share scratch memory
-5. The CLI tools were ported to plain Go; their output is byte-identical to the transpiled versions
+5. The CLI tools were ported to plain Go; their output is byte-identical to the transpiled versions built on darwin. The packet-loss simulation (`-loss`, `-random_fec`, `-random_framesize`) uses the `rand()` sequence of the darwin build on every platform; the transpiled Linux build used musl's `rand()` and produced different loss patterns
 
 ## Alternatives
 

@@ -71,9 +71,8 @@ func readPCM16(fin *os.File, nchannels int) ([]float32, int) {
 		// a trailing partial sample frame is dropped.
 		n, err := fin.Read(buf[:1024/size*size])
 		if err != nil && err != io.EOF {
-			// The reference fread returns (size_t)-1/size on a read error,
-			// which overflows the subsequent realloc size and panics there.
-			panic("invalid malloc size")
+			fmt.Fprintf(os.Stderr, "Error reading input: %v\n", err)
+			os.Exit(1)
 		}
 		nread := n / size
 		if nread <= 0 {

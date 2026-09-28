@@ -4259,7 +4259,7 @@ func opus_custom_encoder_init(tls *libc.TLS, st uintptr, mode uintptr, channels 
 	return OPUS_OK
 }
 
-func SIG2WORD16(tls *libc.TLS, x celt_sig) (r opus_val16) {
+func sig2Word16(tls *libc.TLS, x celt_sig) (r opus_val16) {
 	return x
 }
 
@@ -4552,7 +4552,7 @@ func deemphasis(tls *libc.TLS, in uintptr, pcm uintptr, N int32, C int32, downsa
 			/* Technically the store could be moved outside of the if because
 			   the stores we don't want will just be overwritten */
 			if count == 0 {
-				*(*opus_val16)(unsafe.Pointer(y)) = opus_val16(SIG2WORD16(tls, tmp) * (float32(1) / libc.Float32FromFloat32(32768)))
+				*(*opus_val16)(unsafe.Pointer(y)) = opus_val16(sig2Word16(tls, tmp) * (float32(1) / libc.Float32FromFloat32(32768)))
 			}
 			count = count + 1
 			v1 = count
@@ -23094,7 +23094,7 @@ POSSIBILITY OF SUCH DAMAGE.
 //
 //	/* Compute inverse of LPC prediction gain, and                          */
 //	/* test if LPC coefficients are stable (all poles within unit circle)   */
-func LPC_inverse_pred_gain_QA(tls *libc.TLS, A_QA uintptr, order int32) (r opus_int32) {
+func lpcInversePredGainQA(tls *libc.TLS, A_QA uintptr, order int32) (r opus_int32) {
 	var Anew_QA, Aold_QA uintptr
 	var b32_inv, b32_nrm, err_Q32, invGain_Q30, out32, rc_Q31, rc_mult1_Q30, rc_mult2, result, tmp_QA, v10, v12, v14, v3, v4, v7 opus_int32
 	var b_headrm, k, lshift, mult2Q, n, v13, v2, v25, v26, v27, v28 int32
@@ -23423,7 +23423,7 @@ func silk_LPC_inverse_pred_gain(tls *libc.TLS, A_Q12 uintptr, order int32) (r op
 	if DC_resp >= int32(4096) {
 		return 0
 	}
-	return LPC_inverse_pred_gain_QA(tls, bp, order)
+	return lpcInversePredGainQA(tls, bp, order)
 }
 
 const CELT_SIG_SCALE6 = "32768.f"
