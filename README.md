@@ -15,7 +15,8 @@ This is a complete Opus codec (SILK + CELT + Hybrid modes) — unlike other pure
 - Frame sizes: 2.5, 5, 10, 20, 40, 60 ms
 - Multistream support
 - Forward Error Correction (FEC)
-- Zero external dependencies (pure Go via modernc.org/libc)
+- Zero dependencies: the module requires nothing outside the Go standard library
+- Safe to use from many goroutines at once, one C context (`TLS`) per goroutine
 
 ## Performance
 
@@ -53,6 +54,36 @@ go build -o opus_compare ./cmd/opus_compare/
 
 ## Usage
 
+### Library
+
+The package exports the libopus C API (`opus.h`) in its transpiled form: pointers are `uintptr` values into C memory, and every call takes a C context.
+
+```go
+tls := opus.NewTLS() // one per goroutine
+defer tls.Close()
+
+errp := opus.Malloc(4)
+pcm := opus.Malloc(960 * 2 * 2) // 20 ms of 48 kHz stereo int16
+pkt := opus.Malloc(1500)
+va := opus.Malloc(8) // va_list slot for ctl calls
+defer func() {
+	for _, p := range []uintptr{errp, pcm, pkt, va} {
+		opus.Free(p)
+	}
+}()
+
+enc := opus.EncoderCreate(tls, 48000, 2, opus.OPUS_APPLICATION_AUDIO, errp)
+defer opus.EncoderDestroy(tls, enc)
+opus.EncoderCtl(tls, enc, opus.OPUS_SET_BITRATE_REQUEST, opus.VaList(va, int32(64000)))
+
+samples := unsafe.Slice((*int16)(unsafe.Pointer(pcm)), 960*2) // fill with audio
+n := opus.Encode(tls, enc, pcm, 960, pkt, 1500)                // n bytes at pkt
+```
+
+Buffers passed to the codec must come from `opus.Malloc`, not from Go slices: C memory lives outside the Go heap, so the garbage collector never moves or frees it and `-race` (checkptr) accepts the pointer arithmetic.
+
+**Compatibility with earlier versions.** Earlier versions required `modernc.org/libc` and took a `*libc.TLS`. The context parameter is now generic, so that code still compiles and produces the same output: any pointer other than `*opus.TLS` is used as a key for an internal context, which is released when the key is garbage collected. Memory from `libc.Xmalloc` and `libc.VaList` works as before. New code should use `opus.NewTLS`, `opus.Malloc`, `opus.Free` and `opus.VaList`, and needs no dependency.
+
 ### Command-line
 
 ```bash
@@ -85,19 +116,22 @@ ffmpeg -f s16le -ar 48000 -ac 2 -i decoded.pcm output.wav
 ```
 go-opus/
 ├── lib.go                  # Opus library (package opus), transpiled + hand-optimized kernels
-├── export.go               # Exported encoder/decoder entry points used by the CLI
+├── export.go               # Exported API: TLS, Malloc/Free, VaList, encoder/decoder entry points
+├── internal/libc/          # Minimal C runtime for lib.go (C stack, malloc, memcpy, va_list)
 ├── lib_test.go             # Bit-exact codec output tests and benchmarks
 ├── lib_kernels_test.go     # Optimized kernels vs. the generated reference code
 ├── ptr64.go                # 64-bit struct layout on 32-bit targets
 ├── libc_shim.go            # size_t wrappers for 32-bit targets
 ├── layout_test.go          # Struct layout check against testdata/layout64.txt
 ├── multistream_test.go     # Bit-exact multistream (5.1, quad) output test
+├── export_test.go          # Exported API with *TLS and with foreign (legacy) contexts
+├── runtime_test.go         # Encode/decode with C memory only; runs under -race
+├── concurrency_test.go     # Parallel encoders match a serial run
 ├── sx16*.go                # ppc64 compiler bug workaround
 ├── cmd/
 │   ├── opus_demo/main.go   # Encoder/decoder CLI (opus_demo.c) on top of package opus
-│   └── opus_compare/main.go # Audio comparison CLI
-├── go.mod
-└── go.sum
+│   └── opus_compare/main.go # Audio comparison CLI (opus_compare.c)
+└── go.mod
 ```
 
 ## How It Was Built
@@ -105,7 +139,8 @@ go-opus/
 1. Source: [RFC 6716](https://www.rfc-editor.org/rfc/rfc6716) reference C implementation (130 source files, ~93K lines)
 2. Each `.c` file compiled to `.o.go` using `ccgo -c` with flags: `-DUSE_ALLOCA -Drestrict= -DOPUS_BUILD`
 3. Object files linked into final Go source with `ccgo`
-4. Runtime provided by [modernc.org/libc](https://pkg.go.dev/modernc.org/libc)
+4. The runtime from [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) was replaced by `internal/libc`, which implements only what `lib.go` uses. `alloca` memory lives on the per-context C stack, so codec instances on different goroutines never share scratch memory
+5. The CLI tools were ported to plain Go; their output is byte-identical to the transpiled versions
 
 ## Alternatives
 
@@ -139,7 +174,7 @@ go-opus encodes about twice as fast. The quality measures point in different dir
 
 ## Platform Support
 
-The code was transpiled on `darwin/arm64`, but it runs on 64-bit targets and on 32-bit little-endian targets. On every platform marked "bit-exact" below, `TestCodecOutput` and `TestMultistreamOutput` pass, so encoded packets and decoded PCM match `darwin/arm64` exactly.
+The code was transpiled on `darwin/arm64`, but it runs on 64-bit targets and on 32-bit little-endian targets. It needs only the Go standard library, so it builds for every `GOOS/GOARCH` that Go supports. On every platform marked "bit-exact" below, `TestCodecOutput` and `TestMultistreamOutput` pass, so encoded packets and decoded PCM match `darwin/arm64` exactly.
 
 | Platform | Build | Status | Tested with |
 |---|---|---|---|
@@ -152,10 +187,11 @@ The code was transpiled on `darwin/arm64`, but it runs on 64-bit targets and on 
 | `linux/ppc64le` | ✅ | bit-exact (POWER8, POWER9; POWER10 not tested) | Docker + QEMU |
 | `windows/amd64`, `windows/386` | ✅ | bit-exact | Wine |
 | `windows/arm64`, `freebsd/*`, `netbsd/*`, `openbsd/*`, `illumos/amd64`, `linux/loong64` | ✅ | builds, not run | — |
-| `linux/mips64le` | ❌ | `modernc.org/libc` does not build | — |
-| `wasip1/wasm`, `js/wasm` | ❌ | not supported by `modernc.org/libc` | — |
+| `js/wasm` | ✅ | bit-exact | Node.js (`go_js_wasm_exec`) |
+| `linux/mips64` (big-endian) | ✅ | bit-exact | Docker + QEMU |
+| `wasip1/wasm`, `linux/mips64le`, `linux/ppc64`, `linux/mips`, `plan9/*`, `aix/ppc64`, `solaris/amd64`, `freebsd/riscv64` | ✅ | builds, not run | — |
 
-`modernc.org/libc` supports no 32-bit big-endian target, so those are out of reach.
+On targets without `mmap`/`VirtualAlloc` (wasm, plan9), C memory is Go heap memory kept alive by the runtime (`internal/libc/mem_goheap.go`); `-tags libc.goheap` selects this backend anywhere for testing.
 
 ### Portability notes
 
@@ -171,4 +207,4 @@ BSD 3-Clause — same as the original Opus reference implementation (IETF Trust,
 
 - [Opus Codec](https://opus-codec.org/) — IETF RFC 6716
 - [modernc.org/ccgo](https://pkg.go.dev/modernc.org/ccgo/v4) — C to Go transpiler by Jan Mercl
-- [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) — Go libc runtime
+- [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) — Go libc runtime used by earlier versions
