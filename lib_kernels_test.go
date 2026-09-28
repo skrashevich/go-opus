@@ -6,7 +6,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"modernc.org/libc"
+	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 // The reference functions below are verbatim scalar copies of the loops that
@@ -326,9 +326,9 @@ func ref_celt_autocorr(tls *libc.TLS, x uintptr, ac uintptr, window uintptr, ove
 	var i int32
 	var xx uintptr
 	_, _, _ = d, i, xx
-	_sp := _arenaSave()
-	defer _arenaRestore(_sp)
-	xx = _arenaAlloc(uint64(4) * uint64(n))
+	_sp := tls.ArenaSave()
+	defer tls.ArenaRestore(_sp)
+	xx = tls.ArenaAlloc(uint64(4) * uint64(n))
 	i = 0
 	for {
 		if !(i < n) {
@@ -1141,14 +1141,14 @@ func ref_clt_mdct_backward(tls *libc.TLS, l uintptr, in uintptr, out uintptr, wi
 	var f, f2, fp, fp1, fp11, fp2, fp21, t, t1, wp1, wp11, wp2, wp21, xp1, xp11, xp2, xp21, yp, yp1, yp11, yp2, v2 uintptr
 	var im, re, sine, x1, x2, yi, yi1, yr, yr1 float32
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = N, N2, N4, f, f2, fp, fp1, fp11, fp2, fp21, i, im, re, sine, t, t1, wp1, wp11, wp2, wp21, x1, x2, xp1, xp11, xp2, xp21, yi, yi1, yp, yp1, yp11, yp2, yr, yr1, v2
-	_sp := _arenaSave()
-	defer _arenaRestore(_sp)
+	_sp := tls.ArenaSave()
+	defer tls.ArenaRestore(_sp)
 	N = (*mdct_lookup)(unsafe.Pointer(l)).Fn
 	N = N >> shift
 	N2 = N >> int32(1)
 	N4 = N >> int32(2)
-	f = _arenaAlloc(uint64(4) * uint64(N2))
-	f2 = _arenaAlloc(uint64(4) * uint64(N2))
+	f = tls.ArenaAlloc(uint64(4) * uint64(N2))
+	f2 = tls.ArenaAlloc(uint64(4) * uint64(N2))
 	/* sin(x) ~= x here */
 	sine = float32(float32(float32(2)*libc.Float32FromFloat32(3.141592653))*libc.Float32FromFloat32(0.125)) / float32(N)
 	/* Pre-rotate */
@@ -1334,10 +1334,10 @@ func ref_deinterleave_hadamard(tls *libc.TLS, X uintptr, N0 int32, stride int32,
 	var N, i, j int32
 	var ordery, tmp uintptr
 	_, _, _, _, _ = N, i, j, ordery, tmp
-	_sp := _arenaSave()
-	defer _arenaRestore(_sp)
+	_sp := tls.ArenaSave()
+	defer tls.ArenaRestore(_sp)
 	N = N0 * stride
-	tmp = _arenaAlloc(uint64(4) * uint64(N))
+	tmp = tls.ArenaAlloc(uint64(4) * uint64(N))
 	if hadamard != 0 {
 		ordery = uintptr(unsafe.Pointer(&ordery_table)) + uintptr(stride)*4 - uintptr(2)*4
 		i = 0
@@ -1401,10 +1401,10 @@ func ref_interleave_hadamard(tls *libc.TLS, X uintptr, N0 int32, stride int32, h
 	var N, i, j int32
 	var ordery, tmp uintptr
 	_, _, _, _, _ = N, i, j, ordery, tmp
-	_sp := _arenaSave()
-	defer _arenaRestore(_sp)
+	_sp := tls.ArenaSave()
+	defer tls.ArenaRestore(_sp)
 	N = N0 * stride
-	tmp = _arenaAlloc(uint64(4) * uint64(N))
+	tmp = tls.ArenaAlloc(uint64(4) * uint64(N))
 	if hadamard != 0 {
 		ordery = uintptr(unsafe.Pointer(&ordery_table)) + uintptr(stride)*4 - uintptr(2)*4
 		i = 0
@@ -1747,15 +1747,15 @@ func ref_transient_analysis(tls *libc.TLS, in uintptr, len1 int32, C int32, over
 	var max_abs, t1, t2, t3, v7, v8, v9 opus_val16
 	var mem0, mem1, x, y opus_val32
 	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = N, bins, block, conseq, i, is_transient, j, j1, max_abs, mem0, mem1, t1, t2, t3, tmp, x, y, v7, v8, v9
-	_sp := _arenaSave()
-	defer _arenaRestore(_sp)
+	_sp := tls.ArenaSave()
+	defer tls.ArenaRestore(_sp)
 	mem0 = float32(0)
 	mem1 = float32(0)
 	is_transient = 0
-	tmp = _arenaAlloc(uint64(4) * uint64(len1))
+	tmp = tls.ArenaAlloc(uint64(4) * uint64(len1))
 	block = overlap / int32(2)
 	N = len1 / block
-	bins = _arenaAlloc(uint64(4) * uint64(N))
+	bins = tls.ArenaAlloc(uint64(4) * uint64(N))
 	if C == int32(1) {
 		i = 0
 		for {

@@ -1,6 +1,6 @@
 package opus
 
-import "modernc.org/libc"
+import "github.com/skrashevich/go-opus/internal/libc"
 
 // lib.go was generated for a 64-bit target, where size_t is uint64. These
 // wrappers keep that signature and convert to the platform's libc.Tsize_t, so

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"modernc.org/libc"
+	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 // TestMultistreamOutput pins the multistream encoder and decoder output. Besides

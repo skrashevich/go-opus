@@ -9,7 +9,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"modernc.org/libc"
+	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 // heapSink forces codec buffers onto the heap. The codec receives raw
