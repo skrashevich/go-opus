@@ -91,6 +91,8 @@ go-opus/
 ├── ptr64.go                # 64-bit struct layout on 32-bit targets
 ├── libc_shim.go            # size_t wrappers for 32-bit targets
 ├── layout_test.go          # Struct layout check against testdata/layout64.txt
+├── multistream_test.go     # Bit-exact multistream (5.1, quad) output test
+├── sx16*.go                # ppc64 compiler bug workaround
 ├── cmd/
 │   ├── opus_demo/main.go   # Encoder/decoder CLI (opus_demo.c) on top of package opus
 │   └── opus_compare/main.go # Audio comparison CLI
@@ -137,25 +139,29 @@ go-opus encodes about twice as fast. The quality measures point in different dir
 
 ## Platform Support
 
-The code was transpiled on `darwin/arm64`, but it runs on other 64-bit targets and on 32-bit little-endian targets. On every platform marked "bit-exact" below, `TestCodecOutput` passes, so encoded packets and decoded PCM match `darwin/arm64` exactly.
+The code was transpiled on `darwin/arm64`, but it runs on 64-bit targets and on 32-bit little-endian targets. On every platform marked "bit-exact" below, `TestCodecOutput` and `TestMultistreamOutput` pass, so encoded packets and decoded PCM match `darwin/arm64` exactly.
 
 | Platform | Build | Status | Tested with |
 |---|---|---|---|
 | `darwin/arm64` | ✅ | bit-exact | native |
 | `darwin/amd64` | ✅ | bit-exact | Rosetta 2 |
 | `linux/amd64`, `linux/arm64` | ✅ | bit-exact | Docker |
+| `linux/386`, `linux/arm` (32-bit) | ✅ | bit-exact | Docker + QEMU |
 | `linux/riscv64` | ✅ | bit-exact | Docker + QEMU |
 | `linux/s390x` (big-endian) | ✅ | bit-exact | Docker + QEMU |
-| `windows/amd64` | ✅ | bit-exact | Wine |
-| `linux/ppc64le` | ✅ | **broken**: SILK/hybrid output is wrong in optimized builds (correct with `-gcflags='-N -l'`); CELT is fine | Docker + QEMU |
-| `windows/arm64`, `freebsd/amd64`, `linux/loong64` | ✅ | builds, not run | — |
-| `linux/386`, `linux/arm` (32-bit) | ✅ | bit-exact | Docker + QEMU |
-| `windows/386` | ✅ | bit-exact | Wine |
+| `linux/ppc64le` | ✅ | bit-exact (POWER8, POWER9; POWER10 not tested) | Docker + QEMU |
+| `windows/amd64`, `windows/386` | ✅ | bit-exact | Wine |
+| `windows/arm64`, `freebsd/*`, `netbsd/*`, `openbsd/*`, `illumos/amd64`, `linux/loong64` | ✅ | builds, not run | — |
+| `linux/mips64le` | ❌ | `modernc.org/libc` does not build | — |
 | `wasip1/wasm`, `js/wasm` | ❌ | not supported by `modernc.org/libc` | — |
 
-On Windows, `cmd/opus_demo` does not build because `modernc.org/libc` has no `feof` there. The library itself works.
+`modernc.org/libc` supports no 32-bit big-endian target, so those are out of reach.
 
-32-bit targets keep the 64-bit memory layout: each C pointer field is padded to 8 bytes and 8-byte aligned (`ptr64.go`), and `size_t` arguments go through small wrappers (`libc_shim.go`). `TestStructLayout` checks the layout of every codec struct against `testdata/layout64.txt`. This only works on little-endian targets, so 32-bit big-endian targets (MIPS, PowerPC) are not supported.
+### Portability notes
+
+- **32-bit targets** keep the 64-bit memory layout that the transpiled code hardcodes. Each C pointer field is padded to 8 bytes and aligned to 8 bytes (`ptr64.go`). `size_t` arguments go through small wrappers (`libc_shim.go`). `TestStructLayout` checks every codec struct against `testdata/layout64.txt`. `TestStructLayoutCoverage` fails when code starts using a struct that is not checked, or views C memory as a Go `[N]uintptr` array.
+- **ppc64/ppc64le** needs a workaround for a Go compiler bug (Go 1.27.1). A lowering rule in `PPC64.rules` compares a size in bytes with 16. As a result it drops the 16-bit extension after a 32-bit shift, so `int32(int16(x >> 6))` compiles to `x >> 6`. The affected conversions in `lib.go` use `sx16` (`sx16_ppc64x.go`). On other targets `sx16` is plain `int16`.
+- **Big-endian:** test digests hash PCM as little-endian, so the same digests hold on every target.
 
 ## License
 

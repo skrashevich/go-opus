@@ -781,7 +781,9 @@ func main1(tls *libc.TLS, argc int32, argv uintptr) (r int32) {
 		}
 		if decode_only != 0 {
 			*(*int32)(unsafe.Pointer(bp)) = libc.Int32FromUint64(xfread(tls, bp+20, uint64(1), uint64(4), fin))
-			if libc.Xfeof(tls, fin) != 0 {
+			// fread read fewer than 4 bytes: end of file (or a read error). Same
+			// as feof() here, which modernc.org/libc lacks on Windows.
+			if *(*int32)(unsafe.Pointer(bp)) < 4 {
 				break
 			}
 			len1[toggle] = libc.Int32FromUint32(char_to_int(tls, bp+20))

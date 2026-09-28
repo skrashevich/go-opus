@@ -2,6 +2,9 @@ package opus
 
 import (
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"reflect"
 	"strings"
@@ -111,5 +114,65 @@ func TestStructLayout(t *testing.T) {
 			}
 			t.Fatalf("layout differs at line %d:\n got  %s\n want %s", i+1, g, w)
 		}
+	}
+}
+
+// TestStructLayoutCoverage keeps TestStructLayout complete as lib.go changes.
+// Every struct that function code refers to must be in layoutTypes: 32-bit
+// targets lay out pointers and 8-byte scalars differently, and only the golden
+// file comparison catches that. Code must also not view C memory as a Go
+// array of uintptr, whose stride is 4 bytes on 32-bit targets; use pslot.
+func TestStructLayoutCoverage(t *testing.T) {
+	f, err := parser.ParseFile(token.NewFileSet(), "lib.go", nil, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	structs := map[string]bool{}
+	alias := map[string]string{}
+	for _, d := range f.Decls {
+		g, ok := d.(*ast.GenDecl)
+		if !ok || g.Tok != token.TYPE {
+			continue
+		}
+		for _, s := range g.Specs {
+			ts := s.(*ast.TypeSpec)
+			switch typ := ts.Type.(type) {
+			case *ast.StructType:
+				structs[ts.Name.Name] = true
+			case *ast.Ident:
+				alias[ts.Name.Name] = typ.Name
+			}
+		}
+	}
+	listed := map[string]bool{}
+	for _, lt := range layoutTypes {
+		listed[lt.name] = true
+	}
+	missing := map[string]bool{}
+	for _, d := range f.Decls {
+		fd, ok := d.(*ast.FuncDecl)
+		if !ok {
+			continue
+		}
+		ast.Inspect(fd, func(n ast.Node) bool {
+			switch n := n.(type) {
+			case *ast.Ident:
+				name := n.Name
+				for alias[name] != "" {
+					name = alias[name]
+				}
+				if structs[name] && !listed[name] && !missing[name] {
+					missing[name] = true
+					t.Errorf("%s: struct %s is used by the codec but not listed in layoutTypes", fd.Name.Name, name)
+				}
+			case *ast.StarExpr:
+				if at, ok := n.X.(*ast.ArrayType); ok && at.Len != nil {
+					if id, ok := at.Elt.(*ast.Ident); ok && id.Name == "uintptr" {
+						t.Errorf("%s: *[N]uintptr view of C memory has a 4-byte stride on 32-bit targets; use pslot", fd.Name.Name)
+					}
+				}
+			}
+			return true
+		})
 	}
 }
