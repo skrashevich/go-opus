@@ -1,3 +1,8 @@
+// Copyright (c) 2026 Sergey Krashevich.
+// SPDX-License-Identifier: Apache-2.0
+// See LICENSE and NOTICE in the project root.
+// https://github.com/skrashevich/go-opus
+
 package libc
 
 // stackChunk is the size of one segment of the C stack.

@@ -1,3 +1,8 @@
+// Copyright (c) 2026 Sergey Krashevich.
+// SPDX-License-Identifier: Apache-2.0
+// See LICENSE and NOTICE in the project root.
+// https://github.com/skrashevich/go-opus
+
 // Package libc is the minimal C runtime that the transpiled libopus in the
 // parent package needs. It replaces modernc.org/libc and implements only the
 // symbols lib.go uses, with the same names and semantics.

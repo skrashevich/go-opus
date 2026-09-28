@@ -203,7 +203,22 @@ On targets without `mmap`/`VirtualAlloc` (wasm, plan9), C memory is Go heap memo
 
 ## License
 
-BSD 3-Clause — same as the original Opus reference implementation (IETF Trust, Skype Limited, Xiph.Org Foundation).
+Original additions and modifications to go-opus are Copyright (c) 2026
+Sergey Krashevich and licensed under the [Apache License 2.0](LICENSE).
+See [NOTICE](NOTICE) for project attribution.
+
+The underlying Opus reference code and derived portions retain their original
+BSD terms and copyright notices. Those notices are preserved in the source
+files and [COPYING](COPYING); Apache-2.0 does not replace their requirements.
+This is not a choice between Apache and BSD for the entire project: comply
+with the terms applicable to the portions you redistribute.
+
+When redistributing this version or derivatives containing its Apache-licensed
+contributions, include LICENSE, preserve the applicable attribution from NOTICE
+as required by Apache-2.0 section 4, and retain the applicable upstream notices
+from COPYING and the source files. Mark files you modify as required by the
+license. This licensing change does not revoke permissions granted for earlier
+versions.
 
 ## Credits
 

@@ -1,3 +1,9 @@
+// Original modifications and additions: Copyright (c) 2026 Sergey Krashevich.
+// These contributions are licensed under the Apache License, Version 2.0.
+// Upstream portions retain their original copyright and license notices.
+// See LICENSE, NOTICE and COPYING in the project root.
+// https://github.com/skrashevich/go-opus
+
 /* Copyright (c) 2011-2012 Xiph.Org Foundation, Mozilla Corporation
    Written by Jean-Marc Valin and Timothy B. Terriberry */
 /*
