@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Sergey Krashevich.
 // SPDX-License-Identifier: Apache-2.0
 
-package opus_test
+package opus
 
 import (
 	"encoding/binary"
@@ -13,8 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-
-	opus "github.com/skrashevich/go-opus"
 )
 
 // Compile independent consumers under both module identities, without access
@@ -43,6 +41,11 @@ func TestPionModuleReplacement(t *testing.T) {
 			cmd := exec.CommandContext(t.Context(), "go", "test", "-mod=mod", "./...")
 			cmd.Dir = client
 			cmd.Env = append(os.Environ(), "GOWORK=off", "GOPROXY=off", "GOSUMDB=off")
+			tidy := exec.CommandContext(t.Context(), "go", "mod", "tidy")
+			tidy.Dir, tidy.Env = cmd.Dir, cmd.Env
+			if out, err := tidy.CombinedOutput(); err != nil {
+				t.Fatalf("consumer tidy: %v\n%s", err, out)
+			}
 			if out, err := cmd.CombinedOutput(); err != nil {
 				t.Fatalf("consumer: %v\n%s", err, out)
 			}
@@ -52,7 +55,7 @@ func TestPionModuleReplacement(t *testing.T) {
 
 func TestPionRoundTrip(t *testing.T) {
 	for _, channels := range []int{1, 2} {
-		e, err := opus.NewEncoder(opus.WithChannels(channels), opus.WithBandwidth(opus.BandwidthFullband))
+		e, err := NewEncoder(WithChannels(channels), WithBandwidth(BandwidthFullband))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -68,7 +71,7 @@ func TestPionRoundTrip(t *testing.T) {
 		packet = packet[:n]
 		for _, rate := range []int{8000, 12000, 16000, 24000, 48000} {
 			for _, outputChannels := range []int{1, 2} {
-				d, err := opus.NewDecoderWithOutput(rate, outputChannels)
+				d, err := NewDecoderWithOutput(rate, outputChannels)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -86,7 +89,7 @@ func TestPionRoundTrip(t *testing.T) {
 				}
 				bytes := make([]byte, count*outputChannels*2)
 				bw, stereo, err := d.Decode(packet, bytes)
-				if err != nil || bw != opus.BandwidthFullband || stereo != (channels == 2) {
+				if err != nil || bw != BandwidthFullband || stereo != (channels == 2) {
 					t.Fatalf("metadata: %v %v %v", bw, stereo, err)
 				}
 				for i := range count * outputChannels {
@@ -100,7 +103,7 @@ func TestPionRoundTrip(t *testing.T) {
 }
 
 func TestPionInvalidInputPreservesState(t *testing.T) {
-	e, err := opus.NewEncoder()
+	e, err := NewEncoder()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +113,7 @@ func TestPionInvalidInputPreservesState(t *testing.T) {
 		t.Fatal(err)
 	}
 	packet = packet[:n]
-	d := opus.NewDecoder()
+	d := NewDecoder()
 	if _, err := d.DecodeToFloat32(nil, make([]float32, 960)); err == nil {
 		t.Fatal("empty packet accepted")
 	}
@@ -121,7 +124,7 @@ func TestPionInvalidInputPreservesState(t *testing.T) {
 		t.Fatal("invalid rate accepted")
 	}
 	got, want := make([]float32, 960), make([]float32, 960)
-	fresh := opus.NewDecoder()
+	fresh := NewDecoder()
 	if _, err := d.DecodeToFloat32(packet, got); err != nil {
 		t.Fatal(err)
 	}
@@ -143,18 +146,18 @@ func TestPionInvalidInputPreservesState(t *testing.T) {
 }
 
 func TestPionSILKAndPLC(t *testing.T) {
-	e, err := opus.NewEncoder()
+	e, err := NewEncoder()
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, bw := range []opus.Bandwidth{opus.BandwidthNarrowband, opus.BandwidthMediumband, opus.BandwidthWideband} {
+	for _, bw := range []Bandwidth{BandwidthNarrowband, BandwidthMediumband, BandwidthWideband} {
 		for _, units := range []int{1, 2, 3} {
 			packet := make([]byte, 1500)
 			n, err := e.EncodeSILK(make([]int16, bw.SampleRate()/50*units), bw, packet)
 			if err != nil {
 				t.Fatal(err)
 			}
-			d := opus.NewDecoder()
+			d := NewDecoder()
 			out := make([]int16, 960*units)
 			count, err := d.DecodeToInt16(packet[:n], out)
 			if err != nil || count != len(out) {
@@ -165,7 +168,7 @@ func TestPionSILKAndPLC(t *testing.T) {
 			}
 		}
 	}
-	d := opus.NewDecoder()
+	d := NewDecoder()
 	out := make([]int16, 960)
 	for i := range out {
 		out[i] = 123
@@ -184,15 +187,15 @@ func TestPionSILKAndPLC(t *testing.T) {
 }
 
 func TestPionEncoderOptions(t *testing.T) {
-	e, err := opus.NewEncoder(opus.WithVBR(true), opus.WithConstrainedVBR(false), opus.WithApplication(opus.ApplicationVoIP), opus.WithComplexity(7), opus.WithMaxBandwidth(opus.BandwidthWideband))
+	e, err := NewEncoder(WithVBR(true), WithConstrainedVBR(false), WithApplication(ApplicationVoIP), WithComplexity(7), WithMaxBandwidth(BandwidthWideband))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !e.VBR() || e.ConstrainedVBR() || e.Application() != opus.ApplicationVoIP || e.Complexity() != 7 || e.MaxBandwidth() != opus.BandwidthWideband || e.Bandwidth() != opus.BandwidthAuto {
+	if !e.VBR() || e.ConstrainedVBR() || e.Application() != ApplicationVoIP || e.Complexity() != 7 || e.MaxBandwidth() != BandwidthWideband || e.Bandwidth() != BandwidthAuto {
 		t.Fatal("options lost")
 	}
-	for _, opt := range []opus.EncoderOption{opus.WithSampleRate(44100), opus.WithChannels(3), opus.WithBitrate(5999), opus.WithComplexity(11), opus.WithApplication(0), opus.WithBandwidth(opus.BandwidthAuto), opus.WithMaxBandwidth(opus.BandwidthMediumband)} {
-		if _, err := opus.NewEncoder(opt); err == nil {
+	for _, opt := range []EncoderOption{WithSampleRate(44100), WithChannels(3), WithBitrate(5999), WithComplexity(11), WithApplication(0), WithBandwidth(BandwidthAuto), WithMaxBandwidth(BandwidthMediumband)} {
+		if _, err := NewEncoder(opt); err == nil {
 			t.Fatal("invalid option accepted")
 		}
 	}
@@ -202,7 +205,7 @@ func TestPionEncoderOptions(t *testing.T) {
 	if err := e.SetLossRate(12); err != nil || e.LossRate() != 12 {
 		t.Fatal("loss rate lost")
 	}
-	if err := e.SetBandwidth(opus.BandwidthNarrowband); err != nil {
+	if err := e.SetBandwidth(BandwidthNarrowband); err != nil {
 		t.Fatal(err)
 	}
 	packet := make([]byte, 1500)
@@ -210,9 +213,9 @@ func TestPionEncoderOptions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	d := opus.NewDecoder()
+	d := NewDecoder()
 	bw, _, err := d.DecodeFloat32(packet[:n], make([]float32, 960))
-	if err != nil || bw != opus.BandwidthNarrowband {
+	if err != nil || bw != BandwidthNarrowband {
 		t.Fatalf("bandwidth ctl: %v %v", bw, err)
 	}
 }

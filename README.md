@@ -41,7 +41,7 @@ go test -run '^$' -bench 'Benchmark(Encode|Decode)$' -benchtime=1s -count=5 -cpu
 ## Installation
 
 ```bash
-go get github.com/skrashevich/go-opus@v0.1.0
+go get github.com/skrashevich/go-opus@v0.1.1
 ```
 
 ### Command-line tools
@@ -83,7 +83,7 @@ To keep existing `github.com/pion/opus` and `github.com/pion/opus/pkg/oggreader`
 imports unchanged, add one replacement to the consuming project's `go.mod`:
 
 ```go
-replace github.com/pion/opus => github.com/skrashevich/go-opus v0.1.0
+replace github.com/pion/opus => github.com/skrashevich/go-opus v0.1.1
 ```
 
 Then run `go mod tidy`. Go downloads the tagged module from GitHub through the
@@ -92,7 +92,7 @@ existing `require github.com/pion/opus ...` directive stays in place. For a new
 project using the Pion import path, add it with
 `go mod edit -require=github.com/pion/opus@v0.1.0` before `go mod tidy`.
 
-Alternatively, run `go get github.com/skrashevich/go-opus@v0.1.0` and change the
+Alternatively, run `go get github.com/skrashevich/go-opus@v0.1.1` and change the
 import to `import opus "github.com/skrashevich/go-opus"` (and, if used,
 `"github.com/skrashevich/go-opus/pkg/oggreader"`). Both forms expose the same
 public API. Go 1.26.1 or later is required, as declared in `go.mod`.

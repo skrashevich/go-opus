@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.1.1
+
+- Fix `go mod tidy` for consumers replacing `github.com/pion/opus` with this
+  module. Dependency tests no longer import the module through a second name.
+- Check both import paths with `go mod tidy` as well as compilation and a real
+  encode/decode round trip in independent consumer modules.
+
 ## v0.1.0
 
 - Add the public pion/opus decoder and encoder API, including PCM slice methods,

@@ -1,15 +1,13 @@
 // Copyright (c) 2026 Sergey Krashevich.
 // SPDX-License-Identifier: Apache-2.0
 
-package oggreader_test
+package oggreader
 
 import (
 	"bytes"
 	"errors"
 	"io"
 	"testing"
-
-	"github.com/skrashevich/go-opus/pkg/oggreader"
 )
 
 func TestPionOggReader(t *testing.T) {
@@ -24,7 +22,7 @@ func TestPionOggReader(t *testing.T) {
 		0x00, 0x8e, 0x9b, 0x20, 0xaa, 0x02, 0x00, 0x00, 0x00, 0x49,
 		0x97, 0x03, 0x37, 0x01, 0x05, 0x98, 0x36, 0xbe, 0x88, 0x9e,
 	}
-	r, h, err := oggreader.NewWith(bytes.NewReader(container))
+	r, h, err := NewWith(bytes.NewReader(container))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +37,7 @@ func TestPionOggReader(t *testing.T) {
 		t.Fatalf("EOF: %v", err)
 	}
 	container[len(container)-1] ^= 1
-	r, _, err = oggreader.NewWith(bytes.NewReader(container))
+	r, _, err = NewWith(bytes.NewReader(container))
 	if err != nil {
 		t.Fatal(err)
 	}
