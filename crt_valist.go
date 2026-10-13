@@ -3,13 +3,13 @@
 // See LICENSE and NOTICE in the project root.
 // https://github.com/skrashevich/go-opus
 
-package libc
+package opus
 
 import "unsafe"
 
 // VaList stores args at p, 8 bytes per argument, and returns p. It supports
 // the argument types lib.go passes.
-func VaList(p uintptr, args ...any) uintptr {
+func crtVaList(p uintptr, args ...any) uintptr {
 	r := p
 	for _, v := range args {
 		switch x := v.(type) {
@@ -31,7 +31,7 @@ func VaList(p uintptr, args ...any) uintptr {
 	return r
 }
 
-func VaInt32(app *uintptr) int32 {
+func crtVaInt32(app *uintptr) int32 {
 	ap := *app
 	if ap == 0 {
 		return 0
@@ -40,7 +40,7 @@ func VaInt32(app *uintptr) int32 {
 	return int32(*(*int64)(unsafe.Pointer(ap)))
 }
 
-func VaUintptr(app *uintptr) uintptr {
+func crtVaUintptr(app *uintptr) uintptr {
 	ap := *app
 	if ap == 0 {
 		return 0

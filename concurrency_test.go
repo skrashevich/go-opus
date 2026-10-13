@@ -10,20 +10,18 @@ import (
 	"sync"
 	"testing"
 	"unsafe"
-
-	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 func encodeStream(t *testing.T) []byte {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	const frame, ch = 960, 2
-	status := libc.Xmalloc(tls, 4)
-	pcm := libc.Xmalloc(tls, frame*ch*2)
-	pkt := libc.Xmalloc(tls, 4000)
-	defer libc.Xfree(tls, status)
-	defer libc.Xfree(tls, pcm)
-	defer libc.Xfree(tls, pkt)
+	status := crtXmalloc(tls, 4)
+	pcm := crtXmalloc(tls, frame*ch*2)
+	pkt := crtXmalloc(tls, 4000)
+	defer crtXfree(tls, status)
+	defer crtXfree(tls, pcm)
+	defer crtXfree(tls, pkt)
 	enc := opus_encoder_create(tls, 48000, ch, OPUS_APPLICATION_AUDIO, status)
 	defer opus_encoder_destroy(tls, enc)
 	s := unsafe.Slice((*int16)(unsafe.Pointer(pcm)), frame*ch)

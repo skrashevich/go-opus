@@ -16,3 +16,11 @@ support, performance optimizations, portability changes and tests. This
 attribution applies to those contributions, not to the underlying Opus code.
 
 This NOTICE is informational and does not modify the license terms.
+
+The pion/opus compatibility API is checked against upstream commit
+44637de087b3f506170ab738ed96ac1be338006b and the v0.1.0 public API.
+pion_softclip.go and pkg/oggreader/oggreader.go are copied from that upstream
+commit. testdata/pion-redundancy.json contains one synthetic PLC fixture case
+from its testdata/short-plc/libopus.json. Their MIT notices are retained:
+Copyright (c) 2026 The Pion community <https://pion.ly>
+The applicable MIT license is included in LICENSES/pion-MIT.txt.

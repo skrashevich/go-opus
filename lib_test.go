@@ -9,8 +9,6 @@ import (
 	"runtime"
 	"testing"
 	"unsafe"
-
-	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 const (
@@ -20,10 +18,10 @@ const (
 	testMaxPacket  = 4096
 )
 
-func newTestTLS(tb testing.TB) *libc.TLS {
+func newTestTLS(tb testing.TB) *crtTLS {
 	tb.Helper()
 
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	tb.Cleanup(tls.Close)
 	return tls
 }
@@ -63,7 +61,7 @@ func testCString(p uintptr) string {
 	}
 }
 
-func newEncoder(tb testing.TB, tls *libc.TLS) uintptr {
+func newEncoder(tb testing.TB, tls *crtTLS) uintptr {
 	tb.Helper()
 
 	var err int32
@@ -75,7 +73,7 @@ func newEncoder(tb testing.TB, tls *libc.TLS) uintptr {
 	return enc
 }
 
-func newDecoder(tb testing.TB, tls *libc.TLS) uintptr {
+func newDecoder(tb testing.TB, tls *crtTLS) uintptr {
 	tb.Helper()
 
 	var err int32
@@ -87,7 +85,7 @@ func newDecoder(tb testing.TB, tls *libc.TLS) uintptr {
 	return dec
 }
 
-func encodeTestFrame(tb testing.TB, tls *libc.TLS, enc uintptr, pcm []opus_int16) []byte {
+func encodeTestFrame(tb testing.TB, tls *crtTLS, enc uintptr, pcm []opus_int16) []byte {
 	tb.Helper()
 
 	packet := make([]byte, testMaxPacket)

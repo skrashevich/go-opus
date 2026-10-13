@@ -12,8 +12,6 @@ import (
 	"runtime"
 	"testing"
 	"unsafe"
-
-	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 // The reference output digests include explicit float32 rounding.
@@ -43,7 +41,7 @@ func TestPortabilityCodecOutput(t *testing.T) {
 		{"mix 24k stereo 40ms long", 24000, 960, 48000, 2, OPUS_APPLICATION_AUDIO, 2, 100, "322197c02cb1dd2d352d2d5a2dd1b5a80c02aaafe456e72a9169537e2372b5a0"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			tls := libc.NewTLS()
+			tls := crtNewTLS()
 			defer tls.Close()
 			status := &cBuf[int32](1)[0]
 			enc := opus_encoder_create(tls, tc.rate, tc.channels, tc.application, uintptr(unsafe.Pointer(status)))
@@ -53,7 +51,7 @@ func TestPortabilityCodecOutput(t *testing.T) {
 			defer opus_encoder_destroy(tls, enc)
 			if tc.bitrate != 0 {
 				va := tls.Alloc(16)
-				rc := opus_encoder_ctl(tls, enc, OPUS_SET_BITRATE_REQUEST, libc.VaList(va, tc.bitrate))
+				rc := opus_encoder_ctl(tls, enc, OPUS_SET_BITRATE_REQUEST, crtVaList(va, tc.bitrate))
 				tls.Free(16)
 				if rc != OPUS_OK {
 					t.Fatalf("set bitrate: %d", rc)

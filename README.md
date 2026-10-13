@@ -41,7 +41,7 @@ go test -run '^$' -bench 'Benchmark(Encode|Decode)$' -benchtime=1s -count=5 -cpu
 ## Installation
 
 ```bash
-go get github.com/skrashevich/go-opus
+go get github.com/skrashevich/go-opus@v0.1.0
 ```
 
 ### Command-line tools
@@ -57,6 +57,69 @@ go build -o opus_compare ./cmd/opus_compare/
 ## Usage
 
 ### Library
+
+#### Pion-compatible Go API
+
+The root package also exports the public `github.com/pion/opus` codec API:
+`Decoder`, `NewDecoder`, `NewDecoderWithOutput`, all PCM decode methods and
+`DecodePLC`; `Encoder`, `NewEncoder`, encoder options, controls and PCM encode
+methods; `Bandwidth`, `Application` and their constants. `Configuration` is
+retained for v0.1.0 callers. `pkg/oggreader` provides the public Ogg reader API.
+Compatibility is based on Pion v0.1.0 and upstream commit
+[`44637de`](https://github.com/pion/opus/tree/44637de087b3f506170ab738ed96ac1be338006b).
+
+To switch an import directly:
+
+```go
+import opus "github.com/skrashevich/go-opus"
+
+decoder := opus.NewDecoder() // 48 kHz mono, like pion/opus
+pcm := make([]int16, 5760)   // up to 120 ms
+samplesPerChannel, err := decoder.DecodeToInt16(packet, pcm)
+// On success, pcm[:samplesPerChannel] contains the decoded mono samples.
+```
+
+To keep existing `github.com/pion/opus` and `github.com/pion/opus/pkg/oggreader`
+imports unchanged, add one replacement to the consuming project's `go.mod`:
+
+```go
+replace github.com/pion/opus => github.com/skrashevich/go-opus v0.1.0
+```
+
+Then run `go mod tidy`. Go downloads the tagged module from GitHub through the
+configured module proxy; no local checkout or adapter module is needed. The
+existing `require github.com/pion/opus ...` directive stays in place. For a new
+project using the Pion import path, add it with
+`go mod edit -require=github.com/pion/opus@v0.1.0` before `go mod tidy`.
+
+Alternatively, run `go get github.com/skrashevich/go-opus@v0.1.0` and change the
+import to `import opus "github.com/skrashevich/go-opus"` (and, if used,
+`"github.com/skrashevich/go-opus/pkg/oggreader"`). Both forms expose the same
+public API. Go 1.26.1 or later is required, as declared in `go.mod`.
+
+`NewDecoderWithOutput` supports 8, 12, 16, 24 and 48 kHz, mono or stereo.
+`DecodeToInt16` and `DecodeToFloat32` return samples **per channel**; stereo PCM
+is interleaved. `Decode` writes signed 16-bit little-endian bytes. Metadata
+methods report the packet bandwidth and encoded stereo flag, independently of
+the configured output format. Empty packets are errors; use `DecodePLC` for loss.
+`Init` resets a decoder and validates settings before replacing its state.
+
+The compatible encoder follows Pion's defaults: 48 kHz mono, 24 kbit/s,
+complexity 5, CBR, constrained VBR enabled, and `ApplicationAudio`.
+`Encode`/`EncodeFloat32` take one 20 ms frame and emit CELT packets;
+`EncodeSILK` takes mono 20/40/60 ms PCM at 8/12/16 kHz for narrow/medium/wide
+bandwidth. Like the referenced Pion encoder, the application profile is recorded
+without automatically changing the other controls.
+
+This is public API compatibility, not identical encoded bytes or bit-exact PCM
+with Pion's implementation: the codec engine remains this project's RFC 6716
+reference implementation. Pion's `internal` packages are outside this contract.
+Go slices are copied into reusable native buffers; resources are reclaimed
+automatically. Use separate encoders/decoders for independent streams, never
+access an instance concurrently, and do not copy an initialized instance.
+The root module still has no external dependencies.
+
+#### Low-level API
 
 The package exports the libopus C API (`opus.h`) in its transpiled form: pointers are `uintptr` values into C memory, and every call takes a C context.
 
@@ -123,7 +186,7 @@ ffmpeg -f s16le -ar 48000 -ac 2 -i decoded.pcm output.wav
 go-opus/
 ├── lib.go                  # Opus library (package opus), transpiled + hand-optimized kernels
 ├── export.go               # Exported API: TLS, Malloc/Free, VaList, encoder/decoder entry points
-├── internal/libc/          # Minimal C runtime for lib.go (C stack, malloc, memcpy, va_list)
+├── crt_*.go                # Private C runtime in the root package (C stack, malloc, memcpy, va_list)
 ├── lib_test.go             # Creation, packet round-trip tests and benchmarks
 ├── codec_output_test.go    # Reference codec output digests and benchmarks
 ├── portability_test.go     # Additional output regression coverage
@@ -149,7 +212,7 @@ go-opus/
 1. Source: [RFC 6716](https://www.rfc-editor.org/rfc/rfc6716) reference C implementation (130 source files, ~93K lines)
 2. Each `.c` file compiled to `.o.go` using `ccgo -c` with flags: `-DUSE_ALLOCA -Drestrict= -DOPUS_BUILD`
 3. Object files linked into final Go source with `ccgo`
-4. The runtime from [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) was replaced by `internal/libc`, which implements only what `lib.go` uses. `alloca` memory lives on the per-context C stack, so codec instances on different goroutines never share scratch memory
+4. The runtime from [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) was replaced by the private `crt_*.go` helpers, which implement only what `lib.go` uses. `alloca` memory lives on the per-context C stack, so codec instances on different goroutines never share scratch memory
 5. The CLI tools were ported to plain Go and the complete demo was moved into the library; their output is byte-identical to the transpiled versions built on darwin. The packet-loss simulation (`-loss`, `-random_fec`, `-random_framesize`) uses the `rand()` sequence of the darwin build on every platform; the transpiled Linux build used musl's `rand()` and produced different loss patterns
 
 ## Alternatives
@@ -205,7 +268,7 @@ The consolidated sources were checked with Go 1.27.1: the library builds for all
 | `linux/mips64` (big-endian) | ✅ | bit-exact | Docker + QEMU |
 | `wasip1/wasm`, `linux/mips64le`, `linux/ppc64`, `linux/mips`, `plan9/*`, `aix/ppc64`, `solaris/amd64`, `freebsd/riscv64` | ✅ | builds, not run | — |
 
-On targets without `mmap`/`VirtualAlloc` (wasm, plan9), C memory is Go heap memory kept alive by the runtime (`internal/libc/mem_goheap.go`); `-tags libc.goheap` selects this backend anywhere for testing.
+On targets without `mmap`/`VirtualAlloc` (wasm, plan9), C memory is Go heap memory kept alive by the runtime (`crt_mem_goheap.go`); `-tags libc.goheap` selects this backend anywhere for testing.
 
 ### Portability notes
 

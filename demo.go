@@ -12,8 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"unsafe"
-
-	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 const demoMaxPacket = 1500
@@ -70,7 +68,7 @@ func RunDemo(args []string) int {
 		return int(EXIT_FAILURE)
 	}
 
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 
 	fmt.Fprintf(os.Stderr, "%s\n", demoCString(opus_get_version_string(tls)))
@@ -263,7 +261,7 @@ func parseDemoArgs(args []string) (demoConfig, bool) {
 	return cfg, true
 }
 
-func runDemoEncode(tls *libc.TLS, cfg demoConfig) int {
+func runDemoEncode(tls *crtTLS, cfg demoConfig) int {
 	input, err := os.ReadFile(cfg.input)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not open input file %s\n", cfg.input)
@@ -313,7 +311,7 @@ func runDemoEncode(tls *libc.TLS, cfg demoConfig) int {
 	return int(EXIT_SUCCESS)
 }
 
-func runDemoDecode(tls *libc.TLS, cfg demoConfig) int {
+func runDemoDecode(tls *crtTLS, cfg demoConfig) int {
 	input, err := os.ReadFile(cfg.input)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not open input file %s\n", cfg.input)
@@ -351,7 +349,7 @@ type demoStats struct {
 	activeBits float64
 }
 
-func encodeFrames(tls *libc.TLS, cfg demoConfig, enc uintptr, input []byte, skip int32) ([]byte, []byte, demoStats, bool) {
+func encodeFrames(tls *crtTLS, cfg demoConfig, enc uintptr, input []byte, skip int32) ([]byte, []byte, demoStats, bool) {
 	var dec uintptr
 	if !cfg.encodeOnly {
 		var decErr int32
@@ -419,7 +417,7 @@ func encodeFrames(tls *libc.TLS, cfg demoConfig, enc uintptr, input []byte, skip
 	return packetized, decodedBytes, stats, true
 }
 
-func decodePackets(tls *libc.TLS, cfg demoConfig, dec uintptr, input []byte, skip int32) ([]byte, demoStats, bool) {
+func decodePackets(tls *crtTLS, cfg demoConfig, dec uintptr, input []byte, skip int32) ([]byte, demoStats, bool) {
 	decoded := make([]opus_int16, int(cfg.sampleRate/25*cfg.channels*6))
 	var decodedBytes []byte
 	stats := demoStats{}
@@ -515,22 +513,22 @@ func printDemoStats(sampleRate, frameSize int32, stats demoStats) {
 	}
 }
 
-func ctl1(tls *libc.TLS, enc uintptr, request int32, value int32) {
+func ctl1(tls *crtTLS, enc uintptr, request int32, value int32) {
 	bp := tls.Alloc(16)
 	defer tls.Free(16)
-	opus_encoder_ctl(tls, enc, request, libc.VaList(bp, value))
+	opus_encoder_ctl(tls, enc, request, crtVaList(bp, value))
 }
 
-func encCtlPtr(tls *libc.TLS, state uintptr, request int32, ptr uintptr) {
+func encCtlPtr(tls *crtTLS, state uintptr, request int32, ptr uintptr) {
 	bp := tls.Alloc(16)
 	defer tls.Free(16)
-	opus_encoder_ctl(tls, state, request, libc.VaList(bp, ptr))
+	opus_encoder_ctl(tls, state, request, crtVaList(bp, ptr))
 }
 
-func decCtlPtr(tls *libc.TLS, state uintptr, request int32, ptr uintptr) {
+func decCtlPtr(tls *crtTLS, state uintptr, request int32, ptr uintptr) {
 	bp := tls.Alloc(16)
 	defer tls.Free(16)
-	opus_decoder_ctl(tls, state, request, libc.VaList(bp, ptr))
+	opus_decoder_ctl(tls, state, request, crtVaList(bp, ptr))
 }
 
 func parseInt32(s, name string) (int32, bool) {

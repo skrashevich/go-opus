@@ -5,7 +5,7 @@
 
 //go:build (!unix && !windows) || libc.goheap
 
-package libc
+package opus
 
 import (
 	"sync"
@@ -18,24 +18,24 @@ import (
 // which none of these targets support.
 
 var (
-	mu     sync.Mutex
-	blocks = map[uintptr][]uint64{}
+	crtMu     sync.Mutex
+	crtBlocks = map[uintptr][]uint64{}
 )
 
-func sysAlloc(n uintptr) uintptr {
+func crtSysAlloc(n uintptr) uintptr {
 	b := make([]uint64, (n+7)/8) // 8-byte aligned, zeroed
 	p := uintptr(unsafe.Pointer(&b[0]))
-	mu.Lock()
-	blocks[p] = b
-	mu.Unlock()
+	crtMu.Lock()
+	crtBlocks[p] = b
+	crtMu.Unlock()
 	return p
 }
 
-func sysFree(p uintptr) {
-	mu.Lock()
-	defer mu.Unlock()
-	if _, ok := blocks[p]; !ok {
+func crtSysFree(p uintptr) {
+	crtMu.Lock()
+	defer crtMu.Unlock()
+	if _, ok := crtBlocks[p]; !ok {
 		panic("libc: free of unknown pointer")
 	}
-	delete(blocks, p)
+	delete(crtBlocks, p)
 }

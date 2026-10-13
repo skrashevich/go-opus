@@ -8,8 +8,6 @@ package opus
 import (
 	"runtime"
 	"sync"
-
-	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 // Exported entry points of the libopus C API (opus.h) for callers outside
@@ -27,22 +25,22 @@ import (
 
 // TLS is the per-goroutine C context of the codec. A TLS must not be used by
 // two goroutines at once.
-type TLS = libc.TLS
+type TLS = crtTLS
 
 // NewTLS returns a new C context. Call Close when done with it.
-func NewTLS() *TLS { return libc.NewTLS() }
+func NewTLS() *TLS { return crtNewTLS() }
 
 // Malloc allocates n bytes of C memory, or returns 0 if the allocation fails.
 // Unix and Windows use memory outside the Go heap; other targets retain Go heap memory. The memory must be released with Free. Each call maps
 // at least one page, so allocate buffers once and reuse them.
-func Malloc(n int) uintptr { return libc.Xmalloc(nil, libc.Tsize_t(n)) }
+func Malloc(n int) uintptr { return crtXmalloc(nil, crtTsize_t(n)) }
 
 // Free releases memory returned by Malloc. Free(0) is a no-op.
-func Free(p uintptr) { libc.Xfree(nil, p) }
+func Free(p uintptr) { crtXfree(nil, p) }
 
 // VaList stores ctl arguments (int32 or uintptr) at p, which must hold 8
 // bytes per argument, and returns p for use as the va argument of a ctl call.
-func VaList(p uintptr, args ...any) uintptr { return libc.VaList(p, args...) }
+func VaList(p uintptr, args ...any) uintptr { return crtVaList(p, args...) }
 
 // spare holds idle contexts lent to callers that pass a foreign context.
 var spare struct {
@@ -63,7 +61,7 @@ func acquire[T any](t *T) (*TLS, bool) {
 		spare.list = spare.list[:n-1]
 		return own, true
 	}
-	return libc.NewTLS(), true
+	return crtNewTLS(), true
 }
 
 func release(own *TLS, borrowed bool) {

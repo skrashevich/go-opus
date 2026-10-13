@@ -11,8 +11,6 @@ import (
 	"math/rand/v2"
 	"testing"
 	"unsafe"
-
-	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 // The reference functions below are verbatim scalar copies of the loops that
@@ -107,7 +105,7 @@ func TestPitchXcorrKernels(t *testing.T) {
 }
 
 // ref_remove_doubling is remove_doubling as generated at 939ada7.
-func ref_remove_doubling(tls *libc.TLS, x uintptr, maxperiod int32, minperiod int32, N int32, T0_ uintptr, prev_period int32, prev_gain opus_val16) (r opus_val16) {
+func ref_remove_doubling(tls *crtTLS, x uintptr, maxperiod int32, minperiod int32, N int32, T0_ uintptr, prev_period int32, prev_gain opus_val16) (r opus_val16) {
 	var T, T0, T1, T11, T1b, i, k, minperiod0, offset, v1 int32
 	var best_xy, best_yy, xx, xy, yy, v2, v3 opus_val32
 	var cont, g, g0, g1, pg, v5 opus_val16
@@ -187,17 +185,17 @@ func ref_remove_doubling(tls *libc.TLS, x uintptr, maxperiod int32, minperiod in
 			;
 			i = i + 1
 		}
-		g1 = xy / float32(math.Sqrt(float64(float32(1)+float32(float32(float32(libc.Float32FromFloat32(2)*xx)*libc.Float32FromFloat32(1))*yy))))
-		if libc.Xabs(tls, T1-prev_period) <= int32(1) {
+		g1 = xy / float32(math.Sqrt(float64(float32(1)+float32(float32(float32(crtFloat32FromFloat32(2)*xx)*crtFloat32FromFloat32(1))*yy))))
+		if crtXabs(tls, T1-prev_period) <= int32(1) {
 			cont = prev_gain
 		} else {
-			if libc.Xabs(tls, T1-prev_period) <= int32(2) && int32(5)*k*k < T0 {
-				cont = float32(libc.Float32FromFloat32(0.5) * prev_gain)
+			if crtXabs(tls, T1-prev_period) <= int32(2) && int32(5)*k*k < T0 {
+				cont = float32(crtFloat32FromFloat32(0.5) * prev_gain)
 			} else {
 				cont = float32(0)
 			}
 		}
-		if g1 > libc.Float32FromFloat32(0.3)+float32(libc.Float32FromFloat32(0.4)*g0)-cont {
+		if g1 > crtFloat32FromFloat32(0.3)+float32(crtFloat32FromFloat32(0.4)*g0)-cont {
 			best_xy = xy
 			best_yy = yy
 			T = T1
@@ -209,7 +207,7 @@ func ref_remove_doubling(tls *libc.TLS, x uintptr, maxperiod int32, minperiod in
 		k = k + 1
 	}
 	if best_yy <= best_xy {
-		pg = libc.Float32FromFloat32(1)
+		pg = crtFloat32FromFloat32(1)
 	} else {
 		pg = best_xy / (best_yy + float32(1))
 	}
@@ -237,10 +235,10 @@ func ref_remove_doubling(tls *libc.TLS, x uintptr, maxperiod int32, minperiod in
 		;
 		k = k + 1
 	}
-	if xcorr[int32(2)]-xcorr[0] > float32(libc.Float32FromFloat32(0.7)*(xcorr[int32(1)]-xcorr[0])) {
+	if xcorr[int32(2)]-xcorr[0] > float32(crtFloat32FromFloat32(0.7)*(xcorr[int32(1)]-xcorr[0])) {
 		offset = int32(1)
 	} else {
-		if xcorr[0]-xcorr[int32(2)] > float32(libc.Float32FromFloat32(0.7)*(xcorr[int32(1)]-xcorr[int32(2)])) {
+		if xcorr[0]-xcorr[int32(2)] > float32(crtFloat32FromFloat32(0.7)*(xcorr[int32(1)]-xcorr[int32(2)])) {
 			offset = -int32(1)
 		} else {
 			offset = 0
@@ -257,7 +255,7 @@ func ref_remove_doubling(tls *libc.TLS, x uintptr, maxperiod int32, minperiod in
 }
 
 func TestRemoveDoubling(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	r := rand.New(rand.NewPCG(3, 4))
 	const maxperiod, minperiod, n = 1024, 15, 960
@@ -285,7 +283,7 @@ func TestRemoveDoubling(t *testing.T) {
 }
 
 // refcelt_fir is celt_fir as generated at 939ada7.
-func refcelt_fir(tls *libc.TLS, x uintptr, num uintptr, y uintptr, N int32, ord int32, mem uintptr) {
+func refcelt_fir(tls *crtTLS, x uintptr, num uintptr, y uintptr, N int32, ord int32, mem uintptr) {
 	var i, j int32
 	var sum opus_val32
 	_, _, _ = i, j, sum
@@ -327,7 +325,7 @@ func refcelt_fir(tls *libc.TLS, x uintptr, num uintptr, y uintptr, N int32, ord 
 }
 
 // ref_celt_autocorr is _celt_autocorr as generated at 939ada7.
-func ref_celt_autocorr(tls *libc.TLS, x uintptr, ac uintptr, window uintptr, overlap int32, lag int32, n int32) {
+func ref_celt_autocorr(tls *crtTLS, x uintptr, ac uintptr, window uintptr, overlap int32, lag int32, n int32) {
 	var d opus_val32
 	var i int32
 	var xx uintptr
@@ -380,7 +378,7 @@ func ref_celt_autocorr(tls *libc.TLS, x uintptr, ac uintptr, window uintptr, ove
 }
 
 func TestCeltFir(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	r := rand.New(rand.NewPCG(5, 6))
 	for iter := range 300 {
@@ -408,7 +406,7 @@ func TestCeltFir(t *testing.T) {
 }
 
 func TestCeltAutocorr(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	r := rand.New(rand.NewPCG(7, 8))
 	for iter := range 300 {
@@ -452,14 +450,14 @@ func TestPreemphStereo(t *testing.T) {
 		for c := range 2 {
 			m := wmem[c]
 			for i := range n {
-				x := opus_val16(pcm[2*i+c] * libc.Float32FromFloat32(32768))
+				x := opus_val16(pcm[2*i+c] * crtFloat32FromFloat32(32768))
 				if !(x == x) {
 					x = 0
 				}
 				if clip {
-					if libc.Float32FromFloat32(65536) < x {
+					if crtFloat32FromFloat32(65536) < x {
 						x = 65536
-					} else if -libc.Float32FromFloat32(65536) > x {
+					} else if -crtFloat32FromFloat32(65536) > x {
 						x = -65536
 					}
 				}
@@ -481,7 +479,7 @@ func TestPreemphStereo(t *testing.T) {
 }
 
 // refdeemphasis is deemphasis as generated at 939ada7.
-func refdeemphasis(tls *libc.TLS, in uintptr, pcm uintptr, N int32, C int32, downsample int32, coef uintptr, mem uintptr) {
+func refdeemphasis(tls *crtTLS, in uintptr, pcm uintptr, N int32, C int32, downsample int32, coef uintptr, mem uintptr) {
 	var c, count, j, v1 int32
 	var m, tmp celt_sig
 	var x, y uintptr
@@ -504,7 +502,7 @@ func refdeemphasis(tls *libc.TLS, in uintptr, pcm uintptr, N int32, C int32, dow
 			/* Technically the store could be moved outside of the if because
 			   the stores we don't want will just be overwritten */
 			if count == 0 {
-				*(*opus_val16)(unsafe.Pointer(y)) = opus_val16(sig2Word16(tls, tmp) * (float32(1) / libc.Float32FromFloat32(32768)))
+				*(*opus_val16)(unsafe.Pointer(y)) = opus_val16(sig2Word16(tls, tmp) * (float32(1) / crtFloat32FromFloat32(32768)))
 			}
 			count = count + 1
 			v1 = count
@@ -530,7 +528,7 @@ func refdeemphasis(tls *libc.TLS, in uintptr, pcm uintptr, N int32, C int32, dow
 }
 
 func TestDeemphasis(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	r := rand.New(rand.NewPCG(11, 12))
 	coef := cBuf[opus_val16](4)
@@ -555,7 +553,7 @@ func TestDeemphasis(t *testing.T) {
 	}
 }
 
-func ref_kf_bfly2(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
+func ref_kf_bfly2(tls *crtTLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
 	var Fout2, Fout_beg, tw1 uintptr
 	var i, j int32
 	var t kiss_fft_cpx
@@ -599,7 +597,7 @@ func ref_kf_bfly2(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	}
 }
 
-func ref_ki_bfly2(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
+func ref_ki_bfly2(tls *crtTLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
 	var Fout2, Fout_beg, tw1 uintptr
 	var i, j int32
 	var t kiss_fft_cpx
@@ -639,7 +637,7 @@ func ref_ki_bfly2(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	}
 }
 
-func ref_kf_bfly3(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
+func ref_kf_bfly3(tls *crtTLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
 	var Fout_beg, tw1, tw2, v2 uintptr
 	var epi3 kiss_twiddle_cpx
 	var i int32
@@ -670,8 +668,8 @@ func ref_kf_bfly3(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 			scratch[0].Fi = scratch[int32(1)].Fi - scratch[int32(2)].Fi
 			tw1 = tw1 + uintptr(fstride)*8
 			tw2 = tw2 + uintptr(fstride*uint64(2))*8
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - float32(scratch[int32(3)].Fr*libc.Float32FromFloat32(0.5))
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - float32(scratch[int32(3)].Fi*libc.Float32FromFloat32(0.5))
+			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - float32(scratch[int32(3)].Fr*crtFloat32FromFloat32(0.5))
+			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - float32(scratch[int32(3)].Fi*crtFloat32FromFloat32(0.5))
 			scratch[0].Fr *= epi3.Fi
 			scratch[0].Fi *= epi3.Fi
 			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr += scratch[int32(3)].Fr
@@ -697,7 +695,7 @@ func ref_kf_bfly3(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	}
 }
 
-func ref_ki_bfly3(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
+func ref_ki_bfly3(tls *crtTLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
 	var Fout_beg, tw1, tw2, v2 uintptr
 	var epi3 kiss_twiddle_cpx
 	var i, k, v3 int32
@@ -728,8 +726,8 @@ func ref_ki_bfly3(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 			scratch[0].Fi = scratch[int32(1)].Fi - scratch[int32(2)].Fi
 			tw1 = tw1 + uintptr(fstride)*8
 			tw2 = tw2 + uintptr(fstride*uint64(2))*8
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - float32(scratch[int32(3)].Fr*libc.Float32FromFloat32(0.5))
-			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - float32(scratch[int32(3)].Fi*libc.Float32FromFloat32(0.5))
+			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fr = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr - float32(scratch[int32(3)].Fr*crtFloat32FromFloat32(0.5))
+			(*(*kiss_fft_cpx)(unsafe.Pointer(Fout + uintptr(m)*8))).Fi = (*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fi - float32(scratch[int32(3)].Fi*crtFloat32FromFloat32(0.5))
 			scratch[0].Fr *= -epi3.Fi
 			scratch[0].Fi *= -epi3.Fi
 			(*kiss_fft_cpx)(unsafe.Pointer(Fout)).Fr += scratch[int32(3)].Fr
@@ -755,7 +753,7 @@ func ref_ki_bfly3(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	}
 }
 
-func ref_kf_bfly4(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
+func ref_kf_bfly4(tls *crtTLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
 	var Fout_beg, tw1, tw2, tw3, v2, v3 uintptr
 	var i, j int32
 	var m2, m3 size_t
@@ -822,7 +820,7 @@ func ref_kf_bfly4(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	}
 }
 
-func ref_ki_bfly4(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
+func ref_ki_bfly4(tls *crtTLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
 	var Fout_beg, tw1, tw2, tw3, v2, v3 uintptr
 	var i, j int32
 	var m2, m3 size_t
@@ -885,7 +883,7 @@ func ref_ki_bfly4(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	}
 }
 
-func ref_kf_bfly5(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
+func ref_kf_bfly5(tls *crtTLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
 	var Fout0, Fout1, Fout2, Fout3, Fout4, Fout_beg, tw, twiddles uintptr
 	var i, u int32
 	var scratch [13]kiss_fft_cpx
@@ -964,7 +962,7 @@ func ref_kf_bfly5(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 	}
 }
 
-func ref_ki_bfly5(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
+func ref_ki_bfly5(tls *crtTLS, Fout uintptr, fstride size_t, st uintptr, m int32, N int32, mm int32) {
 	var Fout0, Fout1, Fout2, Fout3, Fout4, Fout_beg, tw, twiddles uintptr
 	var i, u int32
 	var scratch [13]kiss_fft_cpx
@@ -1044,10 +1042,10 @@ func ref_ki_bfly5(tls *libc.TLS, Fout uintptr, fstride size_t, st uintptr, m int
 }
 
 func TestFFTButterflies(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	r := rand.New(rand.NewPCG(13, 14))
-	type bfly func(*libc.TLS, uintptr, size_t, uintptr, int32, int32, int32)
+	type bfly func(*crtTLS, uintptr, size_t, uintptr, int32, int32, int32)
 	cases := []struct {
 		radix     int
 		got, want bfly
@@ -1077,7 +1075,7 @@ func TestFFTButterflies(t *testing.T) {
 	}
 }
 
-func ref_comb_filter(tls *libc.TLS, y uintptr, x uintptr, T0 int32, T1 int32, N int32, g0 opus_val16, g1 opus_val16, tapset0 int32, tapset1 int32, window uintptr, overlap int32) {
+func ref_comb_filter(tls *crtTLS, y uintptr, x uintptr, T0 int32, T1 int32, N int32, g0 opus_val16, g1 opus_val16, tapset0 int32, tapset1 int32, window uintptr, overlap int32) {
 	var f, g00, g01, g02, g10, g11, g12 opus_val16
 	var i int32
 	_, _, _, _, _, _, _, _ = f, g00, g01, g02, g10, g11, g12, i
@@ -1093,7 +1091,7 @@ func ref_comb_filter(tls *libc.TLS, y uintptr, x uintptr, T0 int32, T1 int32, N 
 			break
 		}
 		f = opus_val16(*(*opus_val16)(unsafe.Pointer(window + uintptr(i)*4)) * *(*opus_val16)(unsafe.Pointer(window + uintptr(i)*4)))
-		*(*opus_val32)(unsafe.Pointer(y + uintptr(i)*4)) = *(*opus_val32)(unsafe.Pointer(x + uintptr(i)*4)) + float32(float32((libc.Float32FromFloat32(1)-f)*g00)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T0)*4))) + float32(float32((libc.Float32FromFloat32(1)-f)*g01)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T0-int32(1))*4))) + float32(float32((libc.Float32FromFloat32(1)-f)*g01)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T0+int32(1))*4))) + float32(float32((libc.Float32FromFloat32(1)-f)*g02)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T0-int32(2))*4))) + float32(float32((libc.Float32FromFloat32(1)-f)*g02)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T0+int32(2))*4))) + opus_val16(opus_val16(f*g10)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T1)*4))) + opus_val16(opus_val16(f*g11)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T1-int32(1))*4))) + opus_val16(opus_val16(f*g11)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T1+int32(1))*4))) + opus_val16(opus_val16(f*g12)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T1-int32(2))*4))) + opus_val16(opus_val16(f*g12)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T1+int32(2))*4)))
+		*(*opus_val32)(unsafe.Pointer(y + uintptr(i)*4)) = *(*opus_val32)(unsafe.Pointer(x + uintptr(i)*4)) + float32(float32((crtFloat32FromFloat32(1)-f)*g00)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T0)*4))) + float32(float32((crtFloat32FromFloat32(1)-f)*g01)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T0-int32(1))*4))) + float32(float32((crtFloat32FromFloat32(1)-f)*g01)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T0+int32(1))*4))) + float32(float32((crtFloat32FromFloat32(1)-f)*g02)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T0-int32(2))*4))) + float32(float32((crtFloat32FromFloat32(1)-f)*g02)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T0+int32(2))*4))) + opus_val16(opus_val16(f*g10)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T1)*4))) + opus_val16(opus_val16(f*g11)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T1-int32(1))*4))) + opus_val16(opus_val16(f*g11)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T1+int32(1))*4))) + opus_val16(opus_val16(f*g12)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T1-int32(2))*4))) + opus_val16(opus_val16(f*g12)**(*opus_val32)(unsafe.Pointer(x + uintptr(i-T1+int32(2))*4)))
 		goto _1
 	_1:
 		;
@@ -1113,7 +1111,7 @@ func ref_comb_filter(tls *libc.TLS, y uintptr, x uintptr, T0 int32, T1 int32, N 
 }
 
 func TestCombFilter(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	r := rand.New(rand.NewPCG(15, 16))
 	const hist = 1030
@@ -1142,7 +1140,7 @@ func TestCombFilter(t *testing.T) {
 	}
 }
 
-func ref_clt_mdct_backward(tls *libc.TLS, l uintptr, in uintptr, out uintptr, window uintptr, overlap int32, shift int32, stride int32) {
+func ref_clt_mdct_backward(tls *crtTLS, l uintptr, in uintptr, out uintptr, window uintptr, overlap int32, shift int32, stride int32) {
 	var N, N2, N4, i int32
 	var f, f2, fp, fp1, fp11, fp2, fp21, t, t1, wp1, wp11, wp2, wp21, xp1, xp11, xp2, xp21, yp, yp1, yp11, yp2, v2 uintptr
 	var im, re, sine, x1, x2, yi, yi1, yr, yr1 float32
@@ -1156,7 +1154,7 @@ func ref_clt_mdct_backward(tls *libc.TLS, l uintptr, in uintptr, out uintptr, wi
 	f = tls.ArenaAlloc(uint64(4) * uint64(N2))
 	f2 = tls.ArenaAlloc(uint64(4) * uint64(N2))
 	/* sin(x) ~= x here */
-	sine = float32(float32(float32(2)*libc.Float32FromFloat32(3.141592653))*libc.Float32FromFloat32(0.125)) / float32(N)
+	sine = float32(float32(float32(2)*crtFloat32FromFloat32(3.141592653))*crtFloat32FromFloat32(0.125)) / float32(N)
 	/* Pre-rotate */
 	/* Temp pointers to make it really clear to the compiler what we're doing */
 	xp1 = in
@@ -1314,7 +1312,7 @@ func ref_clt_mdct_backward(tls *libc.TLS, l uintptr, in uintptr, out uintptr, wi
 }
 
 func TestMdctBackward(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	r := rand.New(rand.NewPCG(17, 18))
 	mode := uintptr(unsafe.Pointer(&mode48000_960_120))
@@ -1336,7 +1334,7 @@ func TestMdctBackward(t *testing.T) {
 	}
 }
 
-func ref_deinterleave_hadamard(tls *libc.TLS, X uintptr, N0 int32, stride int32, hadamard int32) {
+func ref_deinterleave_hadamard(tls *crtTLS, X uintptr, N0 int32, stride int32, hadamard int32) {
 	var N, i, j int32
 	var ordery, tmp uintptr
 	_, _, _, _, _ = N, i, j, ordery, tmp
@@ -1403,7 +1401,7 @@ func ref_deinterleave_hadamard(tls *libc.TLS, X uintptr, N0 int32, stride int32,
 	}
 }
 
-func ref_interleave_hadamard(tls *libc.TLS, X uintptr, N0 int32, stride int32, hadamard int32) {
+func ref_interleave_hadamard(tls *crtTLS, X uintptr, N0 int32, stride int32, hadamard int32) {
 	var N, i, j int32
 	var ordery, tmp uintptr
 	_, _, _, _, _ = N, i, j, ordery, tmp
@@ -1471,7 +1469,7 @@ func ref_interleave_hadamard(tls *libc.TLS, X uintptr, N0 int32, stride int32, h
 }
 
 func TestHadamardInterleave(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	r := rand.New(rand.NewPCG(19, 20))
 	for iter := range 200 {
@@ -1479,7 +1477,7 @@ func TestHadamardInterleave(t *testing.T) {
 		n0 := int32(1 + r.IntN(40))
 		had := int32(r.IntN(2))
 		x := randFloats(r, int(n0*stride), 1)
-		for k, pair := range [][2]func(*libc.TLS, uintptr, int32, int32, int32){
+		for k, pair := range [][2]func(*crtTLS, uintptr, int32, int32, int32){
 			{ref_deinterleave_hadamard, deinterleave_hadamard},
 			{ref_interleave_hadamard, interleave_hadamard},
 		} {
@@ -1494,7 +1492,7 @@ func TestHadamardInterleave(t *testing.T) {
 	}
 }
 
-func ref_uprev(tls *libc.TLS, _ui uintptr, _n uint32, _ui0 opus_uint32) {
+func ref_uprev(tls *crtTLS, _ui uintptr, _n uint32, _ui0 opus_uint32) {
 	var j, v1 uint32
 	var ui1 opus_uint32
 	_, _, _ = j, ui1, v1
@@ -1517,7 +1515,7 @@ func ref_uprev(tls *libc.TLS, _ui uintptr, _n uint32, _ui0 opus_uint32) {
 	*(*opus_uint32)(unsafe.Pointer(_ui + uintptr(j-uint32(1))*4)) = _ui0
 }
 
-func ref_unext(tls *libc.TLS, _ui uintptr, _len uint32, _ui0 opus_uint32) {
+func ref_unext(tls *crtTLS, _ui uintptr, _len uint32, _ui0 opus_uint32) {
 	var j, v1 uint32
 	var ui1 opus_uint32
 	_, _, _ = j, ui1, v1
@@ -1540,7 +1538,7 @@ func ref_unext(tls *libc.TLS, _ui uintptr, _len uint32, _ui0 opus_uint32) {
 	*(*opus_uint32)(unsafe.Pointer(_ui + uintptr(j-uint32(1))*4)) = _ui0
 }
 
-func ref_ncwrs_urow(tls *libc.TLS, _n uint32, _k uint32, _u uintptr) (r opus_uint32) {
+func ref_ncwrs_urow(tls *crtTLS, _n uint32, _k uint32, _u uintptr) (r opus_uint32) {
 	var k, len1, v2 uint32
 	var n2m1, um1, um2, v1, v5 opus_uint32
 	_, _, _, _, _, _, _, _ = k, len1, n2m1, um1, um2, v1, v2, v5
@@ -1611,14 +1609,14 @@ func ref_ncwrs_urow(tls *libc.TLS, _n uint32, _k uint32, _u uintptr) (r opus_uin
 	return *(*opus_uint32)(unsafe.Pointer(_u + uintptr(_k)*4)) + *(*opus_uint32)(unsafe.Pointer(_u + uintptr(_k+uint32(1))*4))
 }
 
-func ref_cwrsi(tls *libc.TLS, _n int32, _k int32, _i opus_uint32, _y uintptr, _u uintptr) {
+func ref_cwrsi(tls *crtTLS, _n int32, _k int32, _i opus_uint32, _y uintptr, _u uintptr) {
 	var j, s, yj, v1 int32
 	var p opus_uint32
 	_, _, _, _, _ = j, p, s, yj, v1
 	j = 0
 	for {
 		p = *(*opus_uint32)(unsafe.Pointer(_u + uintptr(_k+int32(1))*4))
-		s = -libc.BoolInt32(_i >= p)
+		s = -crtBoolInt32(_i >= p)
 		_i = _i - p&uint32(s)
 		yj = _k
 		p = *(*opus_uint32)(unsafe.Pointer(_u + uintptr(_k)*4))
@@ -1642,7 +1640,7 @@ func ref_cwrsi(tls *libc.TLS, _n int32, _k int32, _i opus_uint32, _y uintptr, _u
 	}
 }
 
-func ref_icwrs(tls *libc.TLS, _n int32, _k int32, _nc uintptr, _y uintptr, _u uintptr) (r opus_uint32) {
+func ref_icwrs(tls *crtTLS, _n int32, _k int32, _nc uintptr, _y uintptr, _u uintptr) (r opus_uint32) {
 	bp := tls.Alloc(16)
 	defer tls.Free(16)
 	var i opus_uint32
@@ -1665,7 +1663,7 @@ func ref_icwrs(tls *libc.TLS, _n int32, _k int32, _nc uintptr, _y uintptr, _u ui
 	i = icwrs1(tls, _y+uintptr(_n)*4-uintptr(1)*4, bp)
 	j = _n - int32(2)
 	i = i + *(*opus_uint32)(unsafe.Pointer(_u + uintptr(*(*int32)(unsafe.Pointer(bp)))*4))
-	*(*int32)(unsafe.Pointer(bp)) = *(*int32)(unsafe.Pointer(bp)) + libc.Xabs(tls, *(*int32)(unsafe.Pointer(_y + uintptr(j)*4)))
+	*(*int32)(unsafe.Pointer(bp)) = *(*int32)(unsafe.Pointer(bp)) + crtXabs(tls, *(*int32)(unsafe.Pointer(_y + uintptr(j)*4)))
 	if *(*int32)(unsafe.Pointer(_y + uintptr(j)*4)) < 0 {
 		i = i + *(*opus_uint32)(unsafe.Pointer(_u + uintptr(*(*int32)(unsafe.Pointer(bp))+int32(1))*4))
 	}
@@ -1677,7 +1675,7 @@ func ref_icwrs(tls *libc.TLS, _n int32, _k int32, _nc uintptr, _y uintptr, _u ui
 		}
 		ref_unext(tls, _u, uint32(_k+int32(2)), uint32(0))
 		i = i + *(*opus_uint32)(unsafe.Pointer(_u + uintptr(*(*int32)(unsafe.Pointer(bp)))*4))
-		*(*int32)(unsafe.Pointer(bp)) = *(*int32)(unsafe.Pointer(bp)) + libc.Xabs(tls, *(*int32)(unsafe.Pointer(_y + uintptr(j)*4)))
+		*(*int32)(unsafe.Pointer(bp)) = *(*int32)(unsafe.Pointer(bp)) + crtXabs(tls, *(*int32)(unsafe.Pointer(_y + uintptr(j)*4)))
 		if *(*int32)(unsafe.Pointer(_y + uintptr(j)*4)) < 0 {
 			i = i + *(*opus_uint32)(unsafe.Pointer(_u + uintptr(*(*int32)(unsafe.Pointer(bp))+int32(1))*4))
 		}
@@ -1687,7 +1685,7 @@ func ref_icwrs(tls *libc.TLS, _n int32, _k int32, _nc uintptr, _y uintptr, _u ui
 }
 
 func TestCWRSTable(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	r := rand.New(rand.NewPCG(21, 22))
 	u := cBuf[uint32](cwrsCols + 2)
@@ -1747,7 +1745,7 @@ func TestCWRSTable(t *testing.T) {
 func ptr32(v []uint32) uintptr { return uintptr(unsafe.Pointer(&v[0])) }
 func ptr32i(v []int32) uintptr { return uintptr(unsafe.Pointer(&v[0])) }
 
-func ref_transient_analysis(tls *libc.TLS, in uintptr, len1 int32, C int32, overlap int32) (r int32) {
+func ref_transient_analysis(tls *crtTLS, in uintptr, len1 int32, C int32, overlap int32) (r int32) {
 	var N, block, conseq, i, is_transient, j, j1 int32
 	var bins, tmp uintptr
 	var max_abs, t1, t2, t3, v7, v8, v9 opus_val16
@@ -1796,7 +1794,7 @@ func ref_transient_analysis(tls *libc.TLS, in uintptr, len1 int32, C int32, over
 		x = *(*opus_val16)(unsafe.Pointer(tmp + uintptr(i)*4))
 		y = mem0 + x
 		mem0 = mem1 + y - opus_val32(float32(2)*x)
-		mem1 = x - opus_val32(libc.Float32FromFloat32(0.5)*y)
+		mem1 = x - opus_val32(crtFloat32FromFloat32(0.5)*y)
 		*(*opus_val16)(unsafe.Pointer(tmp + uintptr(i)*4)) = y
 		goto _3
 	_3:
@@ -1859,9 +1857,9 @@ func ref_transient_analysis(tls *libc.TLS, in uintptr, len1 int32, C int32, over
 			break
 		}
 		conseq = 0
-		t1 = float32(libc.Float32FromFloat32(0.15) * *(*opus_val16)(unsafe.Pointer(bins + uintptr(i)*4)))
-		t2 = float32(libc.Float32FromFloat32(0.4) * *(*opus_val16)(unsafe.Pointer(bins + uintptr(i)*4)))
-		t3 = float32(libc.Float32FromFloat32(0.15) * *(*opus_val16)(unsafe.Pointer(bins + uintptr(i)*4)))
+		t1 = float32(crtFloat32FromFloat32(0.15) * *(*opus_val16)(unsafe.Pointer(bins + uintptr(i)*4)))
+		t2 = float32(crtFloat32FromFloat32(0.4) * *(*opus_val16)(unsafe.Pointer(bins + uintptr(i)*4)))
+		t3 = float32(crtFloat32FromFloat32(0.15) * *(*opus_val16)(unsafe.Pointer(bins + uintptr(i)*4)))
 		j1 = 0
 		for {
 			if !(j1 < i) {
@@ -1911,7 +1909,7 @@ func ref_transient_analysis(tls *libc.TLS, in uintptr, len1 int32, C int32, over
 }
 
 func TestTransientAnalysis(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	r := rand.New(rand.NewPCG(23, 24))
 	transients := 0

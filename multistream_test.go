@@ -14,8 +14,6 @@ import (
 	"slices"
 	"testing"
 	"unsafe"
-
-	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 // TestMultistreamOutput pins the multistream encoder and decoder output. Besides
@@ -39,7 +37,7 @@ func TestMultistreamOutput(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			channels := int32(len(tc.mapping))
-			tls := libc.NewTLS()
+			tls := crtNewTLS()
 			defer tls.Close()
 			status := &cBuf[int32](1)[0]
 			mapping := cBuf[byte](len(tc.mapping))
@@ -51,7 +49,7 @@ func TestMultistreamOutput(t *testing.T) {
 			defer opus_multistream_encoder_destroy(tls, enc)
 			va := tls.Alloc(32)
 			defer tls.Free(32)
-			if rc := opus_multistream_encoder_ctl(tls, enc, OPUS_SET_BITRATE_REQUEST, libc.VaList(va, tc.bitrate)); rc != OPUS_OK {
+			if rc := opus_multistream_encoder_ctl(tls, enc, OPUS_SET_BITRATE_REQUEST, crtVaList(va, tc.bitrate)); rc != OPUS_OK {
 				t.Fatalf("set bitrate: %d", rc)
 			}
 			dec := opus_multistream_decoder_create(tls, tc.rate, channels, tc.streams, tc.coupled, uintptr(unsafe.Pointer(&mapping[0])), uintptr(unsafe.Pointer(status)))
@@ -68,14 +66,14 @@ func TestMultistreamOutput(t *testing.T) {
 			h := sha256.New()
 			buf := make([]byte, 0, 2*len(out))
 			// finalRanges returns the range coder state of each per-stream codec.
-			finalRanges := func(st uintptr, getState int32, ctl func(*libc.TLS, uintptr, int32, uintptr) int32, streamCtl func(*libc.TLS, uintptr, int32, uintptr) int32) []uint32 {
+			finalRanges := func(st uintptr, getState int32, ctl func(*crtTLS, uintptr, int32, uintptr) int32, streamCtl func(*crtTLS, uintptr, int32, uintptr) int32) []uint32 {
 				ranges := make([]uint32, tc.streams)
 				for s := range tc.streams {
 					*state = 0
-					if rc := ctl(tls, st, getState, libc.VaList(va, s, uintptr(unsafe.Pointer(state)))); rc != OPUS_OK || *state == 0 {
+					if rc := ctl(tls, st, getState, crtVaList(va, s, uintptr(unsafe.Pointer(state)))); rc != OPUS_OK || *state == 0 {
 						t.Fatalf("get state %d: %d", s, rc)
 					}
-					if rc := streamCtl(tls, *state, OPUS_GET_FINAL_RANGE_REQUEST, libc.VaList(va, uintptr(unsafe.Pointer(rng)))); rc != OPUS_OK {
+					if rc := streamCtl(tls, *state, OPUS_GET_FINAL_RANGE_REQUEST, crtVaList(va, uintptr(unsafe.Pointer(rng)))); rc != OPUS_OK {
 						t.Fatalf("final range %d: %d", s, rc)
 					}
 					ranges[s] = *rng

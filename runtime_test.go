@@ -8,23 +8,21 @@ package opus
 import (
 	"testing"
 	"unsafe"
-
-	"github.com/skrashevich/go-opus/internal/libc"
 )
 
 // TestRuntimeCheckptr encodes and decodes with every buffer in C memory, so it
 // runs under -race (checkptr) and exercises TLS.Alloc, malloc and VaList.
 func TestRuntimeCheckptr(t *testing.T) {
-	tls := libc.NewTLS()
+	tls := crtNewTLS()
 	defer tls.Close()
 	const frame, ch = 960, 2
-	status := libc.Xmalloc(tls, 4)
-	pcm := libc.Xmalloc(tls, frame*ch*2)
-	out := libc.Xmalloc(tls, frame*ch*2)
-	pkt := libc.Xmalloc(tls, 4000)
+	status := crtXmalloc(tls, 4)
+	pcm := crtXmalloc(tls, frame*ch*2)
+	out := crtXmalloc(tls, frame*ch*2)
+	pkt := crtXmalloc(tls, 4000)
 	defer func() {
 		for _, p := range []uintptr{status, pcm, out, pkt} {
-			libc.Xfree(tls, p)
+			crtXfree(tls, p)
 		}
 	}()
 	enc := opus_encoder_create(tls, 48000, ch, OPUS_APPLICATION_AUDIO, status)
@@ -34,9 +32,9 @@ func TestRuntimeCheckptr(t *testing.T) {
 	}
 	defer opus_encoder_destroy(tls, enc)
 	defer opus_decoder_destroy(tls, dec)
-	va := libc.Xmalloc(tls, 8)
-	defer libc.Xfree(tls, va)
-	if r := opus_encoder_ctl(tls, enc, OPUS_SET_BITRATE_REQUEST, libc.VaList(va, int32(64000))); r != OPUS_OK {
+	va := crtXmalloc(tls, 8)
+	defer crtXfree(tls, va)
+	if r := opus_encoder_ctl(tls, enc, OPUS_SET_BITRATE_REQUEST, crtVaList(va, int32(64000))); r != OPUS_OK {
 		t.Fatalf("ctl: %d", r)
 	}
 	s := unsafe.Slice((*int16)(unsafe.Pointer(pcm)), frame*ch)
