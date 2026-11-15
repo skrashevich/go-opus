@@ -4,6 +4,11 @@ Pure Go implementation of the [Opus audio codec](https://opus-codec.org/) (RFC 6
 
 **No CGo. No system dependencies. Just Go.**
 
+The RFC 6716 core includes the Hybrid folding update from RFC 8251 section 9.
+This changes some Hybrid decoded PCM while preserving encoded packets and the
+public API. It is a scoped update, not a claim of full RFC 8251 conformance.
+See [source maintenance and independent C regression fixtures](docs/rfc8251-section9.md).
+
 This is a complete Opus codec (SILK + CELT + Hybrid modes) — unlike other pure Go implementations that only support SILK.
 
 ## Features
@@ -30,7 +35,7 @@ Apple M1 Pro, encoding and decoding a 3:41 stereo 48 kHz PCM file at 128 kb/s. T
 
 go-opus encodes at 144x realtime and decodes at 295x realtime on this file.
 
-The performance figures above and the following microbenchmarks were measured before checkout consolidation; they are retained measurements, not a fresh benchmark of the merged sources.
+The performance figures above and the following microbenchmarks were measured before the RFC 8251 section 9 update and checkout consolidation; they are retained measurements, not a fresh benchmark of the merged sources.
 
 Go microbenchmarks for one 20 ms stereo 48 kHz frame (default encoder settings, codec state reused, no file I/O): encode 79 µs, decode 51 µs, with 0 allocations per frame. To reproduce:
 
@@ -225,6 +230,7 @@ go-opus/
 
 ### Comparison with pion/opus
 
+These retained measurements predate the RFC 8251 section 9 update.
 pion/opus at commit `b10510e`, same machine and 3:41 file as above. Both libraries are called in one Go process, and the time is user CPU spent inside the encode/decode calls (median of 3 runs).
 
 **Decoding.** The input streams were produced by the C reference encoder. Accuracy is measured against the C reference decoder output with the RFC 6716 `opus_compare` tool. A stream passes at 0% or above, and 100% means identical output.

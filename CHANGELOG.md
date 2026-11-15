@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Apply RFC 8251 section 9 Hybrid folding to the RFC 6716 codec core. Some
+  Hybrid decoded PCM changes; encoded packets and public APIs are preserved.
+- Add independently generated C reference regressions and guarded, idempotent
+  post-generation maintenance. Other RFC 8251 changes remain outside this update.
+
 ## v0.1.1
 
 - Fix `go mod tidy` for consumers replacing `github.com/pion/opus` with this

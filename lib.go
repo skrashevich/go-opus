@@ -4018,8 +4018,19 @@ func quant_all_bands(tls *crtTLS, encode int32, m uintptr, start int32, end int3
 		} else {
 			b = 0
 		}
-		if resynth != 0 && M*int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(i)*2)))-N >= M*int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(start)*2))) && (update_lowband != 0 || lowband_offset == 0) {
+		if resynth != 0 && (M*int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(i)*2)))-N >= M*int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(start)*2))) || i == start+1) && (update_lowband != 0 || lowband_offset == 0) {
 			lowband_offset = i
+		}
+		// RFC 8251 section 9: extend the first Hybrid band's folding data.
+		// n2 == n1 in CELT-only mode, so that path copies no data.
+		if i == start+1 {
+			n1 := M * (int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(start+1)*2))) - int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(start)*2))))
+			n2 := M * (int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(start+2)*2))) - int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(start+1)*2))))
+			offset := M * int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(start)*2)))
+			crtXmemcpy(tls, norm+uintptr(offset+n1)*4, norm+uintptr(offset+2*n1-n2)*4, crtTsize_t((n2-n1)*4))
+			if C == 2 {
+				crtXmemcpy(tls, norm2+uintptr(offset+n1)*4, norm2+uintptr(offset+2*n1-n2)*4, crtTsize_t((n2-n1)*4))
+			}
 		}
 		tf_change = *(*int32)(unsafe.Pointer(tf_res + uintptr(i)*4))
 		if i >= (*OpusCustomMode)(unsafe.Pointer(m)).FeffEBands {
@@ -4050,7 +4061,7 @@ func quant_all_bands(tls *crtTLS, encode int32, m uintptr, start int32, end int3
 			for {
 				fold_end = fold_end + 1
 				v1 = fold_end
-				if !(M*int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(v1)*2))) < effective_lowband+N) {
+				if !(v1 < i && M*int32(*(*opus_int16)(unsafe.Pointer(eBands + uintptr(v1)*2))) < effective_lowband+N) {
 					break
 				}
 			}
