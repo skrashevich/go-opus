@@ -5,6 +5,8 @@
 
 package opus
 
+//go:generate python3 scripts/apply_rfc8251.py
+
 import (
 	"runtime"
 	"sync"

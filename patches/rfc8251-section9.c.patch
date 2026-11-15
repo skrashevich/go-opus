@@ -1,0 +1,22 @@
+--- rfc6716/celt/bands.c
++++ rfc6716-plus-section9/celt/bands.c
+@@ -1237 +1237 @@
+-      if (resynth && M*eBands[i]-N >= M*eBands[start] && (update_lowband || lowband_offset==0))
++      if (resynth && (M*eBands[i]-N >= M*eBands[start] || i==start+1) && (update_lowband || lowband_offset==0))
+@@ -1238,0 +1239,13 @@
++
++      if (i == start+1)
++      {
++         int n1, n2;
++         int offset;
++         n1 = M*(eBands[start+1]-eBands[start]);
++         n2 = M*(eBands[start+2]-eBands[start+1]);
++         offset = M*eBands[start];
++         /* RFC 8251 section 9: duplicate first-band folding data. */
++         OPUS_COPY(&norm[offset+n1], &norm[offset+2*n1 - n2], n2-n1);
++         if (C==2)
++            OPUS_COPY(&norm2[offset+n1], &norm2[offset+2*n1 - n2], n2-n1);
++      }
+@@ -1260 +1273 @@
+-         while(M*eBands[++fold_end] < effective_lowband+N);
++         while(++fold_end < i && M*eBands[fold_end] < effective_lowband+N);
